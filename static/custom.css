@@ -1,5 +1,16 @@
 /* Custom Color Scheme Override */
 
+/* Change body background to lighter theme */
+body {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+}
+
+/* Navigation bar with modern gradient */
+.navbar, .navbar-dark {
+    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+}
+
 /* Cards with blue gradient from your color guide */
 .card, .card.bg-dark {
     background: linear-gradient(135deg, #219CF3, #1976D2) !important;
@@ -87,4 +98,35 @@ code {
 
 .text-white-90 {
     color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Homepage specific styles */
+.display-4 {
+    color: #1976D2 !important;
+}
+
+.lead {
+    color: #666 !important;
+}
+
+/* Feature cards on homepage - use different gradients */
+.col-md-4:nth-child(1) .card {
+    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+}
+
+.col-md-4:nth-child(2) .card {
+    background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
+}
+
+.col-md-4:nth-child(3) .card {
+    background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
+}
+
+/* Update text colors for light background */
+h1, h2, h3, h4, h5, h6 {
+    color: #1976D2 !important;
+}
+
+.text-muted {
+    color: #666 !important;
 }
