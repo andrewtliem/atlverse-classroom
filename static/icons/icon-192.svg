@@ -1,0 +1,24 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="24" fill="#0d1117"/>
+  <rect x="16" y="16" width="160" height="160" rx="16" fill="#21262d"/>
+  
+  <!-- Book icon -->
+  <rect x="48" y="56" width="96" height="80" rx="8" fill="#58a6ff" opacity="0.2"/>
+  <rect x="48" y="56" width="96" height="16" rx="8" fill="#58a6ff"/>
+  
+  <!-- Pages -->
+  <line x1="64" y1="88" x2="128" y2="88" stroke="#f0f6fc" stroke-width="2" stroke-linecap="round"/>
+  <line x1="64" y1="100" x2="112" y2="100" stroke="#f0f6fc" stroke-width="2" stroke-linecap="round"/>
+  <line x1="64" y1="112" x2="120" y2="112" stroke="#f0f6fc" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- AI brain symbol -->
+  <circle cx="144" cy="48" r="20" fill="#f78166"/>
+  <circle cx="140" cy="44" r="3" fill="#0d1117"/>
+  <circle cx="148" cy="44" r="3" fill="#0d1117"/>
+  <circle cx="140" cy="52" r="2" fill="#0d1117"/>
+  <circle cx="144" cy="52" r="2" fill="#0d1117"/>
+  <circle cx="148" cy="52" r="2" fill="#0d1117"/>
+  
+  <!-- Bookmark -->
+  <path d="M136 56 L144 64 L152 56 L152 80 L144 72 L136 80 Z" fill="#7c3aed"/>
+</svg>

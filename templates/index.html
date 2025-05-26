@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - AI Enhanced Classroom{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Hero Section -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i data-feather="book-open" style="width: 80px; height: 80px;" class="text-primary"></i>
+            </div>
+            <h1 class="display-4 mb-3">AI Enhanced Classroom</h1>
+            <p class="lead text-muted mb-4">
+                Transform your learning experience with AI-powered study guides and personalized quizzes
+            </p>
+            
+            {% if not current_user.is_authenticated %}
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('auth_register') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="user-plus" class="me-2"></i>Get Started
+                    </a>
+                    <a href="{{ url_for('auth_login') }}" class="btn btn-outline-secondary btn-lg">
+                        <i data-feather="log-in" class="me-2"></i>Sign In
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4 my-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i data-feather="users" class="text-primary mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">For Teachers</h5>
+                        <p class="card-text text-muted">
+                            Create classrooms, manage students, upload materials, and track learning progress with detailed analytics.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i data-feather="brain" class="text-success mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">AI-Powered Learning</h5>
+                        <p class="card-text text-muted">
+                            Generate personalized study guides and self-evaluation quizzes using Google's Gemini AI technology.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i data-feather="smartphone" class="text-info mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">Mobile Ready</h5>
+                        <p class="card-text text-muted">
+                            Progressive Web App (PWA) design works seamlessly on all devices with offline support.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="my-5">
+            <h2 class="text-center mb-4">How It Works</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">1</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Join a Classroom</h5>
+                            <p class="text-muted">Students join classes using invitation codes provided by teachers.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">2</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Access Materials</h5>
+                            <p class="text-muted">View and download class materials uploaded by your teacher.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">3</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Generate Study Guides</h5>
+                            <p class="text-muted">AI creates personalized study guides from your class materials.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">4</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Take Self-Assessments</h5>
+                            <p class="text-muted">Test your knowledge with AI-generated quizzes and get instant feedback.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_authenticated %}
+            <!-- Quick Actions for Authenticated Users -->
+            <div class="text-center my-5">
+                <h3 class="mb-4">Welcome back, {{ current_user.first_name }}!</h3>
+                {% if current_user.role == 'teacher' %}
+                    <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="home" class="me-2"></i>Go to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary btn-lg">
+                        <i data-feather="home" class="me-2"></i>Go to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1>Student Results</h1>
+        <h5 class="text-muted">{{ classroom.name }}</h5>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('teacher_export_results', classroom_id=classroom.id) }}" class="btn btn-outline-primary">
+            <i data-feather="download" class="me-2"></i>Export CSV
+        </a>
+        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-secondary">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+        </a>
+    </div>
+</div>
+
+{% if evaluations %}
+    <div class="card border-0 bg-dark">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i data-feather="bar-chart-2" class="me-2"></i>Self-Evaluation Results
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Material</th>
+                            <th>Quiz Type</th>
+                            <th>Score</th>
+                            <th>Date Completed</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evaluation in evaluations %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>{{ evaluation.student.full_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ evaluation.student.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if evaluation.material %}
+                                        {{ evaluation.material.title }}
+                                    {% else %}
+                                        <span class="text-muted">All Materials</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ evaluation.quiz_type.title() }}</span>
+                                </td>
+                                <td>
+                                    {% if evaluation.score is not none %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress me-2" style="width: 60px;">
+                                                <div class="progress-bar 
+                                                    {% if evaluation.score >= 80 %}bg-success
+                                                    {% elif evaluation.score >= 60 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    style="width: {{ evaluation.score }}%"></div>
+                                            </div>
+                                            <span class="
+                                                {% if evaluation.score >= 80 %}text-success
+                                                {% elif evaluation.score >= 60 %}text-warning
+                                                {% else %}text-danger{% endif %}">
+                                                {{ "%.1f"|format(evaluation.score) }}%
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">Not scored</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if evaluation.completed_at %}
+                                        {{ evaluation.completed_at.strftime('%m/%d/%y %I:%M %p') }}
+                                    {% else %}
+                                        <span class="text-muted">In progress</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if evaluation.completed_at %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">In Progress</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-dark text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ evaluations|length }}</h3>
+                    <p class="text-muted mb-0">Total Evaluations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-dark text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ evaluations|selectattr('completed_at')|list|length }}</h3>
+                    <p class="text-muted mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-dark text-center">
+                <div class="card-body">
+                    {% set completed_evaluations = evaluations|selectattr('completed_at')|selectattr('score')|list %}
+                    {% if completed_evaluations %}
+                        {% set avg_score = (completed_evaluations|sum(attribute='score')) / completed_evaluations|length %}
+                        <h3 class="
+                            {% if avg_score >= 80 %}text-success
+                            {% elif avg_score >= 60 %}text-warning
+                            {% else %}text-danger{% endif %}">
+                            {{ "%.1f"|format(avg_score) }}%
+                        </h3>
+                    {% else %}
+                        <h3 class="text-muted">--</h3>
+                    {% endif %}
+                    <p class="text-muted mb-0">Average Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-dark text-center">
+                <div class="card-body">
+                    {% set unique_students = evaluations|map(attribute='student_id')|unique|list|length %}
+                    <h3 class="text-info">{{ unique_students }}</h3>
+                    <p class="text-muted mb-0">Active Students</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i data-feather="bar-chart-2" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+        <h3 class="text-muted">No Results Yet</h3>
+        <p class="text-muted">Students haven't completed any self-evaluations yet.</p>
+        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-primary">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

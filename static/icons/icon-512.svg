@@ -1,0 +1,47 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="64" fill="#0d1117"/>
+  <rect x="42" y="42" width="428" height="428" rx="42" fill="#21262d"/>
+  
+  <!-- Main book icon -->
+  <rect x="128" y="150" width="256" height="212" rx="20" fill="#58a6ff" opacity="0.2"/>
+  <rect x="128" y="150" width="256" height="42" rx="20" fill="#58a6ff"/>
+  
+  <!-- Book pages -->
+  <line x1="170" y1="235" x2="342" y2="235" stroke="#f0f6fc" stroke-width="6" stroke-linecap="round"/>
+  <line x1="170" y1="267" x2="298" y2="267" stroke="#f0f6fc" stroke-width="6" stroke-linecap="round"/>
+  <line x1="170" y1="299" x2="320" y2="299" stroke="#f0f6fc" stroke-width="6" stroke-linecap="round"/>
+  <line x1="170" y1="331" x2="310" y2="331" stroke="#f0f6fc" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- AI brain symbol -->
+  <circle cx="384" cy="128" r="54" fill="#f78166"/>
+  <circle cx="372" cy="115" r="8" fill="#0d1117"/>
+  <circle cx="396" cy="115" r="8" fill="#0d1117"/>
+  <circle cx="372" cy="138" r="5" fill="#0d1117"/>
+  <circle cx="384" cy="138" r="5" fill="#0d1117"/>
+  <circle cx="396" cy="138" r="5" fill="#0d1117"/>
+  <circle cx="384" cy="150" r="3" fill="#0d1117"/>
+  
+  <!-- Neural network connections -->
+  <line x1="330" y1="128" x2="350" y2="128" stroke="#f78166" stroke-width="3" opacity="0.6"/>
+  <line x1="418" y1="128" x2="438" y2="128" stroke="#f78166" stroke-width="3" opacity="0.6"/>
+  <line x1="384" y1="74" x2="384" y2="94" stroke="#f78166" stroke-width="3" opacity="0.6"/>
+  <line x1="384" y1="162" x2="384" y2="182" stroke="#f78166" stroke-width="3" opacity="0.6"/>
+  
+  <!-- Bookmark -->
+  <path d="M362 150 L384 182 L406 150 L406 212 L384 192 L362 212 Z" fill="#7c3aed"/>
+  
+  <!-- Secondary elements for depth -->
+  <rect x="96" y="384" width="128" height="64" rx="12" fill="#238636" opacity="0.3"/>
+  <rect x="96" y="384" width="128" height="16" rx="8" fill="#238636"/>
+  
+  <rect x="288" y="384" width="128" height="64" rx="12" fill="#da3633" opacity="0.3"/>
+  <rect x="288" y="384" width="128" height="16" rx="8" fill="#da3633"/>
+  
+  <!-- Quiz/test icons -->
+  <circle cx="152" cy="416" r="12" fill="#f0f6fc"/>
+  <circle cx="152" cy="416" r="6" fill="#238636"/>
+  
+  <circle cx="352" cy="416" r="12" fill="#f0f6fc"/>
+  <path d="M346 410 L352 416 L358 410" stroke="#da3633" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M346 422 L358 410" stroke="#da3633" stroke-width="3" stroke-linecap="round"/>
+</svg>

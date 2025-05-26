@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if show_results %}Quiz Results{% else %}{{ quiz_type.title() }} Quiz{% endif %} - {{ classroom.name }}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        {% if show_results %}
+            <h1>Quiz Results</h1>
+            <h5 class="text-muted">{{ quiz_type.title() }} Quiz - {{ classroom.name }}</h5>
+            {% if evaluation.score is not none %}
+                <div class="mt-2">
+                    <span class="badge badge-lg 
+                        {% if evaluation.score >= 80 %}bg-success
+                        {% elif evaluation.score >= 60 %}bg-warning
+                        {% else %}bg-danger{% endif %}">
+                        Final Score: {{ "%.1f"|format(evaluation.score) }}%
+                    </span>
+                </div>
+            {% endif %}
+        {% else %}
+            <h1>{{ quiz_type.title() }} Quiz</h1>
+            <h5 class="text-muted">{{ classroom.name }}</h5>
+            {% if evaluation.material %}
+                <small class="text-muted">Material: {{ evaluation.material.title }}</small>
+            {% else %}
+                <small class="text-muted">Based on all class materials</small>
+            {% endif %}
+        {% endif %}
+    </div>
+    <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-secondary">
+        <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+    </a>
+</div>
+
+{% if not show_results %}
+    <!-- Quiz Form -->
+    <form method="POST" action="{{ url_for('student_submit_quiz', evaluation_id=evaluation.id) }}">
+        <div class="card border-0 bg-dark">
+            <div class="card-body">
+                {% for i, question in enumerate(questions) %}
+                    <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
+                        <h5 class="mb-3">{{ i + 1 }}. {{ question.question }}</h5>
+                        
+                        {% if quiz_type == 'mcq' %}
+                            {% for option in question.options %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="answer_{{ i }}" value="{{ option[0] }}" 
+                                           id="q{{ i }}_{{ loop.index0 }}" required>
+                                    <label class="form-check-label" for="q{{ i }}_{{ loop.index0 }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        
+                        {% elif quiz_type == 'true_false' %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" 
+                                       name="answer_{{ i }}" value="True" 
+                                       id="q{{ i }}_true" required>
+                                <label class="form-check-label" for="q{{ i }}_true">
+                                    True
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" 
+                                       name="answer_{{ i }}" value="False" 
+                                       id="q{{ i }}_false" required>
+                                <label class="form-check-label" for="q{{ i }}_false">
+                                    False
+                                </label>
+                            </div>
+                        
+                        {% elif quiz_type == 'essay' %}
+                            <textarea class="form-control" name="answer_{{ i }}" 
+                                      rows="6" placeholder="Write your answer here..." required></textarea>
+                            {% if question.key_points %}
+                                <div class="form-text mt-2">
+                                    <strong>Consider including:</strong> {{ question.key_points|join(', ') }}
+                                </div>
+                            {% endif %}
+                            {% if question.suggested_length %}
+                                <div class="form-text">
+                                    <strong>Suggested length:</strong> {{ question.suggested_length }}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">{{ questions|length }} question{{ 's' if questions|length != 1 else '' }}</span>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="check" class="me-2"></i>Submit Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% else %}
+    <!-- Quiz Results -->
+    <div class="card border-0 bg-dark">
+        <div class="card-body">
+            {% for i, question in enumerate(questions) %}
+                <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
+                    <h5 class="mb-3">{{ i + 1 }}. {{ question.question }}</h5>
+                    
+                    {% if quiz_type == 'mcq' or quiz_type == 'true_false' %}
+                        {% set feedback_item = feedback[i] %}
+                        
+                        <!-- Show user's answer -->
+                        <div class="mb-2">
+                            <strong>Your answer:</strong>
+                            <span class="ms-2 {% if feedback_item.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                {{ answers[i] if answers[i] else "Not answered" }}
+                                {% if feedback_item.is_correct %}
+                                    <i data-feather="check-circle" class="ms-1"></i>
+                                {% else %}
+                                    <i data-feather="x-circle" class="ms-1"></i>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Show correct answer if wrong -->
+                        {% if not feedback_item.is_correct %}
+                            <div class="mb-2">
+                                <strong>Correct answer:</strong>
+                                <span class="text-success ms-2">{{ feedback_item.correct_answer }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Show explanation -->
+                        {% if feedback_item.explanation %}
+                            <div class="alert alert-info">
+                                <strong>Explanation:</strong> {{ feedback_item.explanation }}
+                            </div>
+                        {% endif %}
+                    
+                    {% elif quiz_type == 'essay' %}
+                        {% set feedback_item = feedback[i] %}
+                        
+                        <!-- Show user's answer -->
+                        <div class="mb-3">
+                            <strong>Your answer:</strong>
+                            <div class="border rounded p-3 mt-2 bg-secondary">
+                                {{ answers[i] if answers[i] else "No answer provided" }}
+                            </div>
+                        </div>
+                        
+                        <!-- Show score and feedback -->
+                        <div class="mb-2">
+                            <strong>Score:</strong>
+                            <span class="ms-2 badge
+                                {% if feedback_item.score >= 80 %}bg-success
+                                {% elif feedback_item.score >= 60 %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ feedback_item.score }}/100
+                            </span>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>Feedback:</strong> {{ feedback_item.feedback }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted">
+                        Completed on {{ evaluation.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
+                    </span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type=quiz_type) }}" 
+                       class="btn btn-outline-primary">
+                        <i data-feather="refresh-cw" class="me-2"></i>Try Again
+                    </a>
+                    <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" 
+                       class="btn btn-primary">
+                        <i data-feather="book-open" class="me-2"></i>Back to Class
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
