@@ -247,7 +247,77 @@ def teacher_results(classroom_id):
     classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
     evaluations = SelfEvaluation.query.filter_by(classroom_id=classroom_id).order_by(SelfEvaluation.created_at.desc()).all()
     
-    return render_template('teacher/results.html', classroom=classroom, evaluations=evaluations)
+    # Create student summaries
+    student_summaries = []
+    students_data = {}
+    
+    # Group evaluations by student
+    for evaluation in evaluations:
+        student_id = evaluation.student_id
+        if student_id not in students_data:
+            students_data[student_id] = {
+                'student': evaluation.student,
+                'evaluations': [],
+                'materials': set()
+            }
+        students_data[student_id]['evaluations'].append(evaluation)
+        if evaluation.material_id:
+            students_data[student_id]['materials'].add(evaluation.material_id)
+    
+    # Create summaries
+    for student_id, data in students_data.items():
+        evaluations_list = data['evaluations']
+        completed_evals = [e for e in evaluations_list if e.completed_at and e.score is not None]
+        
+        summary = type('obj', (object,), {
+            'student': data['student'],
+            'total_evaluations': len(evaluations_list),
+            'completed_count': len(completed_evals),
+            'in_progress_count': len(evaluations_list) - len(completed_evals),
+            'materials_attempted': len(data['materials']),
+            'avg_score': sum(e.score for e in completed_evals) / len(completed_evals) if completed_evals else None
+        })()
+        student_summaries.append(summary)
+    
+    # Sort by student name
+    student_summaries.sort(key=lambda x: x.student.full_name)
+    
+    return render_template('teacher/results.html', classroom=classroom, student_summaries=student_summaries, evaluations=evaluations)
+
+@app.route('/teacher/classroom/<int:classroom_id>/student/<int:student_id>')
+@login_required
+def teacher_student_details(classroom_id, student_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    student = User.query.filter_by(id=student_id, role='student').first_or_404()
+    
+    # Get student's evaluations for this classroom
+    evaluations = SelfEvaluation.query.filter_by(
+        classroom_id=classroom_id, 
+        student_id=student_id
+    ).order_by(SelfEvaluation.created_at.desc()).all()
+    
+    # Group evaluations by material
+    materials_performance = {}
+    for evaluation in evaluations:
+        material_key = evaluation.material_id if evaluation.material_id else 'all_materials'
+        material_title = evaluation.material.title if evaluation.material else 'All Materials'
+        
+        if material_key not in materials_performance:
+            materials_performance[material_key] = {
+                'material_title': material_title,
+                'evaluations': []
+            }
+        materials_performance[material_key]['evaluations'].append(evaluation)
+    
+    return render_template('teacher/student_details.html', 
+                         classroom=classroom, 
+                         student=student, 
+                         evaluations=evaluations,
+                         materials_performance=materials_performance)
 
 @app.route('/teacher/classroom/<int:classroom_id>/export_results')
 @login_required

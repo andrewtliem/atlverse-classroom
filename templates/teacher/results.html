@@ -18,85 +18,73 @@
     </div>
 </div>
 
-{% if evaluations %}
+{% if student_summaries %}
     <div class="card border-0 bg-dark">
         <div class="card-header">
             <h5 class="mb-0">
-                <i data-feather="bar-chart-2" class="me-2"></i>Self-Evaluation Results
+                <i data-feather="users" class="me-2"></i>Student Performance Overview
             </h5>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Material</th>
-                            <th>Quiz Type</th>
-                            <th>Score</th>
-                            <th>Date Completed</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for evaluation in evaluations %}
-                            <tr>
-                                <td>
+            <div class="row">
+                {% for student_summary in student_summaries %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card bg-secondary h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
-                                        <strong>{{ evaluation.student.full_name }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ evaluation.student.email }}</small>
+                                        <h6 class="card-title mb-1">{{ student_summary.student.full_name }}</h6>
+                                        <small class="text-muted">{{ student_summary.student.email }}</small>
                                     </div>
-                                </td>
-                                <td>
-                                    {% if evaluation.material %}
-                                        {{ evaluation.material.title }}
-                                    {% else %}
-                                        <span class="text-muted">All Materials</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge bg-info">{{ evaluation.quiz_type.title() }}</span>
-                                </td>
-                                <td>
-                                    {% if evaluation.score is not none %}
-                                        <div class="d-flex align-items-center">
-                                            <div class="progress me-2" style="width: 60px;">
-                                                <div class="progress-bar 
-                                                    {% if evaluation.score >= 80 %}bg-success
-                                                    {% elif evaluation.score >= 60 %}bg-warning
-                                                    {% else %}bg-danger{% endif %}" 
-                                                    style="width: {{ evaluation.score }}%"></div>
-                                            </div>
-                                            <span class="
-                                                {% if evaluation.score >= 80 %}text-success
-                                                {% elif evaluation.score >= 60 %}text-warning
-                                                {% else %}text-danger{% endif %}">
-                                                {{ "%.1f"|format(evaluation.score) }}%
+                                    <span class="badge bg-primary">{{ student_summary.total_evaluations }} quiz{{ 'zes' if student_summary.total_evaluations != 1 else '' }}</span>
+                                </div>
+                                
+                                {% if student_summary.avg_score is not none %}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small">Average Score</span>
+                                            <span class="small text-
+                                                {% if student_summary.avg_score >= 80 %}success
+                                                {% elif student_summary.avg_score >= 60 %}warning
+                                                {% else %}danger{% endif %}">
+                                                {{ "%.1f"|format(student_summary.avg_score) }}%
                                             </span>
                                         </div>
-                                    {% else %}
-                                        <span class="text-muted">Not scored</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if evaluation.completed_at %}
-                                        {{ evaluation.completed_at.strftime('%m/%d/%y %I:%M %p') }}
-                                    {% else %}
-                                        <span class="text-muted">In progress</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if evaluation.completed_at %}
-                                        <span class="badge bg-success">Completed</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">In Progress</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar 
+                                                {% if student_summary.avg_score >= 80 %}bg-success
+                                                {% elif student_summary.avg_score >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ student_summary.avg_score }}%"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="text-success fw-bold">{{ student_summary.completed_count }}</div>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-warning fw-bold">{{ student_summary.in_progress_count }}</div>
+                                        <small class="text-muted">In Progress</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-info fw-bold">{{ student_summary.materials_attempted }}</div>
+                                        <small class="text-muted">Materials</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i data-feather="eye" class="me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>
