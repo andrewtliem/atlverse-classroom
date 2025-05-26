@@ -42,7 +42,7 @@
             <div class="card-body">
                 {% for question in questions %}
                     <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                        <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
+                        <h5 class="mb-3">Question {{ loop.index }}. {{ question.question }}</h5>
                         
                         {% if quiz_type == 'mcq' %}
                             {% set question_index = loop.index0 %}
