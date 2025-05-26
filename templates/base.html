@@ -27,14 +27,14 @@
             padding: 0;
         }
         
-        /* Navigation */
+        /* Navigation - Your Blue Gradient */
         .navbar {
             background: linear-gradient(135deg, #219CF3, #1976D2) !important;
             padding: 1rem;
         }
         .navbar-brand, .nav-link { color: white !important; }
         
-        /* Cards - Your Blue Gradient */
+        /* Cards - Mix of Your Colors */
         .card {
             background: linear-gradient(135deg, #219CF3, #1976D2) !important;
             color: white !important;
@@ -44,7 +44,17 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        /* Buttons */
+        /* Teal Cards for variety */
+        .card.teal {
+            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
+        }
+        
+        /* Coral Cards for alerts/warnings */
+        .card.coral {
+            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
+        }
+        
+        /* Buttons - Your Blue Primary */
         .btn, .btn-primary, button {
             background: linear-gradient(135deg, #219CF3, #1976D2) !important;
             color: white !important;
@@ -54,17 +64,29 @@
             font-weight: 500;
         }
         
+        /* Secondary Buttons - Your Teal */
         .btn-secondary {
-            background: #00BCD4 !important;
+            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
         }
         
-        /* Badges */
+        /* Warning/Danger Buttons - Your Coral */
+        .btn-warning, .btn-danger {
+            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
+        }
+        
+        /* Badges - Your Yellow Accent */
         .badge {
-            background: #EF5350 !important;
-            color: white !important;
+            background: #FFC107 !important;
+            color: #333 !important;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-size: 0.75rem;
+        }
+        
+        /* Score badges with your coral */
+        .badge.score {
+            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
+            color: white !important;
         }
         
         /* Text styles */
