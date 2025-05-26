@@ -1,14 +1,22 @@
-/* Custom Color Scheme Override */
+/* Custom Color Scheme Override - Force All Pages */
 
-/* Change body background to lighter theme */
-body {
+/* Change body and html background to lighter theme */
+html, body, body.bg-dark, html.bg-dark {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
+    color: #333 !important;
+}
+
+/* Force override data-bs-theme */
+html[data-bs-theme="dark"], body[data-bs-theme="dark"] {
     background-color: #f8f9fa !important;
     color: #333 !important;
 }
 
 /* Navigation bar with modern gradient */
-.navbar, .navbar-dark {
+.navbar, .navbar-dark, .navbar.navbar-dark, nav.navbar-dark {
     background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+    border: none !important;
 }
 
 /* Cards with blue gradient from your color guide */
