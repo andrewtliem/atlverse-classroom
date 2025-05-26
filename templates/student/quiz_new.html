@@ -45,12 +45,13 @@
                         <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
                         
                         {% if quiz_type == 'mcq' %}
+                            {% set question_index = loop.index0 %}
                             {% for option in question.options %}
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="radio" 
-                                           name="answer_{{ loop.index0 }}" value="{{ option[0] }}" 
-                                           id="q{{ loop.index0 }}_opt{{ loop.index0 }}" required>
-                                    <label class="form-check-label" for="q{{ loop.index0 }}_opt{{ loop.index0 }}">
+                                           name="answer_{{ question_index }}" value="{{ option[0] }}" 
+                                           id="q{{ question_index }}_opt{{ loop.index0 }}" required>
+                                    <label class="form-check-label" for="q{{ question_index }}_opt{{ loop.index0 }}">
                                         {{ option }}
                                     </label>
                                 </div>
