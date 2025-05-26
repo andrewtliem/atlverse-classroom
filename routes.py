@@ -442,7 +442,7 @@ def student_create_quiz(classroom_id):
         db.session.add(evaluation)
         db.session.commit()
         
-        return render_template('student/quiz.html', 
+        return render_template('student/quiz_new.html', 
                              classroom=classroom,
                              evaluation=evaluation,
                              questions=questions,
