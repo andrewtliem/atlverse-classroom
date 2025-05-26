@@ -29,21 +29,21 @@
             <div class="row">
                 {% for student_summary in student_summaries %}
                     <div class="col-lg-6 col-xl-4 mb-4">
-                        <div class="card border-0 h-100" style="background: linear-gradient(135deg, #219CF3, #1976D2); color: white;">
+                        <div class="card border-0 h-100 gradient-blue">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <h6 class="card-title mb-1 text-white">{{ student_summary.student.full_name }}</h6>
-                                        <small style="color: rgba(255,255,255,0.8);">{{ student_summary.student.email }}</small>
+                                        <small class="text-white-80">{{ student_summary.student.email }}</small>
                                     </div>
-                                    <span class="badge" style="background-color: #EF5350; color: white;">{{ student_summary.total_evaluations }} quiz{{ 'zes' if student_summary.total_evaluations != 1 else '' }}</span>
+                                    <span class="badge badge-coral">{{ student_summary.total_evaluations }} quiz{{ 'zes' if student_summary.total_evaluations != 1 else '' }}</span>
                                 </div>
                                 
                                 {% if student_summary.avg_score is not none %}
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between mb-1">
                                             <span class="small text-white">Average Score</span>
-                                            <span class="small" style="color: #FFC107; font-weight: bold;">
+                                            <span class="small text-yellow fw-bold">
                                                 {{ "%.1f"|format(student_summary.avg_score) }}%
                                             </span>
                                         </div>
@@ -57,15 +57,15 @@
                                 <div class="row text-center mb-3">
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #00BCD4;">{{ student_summary.completed_count }}</div>
-                                        <small style="color: rgba(255,255,255,0.8);">Completed</small>
+                                        <small class="text-white-80">Completed</small>
                                     </div>
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #FF8A65;">{{ student_summary.in_progress_count }}</div>
-                                        <small style="color: rgba(255,255,255,0.8);">In Progress</small>
+                                        <small class="text-white-80">In Progress</small>
                                     </div>
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #64B5F6;">{{ student_summary.materials_attempted }}</div>
-                                        <small style="color: rgba(255,255,255,0.8);">Materials</small>
+                                        <small class="text-white-80">Materials</small>
                                     </div>
                                 </div>
                                 
