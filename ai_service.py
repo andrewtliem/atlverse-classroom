@@ -2,7 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from typing import List, Dict, Tuple
-from vector_service import VectorService
+from simple_vector import SimpleVectorSearch
 
 class AIService:
     def __init__(self):
@@ -12,7 +12,7 @@ class AIService:
         
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        self.vector_service = VectorService()
+        self.vector_search = SimpleVectorSearch()
     
     def generate_study_guide(self, content: str, subject: str) -> str:
         """Generate a comprehensive study guide from the provided content"""

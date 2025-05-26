@@ -194,15 +194,7 @@ def teacher_upload_material(classroom_id):
             db.session.add(material)
             db.session.commit()
             
-            # Process material into vector database for better AI responses
-            try:
-                from vector_service import VectorService
-                vector_service = VectorService()
-                vector_service.process_material(material.id)
-                flash('Material uploaded and processed successfully!', 'success')
-            except Exception as e:
-                flash('Material uploaded, but vector processing failed. AI responses may be limited.', 'warning')
-                print(f"Vector processing error: {str(e)}")
+            flash('Material uploaded successfully!', 'success')
         else:
             flash('Invalid file type. Please upload PDF or text files.', 'error')
     
