@@ -442,6 +442,12 @@ def student_create_quiz(classroom_id):
         db.session.add(evaluation)
         db.session.commit()
         
+        # Debug: Print questions structure
+        print(f"Number of questions: {len(questions)}")
+        print(f"Questions type: {type(questions)}")
+        for i, q in enumerate(questions):
+            print(f"Question {i}: {type(q)} - {q}")
+        
         return render_template('student/quiz_new.html', 
                              classroom=classroom,
                              evaluation=evaluation,
