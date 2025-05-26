@@ -10,7 +10,7 @@ class AIService:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
     def generate_study_guide(self, content: str, subject: str) -> str:
         """Generate a comprehensive study guide from the provided content"""
