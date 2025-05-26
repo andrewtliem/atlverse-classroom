@@ -344,11 +344,11 @@ def student_classroom(classroom_id):
     classroom = enrollment.classroom
     materials = Material.query.filter_by(classroom_id=classroom_id).all()
     
-    # Get recent evaluations
+    # Get recent completed evaluations only
     recent_evaluations = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id,
         student_id=current_user.id
-    ).order_by(SelfEvaluation.created_at.desc()).limit(5).all()
+    ).filter(SelfEvaluation.completed_at.isnot(None)).order_by(SelfEvaluation.completed_at.desc()).limit(5).all()
     
     return render_template('student/classroom.html', 
                          classroom=classroom, 
@@ -441,12 +441,6 @@ def student_create_quiz(classroom_id):
         
         db.session.add(evaluation)
         db.session.commit()
-        
-        # Debug: Print questions structure
-        print(f"Number of questions: {len(questions)}")
-        print(f"Questions type: {type(questions)}")
-        for i, q in enumerate(questions):
-            print(f"Question {i}: {type(q)} - {q}")
         
         return render_template('student/quiz_new.html', 
                              classroom=classroom,
