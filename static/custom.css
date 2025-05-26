@@ -1,0 +1,90 @@
+/* Custom Color Scheme Override */
+
+/* Cards with blue gradient from your color guide */
+.card, .card.bg-dark {
+    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Primary buttons */
+.btn-primary, .btn.btn-primary {
+    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+    border: none !important;
+    color: white !important;
+}
+
+/* Secondary buttons with teal */
+.btn-outline-secondary, .btn.btn-outline-secondary {
+    background-color: #00BCD4 !important;
+    border-color: #00BCD4 !important;
+    color: white !important;
+}
+
+/* Badges with coral color */
+.badge, .badge.bg-secondary, .badge.bg-primary {
+    background-color: #EF5350 !important;
+    color: white !important;
+}
+
+/* Yellow accent for codes and highlights */
+code {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #FFC107 !important;
+}
+
+/* Text colors */
+.text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: #FFC107 !important;
+}
+
+/* Special variant cards */
+.card.gradient-teal {
+    background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
+}
+
+.card.gradient-coral {
+    background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
+}
+
+/* Button variants */
+.btn-gradient-blue {
+    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-gradient-teal {
+    background-color: #00BCD4 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-yellow {
+    background-color: #FFC107 !important;
+    color: #1976D2 !important;
+    border: none !important;
+    font-weight: bold !important;
+}
+
+.badge-coral {
+    background-color: #EF5350 !important;
+    color: white !important;
+}
+
+.text-yellow {
+    color: #FFC107 !important;
+}
+
+.text-white-80 {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.text-white-90 {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
