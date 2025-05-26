@@ -15,18 +15,25 @@ class AIService:
     def generate_study_guide(self, content: str, subject: str) -> str:
         """Generate a comprehensive study guide from the provided content"""
         prompt = f"""
-        Create a comprehensive study guide for the subject "{subject}" based on the following content:
+        You are an AI tutor that ONLY uses the provided course materials. Do NOT use any external knowledge.
+
+        Create a comprehensive study guide for "{subject}" based STRICTLY on the following uploaded course materials:
 
         {content}
 
-        Please structure the study guide with:
-        1. Key concepts and definitions
-        2. Important topics summary
-        3. Learning objectives
-        4. Study tips and strategies
-        5. Review questions for self-assessment
+        IMPORTANT RULES:
+        - Use ONLY information from the provided materials above
+        - Do NOT add any external knowledge or information
+        - If the materials are insufficient, state what's missing rather than filling gaps with outside knowledge
+        - Stay strictly within the scope of the uploaded content
 
-        Make it clear, organized, and helpful for student learning.
+        Please structure the study guide with:
+        1. Key concepts and definitions (from the materials only)
+        2. Important topics summary (from the materials only)
+        3. Learning objectives (based on the materials only)
+        4. Review questions for self-assessment (based on the materials only)
+
+        Make it clear, organized, and helpful for student learning using ONLY the provided course content.
         """
         
         try:
@@ -40,57 +47,81 @@ class AIService:
         
         if quiz_type == "mcq":
             prompt = f"""
-            Based on the following content, create 5 multiple choice questions:
+            You are an AI tutor that ONLY uses the provided course materials. Do NOT use any external knowledge.
+
+            Based STRICTLY on the following uploaded course materials, create 5 multiple choice questions:
 
             {content}
 
             Context: {context}
 
+            IMPORTANT RULES:
+            - Use ONLY information from the provided materials above
+            - Do NOT add any external knowledge or information
+            - Questions must be answerable from the given content only
+            - If the materials are insufficient for 5 questions, create fewer questions
+
             Format each question as JSON with this structure:
             {{
-                "question": "Question text",
+                "question": "Question text (based only on provided materials)",
                 "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
                 "correct_answer": "A",
-                "explanation": "Why this answer is correct"
+                "explanation": "Why this answer is correct (referencing only the provided materials)"
             }}
 
-            Return only a JSON array of 5 questions.
+            Return only a JSON array of questions based strictly on the provided content.
             """
         
         elif quiz_type == "true_false":
             prompt = f"""
-            Based on the following content, create 5 true/false questions:
+            You are an AI tutor that ONLY uses the provided course materials. Do NOT use any external knowledge.
+
+            Based STRICTLY on the following uploaded course materials, create 5 true/false questions:
 
             {content}
 
             Context: {context}
 
+            IMPORTANT RULES:
+            - Use ONLY information from the provided materials above
+            - Do NOT add any external knowledge or information
+            - Questions must be answerable from the given content only
+            - If the materials are insufficient for 5 questions, create fewer questions
+
             Format each question as JSON with this structure:
             {{
-                "question": "Statement to evaluate",
+                "question": "Statement to evaluate (based only on provided materials)",
                 "correct_answer": "True" or "False",
-                "explanation": "Explanation of why this is true or false"
+                "explanation": "Explanation of why this is true or false (referencing only the provided materials)"
             }}
 
-            Return only a JSON array of 5 questions.
+            Return only a JSON array of questions based strictly on the provided content.
             """
         
         elif quiz_type == "essay":
             prompt = f"""
-            Based on the following content, create 3 essay questions:
+            You are an AI tutor that ONLY uses the provided course materials. Do NOT use any external knowledge.
+
+            Based STRICTLY on the following uploaded course materials, create 3 essay questions:
 
             {content}
 
             Context: {context}
 
+            IMPORTANT RULES:
+            - Use ONLY information from the provided materials above
+            - Do NOT add any external knowledge or information
+            - Questions must be answerable from the given content only
+            - If the materials are insufficient for 3 questions, create fewer questions
+
             Format each question as JSON with this structure:
             {{
-                "question": "Essay question that requires detailed analysis",
-                "key_points": ["Key point 1", "Key point 2", "Key point 3"],
+                "question": "Essay question that requires detailed analysis (based only on provided materials)",
+                "key_points": ["Key point 1 from materials", "Key point 2 from materials", "Key point 3 from materials"],
                 "suggested_length": "Number of paragraphs or words"
             }}
 
-            Return only a JSON array of 3 questions.
+            Return only a JSON array of questions based strictly on the provided content.
             """
         
         else:
@@ -178,23 +209,27 @@ class AIService:
                 score = 0
                 ai_feedback = "No answer provided."
             else:
-                # Use AI to score the essay
+                # Use AI to score the essay based only on provided materials
                 prompt = f"""
-                Score this essay answer on a scale of 0-100 based on:
-                1. Relevance to the question
-                2. Depth of understanding
-                3. Use of key concepts
-                4. Quality of explanation
+                You are an AI tutor that ONLY evaluates based on the provided course materials. Do NOT use external knowledge.
+
+                Score this essay answer on a scale of 0-100 based STRICTLY on how well it addresses the course materials:
+                1. Relevance to the question (based on course materials only)
+                2. Depth of understanding of the provided materials
+                3. Use of key concepts from the uploaded materials only
+                4. Quality of explanation using only the course content
 
                 Question: {question.get('question', '')}
-                Key points that should be covered: {', '.join(question.get('key_points', []))}
+                Key points from course materials that should be covered: {', '.join(question.get('key_points', []))}
                 
                 Student's answer: {answer}
+
+                IMPORTANT: Only evaluate based on how well the student demonstrates understanding of the specific course materials provided. Do not penalize for not including information outside the uploaded content.
 
                 Provide your response in this JSON format:
                 {{
                     "score": <number 0-100>,
-                    "feedback": "Detailed feedback explaining the score and suggestions for improvement"
+                    "feedback": "Detailed feedback explaining the score based on course materials understanding and suggestions for improvement"
                 }}
                 """
                 
