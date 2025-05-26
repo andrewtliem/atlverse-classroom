@@ -1,6 +1,7 @@
 import os
 import PyPDF2
 from werkzeug.utils import secure_filename
+from docx import Document
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
 
@@ -19,9 +20,7 @@ def extract_text_from_file(file_path, original_filename):
         elif file_extension == 'txt':
             return extract_text_from_txt(file_path)
         elif file_extension in ['doc', 'docx']:
-            # For now, just return filename as content
-            # In production, you'd want to use python-docx for .docx files
-            return f"Document uploaded: {original_filename}\n\nPlease convert to PDF or TXT for full text extraction."
+            return extract_text_from_docx(file_path)
         else:
             return f"File uploaded: {original_filename}"
     except Exception as e:
@@ -53,6 +52,17 @@ def extract_text_from_txt(file_path):
             raise Exception(f"Error reading text file: {str(e)}")
     except Exception as e:
         raise Exception(f"Error reading text file: {str(e)}")
+
+def extract_text_from_docx(file_path):
+    """Extract text from DOCX file"""
+    try:
+        doc = Document(file_path)
+        text = ""
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        return text.strip()
+    except Exception as e:
+        raise Exception(f"Error reading DOCX file: {str(e)}")
 
 def format_file_size(size_bytes):
     """Format file size in human readable format"""
