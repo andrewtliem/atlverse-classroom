@@ -18,12 +18,16 @@
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     
     <!-- Custom Color Scheme - Load After Bootstrap -->
-    <link href="{{ url_for('static', filename='custom.css') }}?v={{ range(1000, 9999) | random }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='custom.css') }}?v=20250526130600" rel="stylesheet">
     
     <!-- Force Color Override -->
     <script>
         // Add timestamp to force cache refresh
         document.addEventListener('DOMContentLoaded', function() {
+            // Force light background immediately
+            document.body.style.setProperty('background-color', '#f8f9fa', 'important');
+            document.body.style.setProperty('color', '#333', 'important');
+            
             // Apply color scheme directly via JavaScript to override Bootstrap
             const applyColors = () => {
                 // Blue gradient cards
