@@ -449,6 +449,9 @@ def student_create_quiz(classroom_id):
                              quiz_type=quiz_type)
     
     except Exception as e:
+        import traceback
+        print(f"Quiz generation error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         flash(f'Error generating quiz: {str(e)}', 'error')
         return redirect(url_for('student_classroom', classroom_id=classroom_id))
 
