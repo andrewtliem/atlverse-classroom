@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>My Classrooms</h1>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
+    <button type="button" class="btn" style="background: linear-gradient(135deg, #219CF3, #1976D2); color: white; border: none;" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
         <i data-feather="plus" class="me-2"></i>Join Classroom
     </button>
 </div>
@@ -15,29 +15,29 @@
     <div class="row g-4">
         {% for classroom in classrooms %}
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 bg-dark">
+                <div class="card h-100 border-0" style="background: linear-gradient(135deg, #00BCD4, #4DD0E1); color: white;">
                     <div class="card-body">
-                        <h5 class="card-title">{{ classroom.name }}</h5>
+                        <h5 class="card-title text-white">{{ classroom.name }}</h5>
                         
                         {% if classroom.description %}
-                            <p class="card-text text-muted">{{ classroom.description[:100] }}{% if classroom.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text" style="color: rgba(255,255,255,0.9);">{{ classroom.description[:100] }}{% if classroom.description|length > 100 %}...{% endif %}</p>
                         {% endif %}
                         
                         <div class="mb-3">
-                            <small class="text-muted">
+                            <small style="color: rgba(255,255,255,0.8);">
                                 <i data-feather="user" class="me-1"></i>
                                 Teacher: {{ classroom.teacher.full_name }}
                             </small>
                         </div>
                         
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-sm" style="background-color: #FFC107; color: #1976D2; border: none; font-weight: bold;">
                                 <i data-feather="book-open" class="me-1"></i>Enter Class
                             </a>
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
-                        <small class="text-muted">
+                        <small style="color: rgba(255,255,255,0.7);">
                             <i data-feather="file-text" class="me-1"></i>
                             {{ classroom.materials|length }} materials available
                         </small>

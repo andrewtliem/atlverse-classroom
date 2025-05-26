@@ -8,7 +8,7 @@
         <!-- Hero Section -->
         <div class="text-center py-5">
             <div class="mb-4">
-                <i data-feather="book-open" style="width: 80px; height: 80px;" class="text-primary"></i>
+                <i data-feather="book-open" style="width: 80px; height: 80px; color: #219CF3;"></i>
             </div>
             <h1 class="display-4 mb-3">AI Enhanced Classroom</h1>
             <p class="lead text-muted mb-4">
@@ -17,10 +17,10 @@
             
             {% if not current_user.is_authenticated %}
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <a href="{{ url_for('auth_register') }}" class="btn btn-primary btn-lg">
+                    <a href="{{ url_for('auth_register') }}" class="btn btn-lg" style="background: linear-gradient(135deg, #219CF3, #1976D2); color: white; border: none;">
                         <i data-feather="user-plus" class="me-2"></i>Get Started
                     </a>
-                    <a href="{{ url_for('auth_login') }}" class="btn btn-outline-secondary btn-lg">
+                    <a href="{{ url_for('auth_login') }}" class="btn btn-lg" style="background-color: #00BCD4; color: white; border: none;">
                         <i data-feather="log-in" class="me-2"></i>Sign In
                     </a>
                 </div>
