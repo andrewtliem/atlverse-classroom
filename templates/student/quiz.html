@@ -40,17 +40,17 @@
     <form method="POST" action="{{ url_for('student_submit_quiz', evaluation_id=evaluation.id) }}">
         <div class="card border-0 bg-dark">
             <div class="card-body">
-                {% for i, question in enumerate(questions) %}
+                {% for question in questions %}
                     <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                        <h5 class="mb-3">{{ i + 1 }}. {{ question.question }}</h5>
+                        <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
                         
                         {% if quiz_type == 'mcq' %}
                             {% for option in question.options %}
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="radio" 
-                                           name="answer_{{ i }}" value="{{ option[0] }}" 
-                                           id="q{{ i }}_{{ loop.index0 }}" required>
-                                    <label class="form-check-label" for="q{{ i }}_{{ loop.index0 }}">
+                                           name="answer_{{ loop.index0 }}" value="{{ option[0] }}" 
+                                           id="q{{ loop.index0 }}_{{ loop.index0 }}" required>
+                                    <label class="form-check-label" for="q{{ loop.index0 }}_{{ loop.index0 }}">
                                         {{ option }}
                                     </label>
                                 </div>
@@ -59,23 +59,23 @@
                         {% elif quiz_type == 'true_false' %}
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="radio" 
-                                       name="answer_{{ i }}" value="True" 
-                                       id="q{{ i }}_true" required>
-                                <label class="form-check-label" for="q{{ i }}_true">
+                                       name="answer_{{ loop.index0 }}" value="True" 
+                                       id="q{{ loop.index0 }}_true" required>
+                                <label class="form-check-label" for="q{{ loop.index0 }}_true">
                                     True
                                 </label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="radio" 
-                                       name="answer_{{ i }}" value="False" 
-                                       id="q{{ i }}_false" required>
-                                <label class="form-check-label" for="q{{ i }}_false">
+                                       name="answer_{{ loop.index0 }}" value="False" 
+                                       id="q{{ loop.index0 }}_false" required>
+                                <label class="form-check-label" for="q{{ loop.index0 }}_false">
                                     False
                                 </label>
                             </div>
                         
                         {% elif quiz_type == 'essay' %}
-                            <textarea class="form-control" name="answer_{{ i }}" 
+                            <textarea class="form-control" name="answer_{{ loop.index0 }}" 
                                       rows="6" placeholder="Write your answer here..." required></textarea>
                             {% if question.key_points %}
                                 <div class="form-text mt-2">
@@ -106,18 +106,18 @@
     <!-- Quiz Results -->
     <div class="card border-0 bg-dark">
         <div class="card-body">
-            {% for i, question in enumerate(questions) %}
+            {% for question in questions %}
                 <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                    <h5 class="mb-3">{{ i + 1 }}. {{ question.question }}</h5>
+                    <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
                     
                     {% if quiz_type == 'mcq' or quiz_type == 'true_false' %}
-                        {% set feedback_item = feedback[i] %}
+                        {% set feedback_item = feedback[loop.index0] %}
                         
                         <!-- Show user's answer -->
                         <div class="mb-2">
                             <strong>Your answer:</strong>
                             <span class="ms-2 {% if feedback_item.is_correct %}text-success{% else %}text-danger{% endif %}">
-                                {{ answers[i] if answers[i] else "Not answered" }}
+                                {{ answers[loop.index0] if answers[loop.index0] else "Not answered" }}
                                 {% if feedback_item.is_correct %}
                                     <i data-feather="check-circle" class="ms-1"></i>
                                 {% else %}
@@ -142,13 +142,13 @@
                         {% endif %}
                     
                     {% elif quiz_type == 'essay' %}
-                        {% set feedback_item = feedback[i] %}
+                        {% set feedback_item = feedback[loop.index0] %}
                         
                         <!-- Show user's answer -->
                         <div class="mb-3">
                             <strong>Your answer:</strong>
                             <div class="border rounded p-3 mt-2 bg-secondary">
-                                {{ answers[i] if answers[i] else "No answer provided" }}
+                                {{ answers[loop.index0] if answers[loop.index0] else "No answer provided" }}
                             </div>
                         </div>
                         
