@@ -134,17 +134,30 @@ class AIService:
             
             # Extract JSON from response
             response_text = response.text.strip()
+            
+            # Clean up response text
             if response_text.startswith('```json'):
                 response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
             if response_text.endswith('```'):
                 response_text = response_text[:-3]
+            
+            # Try to find JSON array in the response
+            start_idx = response_text.find('[')
+            end_idx = response_text.rfind(']')
+            
+            if start_idx != -1 and end_idx != -1:
+                response_text = response_text[start_idx:end_idx+1]
             
             questions = json.loads(response_text)
             return questions
         
         except json.JSONDecodeError as e:
-            raise Exception(f"Error parsing AI response as JSON: {str(e)}")
+            print(f"JSON parse error. Response was: {response.text[:500]}...")
+            raise Exception(f"AI response format error - please try generating the quiz again")
         except Exception as e:
+            print(f"Quiz generation error: {str(e)}")
             raise Exception(f"Error generating quiz: {str(e)}")
     
     def score_quiz(self, questions: List[Dict], answers: List[str], quiz_type: str) -> Tuple[float, List[Dict]]:
