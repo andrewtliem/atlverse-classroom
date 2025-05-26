@@ -40,21 +40,17 @@
     <form method="POST" action="{{ url_for('student_submit_quiz', evaluation_id=evaluation.id) }}">
         <div class="card border-0 bg-dark">
             <div class="card-body">
-                {% set question_count = 0 %}
                 {% for question in questions %}
-                    {% set question_count = question_count + 1 %}
                     <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                        <h5 class="mb-3">{{ question_count }}. {{ question.question }}</h5>
+                        <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
                         
                         {% if quiz_type == 'mcq' %}
-                            {% set option_count = 0 %}
                             {% for option in question.options %}
-                                {% set option_count = option_count + 1 %}
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="radio" 
                                            name="answer_{{ loop.index0 }}" value="{{ option[0] }}" 
-                                           id="q{{ loop.index0 }}_{{ option_count }}" required>
-                                    <label class="form-check-label" for="q{{ loop.index0 }}_{{ option_count }}">
+                                           id="q{{ loop.index0 }}_opt{{ loop.index0 }}" required>
+                                    <label class="form-check-label" for="q{{ loop.index0 }}_opt{{ loop.index0 }}">
                                         {{ option }}
                                     </label>
                                 </div>
@@ -110,11 +106,9 @@
     <!-- Quiz Results -->
     <div class="card border-0 bg-dark">
         <div class="card-body">
-            {% set question_count = 0 %}
             {% for question in questions %}
-                {% set question_count = question_count + 1 %}
                 <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                    <h5 class="mb-3">{{ question_count }}. {{ question.question }}</h5>
+                    <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
                     
                     {% if quiz_type == 'mcq' or quiz_type == 'true_false' %}
                         {% set feedback_item = feedback[loop.index0] %}
