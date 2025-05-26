@@ -207,9 +207,9 @@ class AIService:
         total_score = 0
         
         for i, (question, answer) in enumerate(zip(questions, answers)):
-            if not answer or answer.strip() == "":
+            if not answer or answer.strip() == "" or answer.strip().lower() in ["i dont know", "i don't know", "no idea", "not sure", "unknown"]:
                 score = 0
-                ai_feedback = "No answer provided."
+                ai_feedback = "No valid answer provided."
             else:
                 # Use AI to score the essay based only on provided materials
                 prompt = f"""
@@ -241,9 +241,17 @@ class AIService:
                     score = result.get('score', 0)
                     ai_feedback = result.get('feedback', 'Unable to generate feedback.')
                 except:
-                    # Fallback scoring if AI fails
-                    score = 70 if len(answer.strip()) > 100 else 50
-                    ai_feedback = "Answer received. Consider providing more detailed analysis."
+                    # Fallback scoring if AI fails - check for minimal effort
+                    answer_lower = answer.strip().lower()
+                    if len(answer.strip()) < 10 or answer_lower in ["i dont know", "i don't know", "no idea", "not sure", "unknown"]:
+                        score = 0
+                        ai_feedback = "Answer appears to be incomplete or invalid. Please provide a substantive response."
+                    elif len(answer.strip()) > 100:
+                        score = 70
+                        ai_feedback = "Answer received. Consider providing more detailed analysis based on course materials."
+                    else:
+                        score = 30
+                        ai_feedback = "Answer appears brief. Please elaborate using concepts from the course materials."
             
             feedback.append({
                 'question_index': i,
