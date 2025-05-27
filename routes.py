@@ -1,6 +1,6 @@
 import os
 import json
-import csv
+import defusedcsv as csv
 import io
 from datetime import datetime
 from urllib.parse import urlparse, urljoin

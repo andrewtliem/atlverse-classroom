@@ -17,6 +17,8 @@ dependencies = [
     "google-generativeai>=0.8.5",
     "numpy>=2.2.6",
     "scikit-learn>=1.6.1",
+    "defusedcsv>=2.0.0",
+    "docx>=0.2.4",
 ]
 
 [[tool.uv.index]]
