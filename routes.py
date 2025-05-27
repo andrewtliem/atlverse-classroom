@@ -45,7 +45,8 @@ def auth_login():
     return render_template('auth/login.html',
                           firebase_api_key=os.environ.get("FIREBASE_API_KEY"),
                           firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID"),
-                          firebase_app_id=os.environ.get("FIREBASE_APP_ID"))
+                          firebase_app_id=os.environ.get("FIREBASE_APP_ID"),
+                          firebase_messaging_sender_id=os.environ.get("FIREBASE_MESSAGING_SENDER_ID"))
 
 @app.route('/register', methods=['GET', 'POST'])
 def auth_register():

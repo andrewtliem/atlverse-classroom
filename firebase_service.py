@@ -48,6 +48,12 @@ class FirebaseService:
             print(f"Error verifying ID token: {str(e)}")
             return None
     
+    def is_frontend_available(self):
+        """Check if frontend Firebase config is available"""
+        return (os.environ.get("FIREBASE_API_KEY") and 
+                os.environ.get("FIREBASE_PROJECT_ID") and 
+                os.environ.get("FIREBASE_APP_ID"))
+    
     def get_user_role_from_email(self, email):
         """Determine user role based on email domain"""
         if email.endswith('@unklab.ac.id'):
