@@ -78,11 +78,15 @@
     let auth = null;
     let provider = null;
     
+    console.log('Firebase config:', firebaseConfig);
+    
     if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
         try {
+            console.log('Initializing Firebase...');
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             provider = new GoogleAuthProvider();
+            console.log('Firebase initialized successfully');
             
             // Handle redirect result on page load
             getRedirectResult(auth).then((result) => {
@@ -118,15 +122,20 @@
                 console.error('Redirect error:', error);
             });
         } catch (error) {
-            console.error('Firebase initialization error:', error);
+            console.error('Firebase initialization failed:', error);
         }
+    } else {
+        console.log('Missing Firebase config values');
     }
 
     // Google Sign-In button click handler
     document.getElementById('googleSignInBtn').addEventListener('click', function() {
+        console.log('Google Sign-In button clicked');
         if (auth && provider) {
+            console.log('Starting Google Sign-In...');
             signInWithRedirect(auth, provider);
         } else {
+            console.log('Firebase not available');
             alert('Google Sign-In is not available. Please use the regular sign-in form or contact your administrator.');
         }
     });
