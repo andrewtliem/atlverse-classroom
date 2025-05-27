@@ -42,7 +42,10 @@ def auth_login():
         else:
             flash('Invalid email or password', 'error')
     
-    return render_template('auth/login.html')
+    return render_template('auth/login.html',
+                          firebase_api_key=os.environ.get("FIREBASE_API_KEY"),
+                          firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID"),
+                          firebase_app_id=os.environ.get("FIREBASE_APP_ID"))
 
 @app.route('/register', methods=['GET', 'POST'])
 def auth_register():
