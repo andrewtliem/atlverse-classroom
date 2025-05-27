@@ -74,11 +74,14 @@
         appId: "{{ firebase_app_id or '' }}",
     };
 
+    console.log('Firebase config:', firebaseConfig);
+
     // Only initialize Firebase if we have the required config
     let auth = null;
     let provider = null;
     
     if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
+        console.log('Firebase config is complete, initializing...');
         try {
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
