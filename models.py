@@ -12,6 +12,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
+    firebase_uid = db.Column(db.String(128), unique=True, nullable=True)  # Firebase UID
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
