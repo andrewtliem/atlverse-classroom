@@ -62,7 +62,7 @@
 <!-- Firebase SDK and Authentication -->
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
 
     // Firebase configuration will be injected by the backend when available
     const firebaseConfig = {
@@ -87,45 +87,54 @@
             auth = getAuth(app);
             provider = new GoogleAuthProvider();
             
-            // Handle redirect result on page load
-            getRedirectResult(auth).then((result) => {
-                if (result) {
-                    const user = result.user;
-                    
-                    // Send user info to backend
-                    fetch('/auth/firebase', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ 
-                            email: user.email,
-                            name: user.displayName,
-                            uid: user.uid
+            // Set auth persistence
+            setPersistence(auth, browserLocalPersistence).then(() => {
+                console.log('Auth persistence set');
+                
+                // Listen for auth state changes
+                onAuthStateChanged(auth, (user) => {
+                    console.log('Auth state changed:', user);
+                    if (user) {
+                        console.log('User is signed in:', user.email);
+                        
+                        // Send user info to backend
+                        fetch('/auth/firebase', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                email: user.email,
+                                name: user.displayName,
+                                uid: user.uid
+                            })
                         })
-                    })
-                    .then(response => {
-                        console.log('Response status:', response.status);
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Response data:', data);
-                        if (data.success) {
-                            console.log('Redirecting to:', data.redirect_url);
-                            window.location.href = data.redirect_url;
-                        } else {
-                            console.error('Authentication failed:', data.error);
-                            alert('Authentication failed: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Fetch error:', error);
-                        alert('Authentication failed. Please try again.');
-                    });
-                }
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Response data:', data);
+                            if (data.success) {
+                                console.log('Redirecting to:', data.redirect_url);
+                                window.location.href = data.redirect_url;
+                            } else {
+                                console.error('Authentication failed:', data.error);
+                                alert('Authentication failed: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch error:', error);
+                            alert('Authentication failed. Please try again.');
+                        });
+                    } else {
+                        console.log('User is signed out');
+                    }
+                });
             }).catch((error) => {
-                console.error('Redirect error:', error);
+                console.error('Persistence error:', error);
             });
+            
         } catch (error) {
             console.error('Firebase initialization error:', error);
         }
