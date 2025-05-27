@@ -11,7 +11,6 @@ from app import app, db
 from models import User, Classroom, Enrollment, Material, SelfEvaluation
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
-from firebase_service import firebase_service
 
 ai_service = AIService()
 
@@ -42,11 +41,7 @@ def auth_login():
         else:
             flash('Invalid email or password', 'error')
     
-    return render_template('auth/login.html',
-                          firebase_api_key=os.environ.get("FIREBASE_API_KEY"),
-                          firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID"),
-                          firebase_app_id=os.environ.get("FIREBASE_APP_ID"),
-                          firebase_messaging_sender_id=os.environ.get("FIREBASE_MESSAGING_SENDER_ID"))
+    return render_template('auth/login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def auth_register():
@@ -91,74 +86,6 @@ def auth_register():
         return redirect(url_for('index'))
     
     return render_template('auth/register.html')
-
-@app.route('/auth/firebase', methods=['POST'])
-def auth_firebase():
-    """Handle Firebase authentication"""
-    try:
-        data = request.get_json()
-        
-        # For testing purposes, let's also accept user info directly
-        # This is a fallback when Firebase Admin SDK isn't available
-        email = data.get('email')
-        name = data.get('name', '')
-        firebase_uid = data.get('uid')
-        id_token = data.get('idToken')
-        
-        if not email:
-            return jsonify({'success': False, 'error': 'No email found in request'}), 400
-        
-        # Determine role based on email domain
-        role = firebase_service.get_user_role_from_email(email)
-        
-        # Split name into first and last name
-        name_parts = name.split(' ', 1) if name else ['', '']
-        first_name = name_parts[0] if name_parts else ''
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        # Check if user exists, if not create them
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            user = User(
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                role=role,
-                firebase_uid=firebase_uid,
-                password_hash='firebase_user'  # Placeholder for Firebase users
-            )
-            db.session.add(user)
-            db.session.commit()
-        else:
-            # Update user info if it has changed
-            if first_name:
-                user.first_name = first_name
-            if last_name:
-                user.last_name = last_name
-            user.role = role
-            if firebase_uid:
-                user.firebase_uid = firebase_uid
-            db.session.commit()
-        
-        # Log the user in
-        login_user(user)
-        
-        # Return success response with redirect URL
-        if role == 'teacher':
-            redirect_url = url_for('teacher_dashboard')
-        else:
-            redirect_url = url_for('student_dashboard')
-            
-        return jsonify({
-            'success': True, 
-            'redirect_url': redirect_url,
-            'role': role,
-            'name': user.full_name
-        })
-        
-    except Exception as e:
-        print(f"Firebase auth error: {str(e)}")
-        return jsonify({'success': False, 'error': 'Authentication failed'}), 500
 
 @app.route('/logout')
 @login_required
