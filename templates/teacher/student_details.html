@@ -20,39 +20,36 @@
     {% set avg_score = (completed_evals|sum(attribute='score')) / completed_evals|length if completed_evals else 0 %}
     
     <div class="col-md-3">
-        <div class="card border-0 bg-dark text-center">
+        <div class="card border-0 gradient-blue text-center">
             <div class="card-body">
-                <h3 class="text-primary">{{ evaluations|length }}</h3>
-                <p class="text-muted mb-0">Total Quizzes</p>
+                <h3 class="text-white">{{ evaluations|length }}</h3>
+                <p class="text-white-80 mb-0">Total Quizzes</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card border-0 bg-dark text-center">
+        <div class="card border-0 gradient-teal text-center">
             <div class="card-body">
-                <h3 class="text-success">{{ completed_evals|length }}</h3>
-                <p class="text-muted mb-0">Completed</p>
+                <h3 class="text-white">{{ completed_evals|length }}</h3>
+                <p class="text-white-80 mb-0">Completed</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card border-0 bg-dark text-center">
+        <div class="card border-0 gradient-coral text-center">
             <div class="card-body">
-                <h3 class="
-                    {% if avg_score >= 80 %}text-success
-                    {% elif avg_score >= 60 %}text-warning
-                    {% else %}text-danger{% endif %}">
+                <h3 class="text-yellow fw-bold">
                     {{ "%.1f"|format(avg_score) }}%
                 </h3>
-                <p class="text-muted mb-0">Average Score</p>
+                <p class="text-white-80 mb-0">Average Score</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card border-0 bg-dark text-center">
+        <div class="card border-0 text-center" style="background: linear-gradient(135deg, #64B5F6, #42A5F5); color: white;">
             <div class="card-body">
-                <h3 class="text-info">{{ materials_performance|length }}</h3>
-                <p class="text-muted mb-0">Materials Attempted</p>
+                <h3 class="text-white">{{ materials_performance|length }}</h3>
+                <p class="text-white-80 mb-0">Materials Attempted</p>
             </div>
         </div>
     </div>
@@ -60,9 +57,9 @@
 
 <!-- Performance by Material -->
 {% if materials_performance %}
-    <div class="card border-0 bg-dark mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
+    <div class="card border-0 gradient-blue mb-4">
+        <div class="card-header bg-transparent">
+            <h5 class="mb-0 text-white">
                 <i data-feather="book-open" class="me-2"></i>Performance by Material
             </h5>
         </div>
@@ -70,33 +67,27 @@
             <div class="row">
                 {% for material_key, material_data in materials_performance.items() %}
                     <div class="col-lg-6 mb-4">
-                        <div class="card bg-secondary h-100">
+                        <div class="card h-100" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
                             <div class="card-body">
-                                <h6 class="card-title">{{ material_data.material_title }}</h6>
+                                <h6 class="card-title text-white">{{ material_data.material_title }}</h6>
                                 
                                 {% set material_completed = material_data.evaluations|selectattr('completed_at')|selectattr('score')|list %}
                                 {% set material_avg = (material_completed|sum(attribute='score')) / material_completed|length if material_completed else 0 %}
                                 
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="small">Average Score</span>
-                                        <span class="small text-
-                                            {% if material_avg >= 80 %}success
-                                            {% elif material_avg >= 60 %}warning
-                                            {% else %}danger{% endif %}">
+                                        <span class="small text-white-80">Average Score</span>
+                                        <span class="small text-yellow fw-bold">
                                             {{ "%.1f"|format(material_avg) }}%
                                         </span>
                                     </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar 
-                                            {% if material_avg >= 80 %}bg-success
-                                            {% elif material_avg >= 60 %}bg-warning
-                                            {% else %}bg-danger{% endif %}" 
-                                            style="width: {{ material_avg }}%"></div>
+                                    <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.2);">
+                                        <div class="progress-bar" 
+                                            style="background-color: #FFC107; width: {{ material_avg }}%"></div>
                                     </div>
                                 </div>
                                 
-                                <div class="small text-muted">
+                                <div class="small text-white-80">
                                     {{ material_completed|length }} completed of {{ material_data.evaluations|length }} total
                                 </div>
                             </div>
