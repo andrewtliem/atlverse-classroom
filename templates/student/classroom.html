@@ -14,7 +14,7 @@
             Teacher: {{ classroom.teacher.full_name }}
         </small>
     </div>
-    <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary">
+    <a href="{{ url_for('student_dashboard') }}" class="btn btn-gradient-teal">
         <i data-feather="arrow-left" class="me-2"></i>Back to Dashboard
     </a>
 </div>
@@ -22,9 +22,9 @@
 <div class="row">
     <!-- Materials Section -->
     <div class="col-lg-8">
-        <div class="card border-0 bg-dark mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
+        <div class="card border-0 gradient-blue mb-4">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 text-white">
                     <i data-feather="file-text" class="me-2"></i>Course Materials
                 </h5>
             </div>
@@ -32,22 +32,22 @@
                 {% if materials %}
                     <div class="list-group list-group-flush">
                         {% for material in materials %}
-                            <div class="list-group-item bg-dark border-secondary">
+                            <div class="list-group-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 8px;">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-1">{{ material.title }}</h6>
-                                        <small class="text-muted">
+                                        <h6 class="mb-1 text-white">{{ material.title }}</h6>
+                                        <small class="text-white-80">
                                             <i data-feather="calendar" class="me-1"></i>
                                             {{ material.uploaded_at.strftime('%B %d, %Y') }}
                                             {% if material.file_type %}
-                                                | <span class="badge bg-info">{{ material.file_type.upper() }}</span>
+                                                | <span class="badge badge-coral">{{ material.file_type.upper() }}</span>
                                             {% endif %}
                                         </small>
                                     </div>
                                     <div class="d-flex gap-2">
                                         {% if material.file_path %}
                                             <a href="{{ url_for('static', filename='../uploads/' + material.file_path) }}" 
-                                               class="btn btn-outline-secondary btn-sm" target="_blank">
+                                               class="btn btn-sm" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" target="_blank">
                                                 <i data-feather="download" class="me-1"></i>Download
                                             </a>
                                         {% endif %}
@@ -90,24 +90,24 @@
 
         <!-- AI Learning Tools -->
         {% if materials %}
-            <div class="card border-0 bg-dark">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i data-feather="brain" class="me-2"></i>AI Learning Tools
+            <div class="card border-0 gradient-teal">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0 text-white">
+                        <i data-feather="zap" class="me-2"></i>AI Learning Tools
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="d-grid">
-                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-success">
+                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-yellow">
                                     <i data-feather="book" class="me-2"></i>Generate Study Guide
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="dropdown d-grid">
-                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn dropdown-toggle" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" type="button" data-bs-toggle="dropdown">
                                     <i data-feather="help-circle" class="me-2"></i>Create Quiz (All Materials)
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-dark w-100">
@@ -137,9 +137,9 @@
 
     <!-- Recent Activities -->
     <div class="col-lg-4">
-        <div class="card border-0 bg-dark">
-            <div class="card-header">
-                <h5 class="mb-0">
+        <div class="card border-0 gradient-coral">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0 text-white">
                     <i data-feather="activity" class="me-2"></i>Recent Activities
                 </h5>
             </div>
@@ -147,11 +147,11 @@
                 {% if recent_evaluations %}
                     <div class="list-group list-group-flush">
                         {% for evaluation in recent_evaluations %}
-                            <div class="list-group-item bg-dark border-secondary">
+                            <div class="list-group-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 8px;">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h6 class="mb-1">{{ evaluation.quiz_type.title() }} Quiz</h6>
-                                        <small class="text-muted">
+                                        <h6 class="mb-1 text-white">{{ evaluation.quiz_type.title() }} Quiz</h6>
+                                        <small class="text-white-80">
                                             {% if evaluation.material %}
                                                 {{ evaluation.material.title }}
                                             {% else %}
@@ -161,27 +161,24 @@
                                     </div>
                                     <div class="text-end">
                                         {% if evaluation.score is not none %}
-                                            <span class="badge 
-                                                {% if evaluation.score >= 80 %}bg-success
-                                                {% elif evaluation.score >= 60 %}bg-warning
-                                                {% else %}bg-danger{% endif %}">
+                                            <span class="badge text-yellow fw-bold" style="background-color: rgba(255,255,255,0.2);">
                                                 {{ "%.0f"|format(evaluation.score) }}%
                                             </span>
                                         {% else %}
-                                            <span class="badge bg-secondary">In Progress</span>
+                                            <span class="badge" style="background-color: #FF8A65; color: white;">In Progress</span>
                                         {% endif %}
                                     </div>
                                 </div>
                                 <div class="mt-2">
                                     {% if evaluation.completed_at %}
-                                        <small class="text-muted">
+                                        <small class="text-white-80">
                                             <i data-feather="check" class="me-1"></i>
                                             Completed {{ evaluation.completed_at.strftime('%m/%d/%y') }}
                                         </small>
                                         <a href="{{ url_for('student_quiz_result', evaluation_id=evaluation.id) }}" 
-                                           class="btn btn-outline-primary btn-sm ms-2">View Result</a>
+                                           class="btn btn-sm ms-2 btn-yellow">View Result</a>
                                     {% else %}
-                                        <small class="text-warning">
+                                        <small class="text-white-80">
                                             <i data-feather="clock" class="me-1"></i>
                                             Started {{ evaluation.created_at.strftime('%m/%d/%y') }}
                                         </small>
