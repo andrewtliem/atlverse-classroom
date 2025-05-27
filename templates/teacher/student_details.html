@@ -101,70 +101,64 @@
 
 <!-- Detailed Quiz History -->
 {% if evaluations %}
-    <div class="card border-0 bg-dark">
-        <div class="card-header">
-            <h5 class="mb-0">
+    <div class="card border-0 gradient-teal">
+        <div class="card-header bg-transparent">
+            <h5 class="mb-0 text-white">
                 <i data-feather="list" class="me-2"></i>Quiz History
             </h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-dark table-hover">
+                <table class="table table-hover" style="color: white;">
                     <thead>
                         <tr>
-                            <th>Material</th>
-                            <th>Quiz Type</th>
-                            <th>Score</th>
-                            <th>Date</th>
-                            <th>Status</th>
+                            <th class="text-white">Material</th>
+                            <th class="text-white">Quiz Type</th>
+                            <th class="text-white">Score</th>
+                            <th class="text-white">Date</th>
+                            <th class="text-white">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for evaluation in evaluations %}
-                            <tr>
-                                <td>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td class="text-white">
                                     {% if evaluation.material %}
                                         {{ evaluation.material.title }}
                                     {% else %}
-                                        <span class="text-muted">All Materials</span>
+                                        <span class="text-white-80">All Materials</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-info">{{ evaluation.quiz_type.title() }}</span>
+                                    <span class="badge badge-coral">{{ evaluation.quiz_type.title() }}</span>
                                 </td>
                                 <td>
                                     {% if evaluation.score is not none %}
                                         <div class="d-flex align-items-center">
-                                            <div class="progress me-2" style="width: 50px;">
-                                                <div class="progress-bar 
-                                                    {% if evaluation.score >= 80 %}bg-success
-                                                    {% elif evaluation.score >= 60 %}bg-warning
-                                                    {% else %}bg-danger{% endif %}" 
-                                                    style="width: {{ evaluation.score }}%"></div>
+                                            <div class="progress me-2" style="width: 50px; background-color: rgba(255,255,255,0.2);">
+                                                <div class="progress-bar" 
+                                                    style="background-color: #FFC107; width: {{ evaluation.score }}%"></div>
                                             </div>
-                                            <span class="
-                                                {% if evaluation.score >= 80 %}text-success
-                                                {% elif evaluation.score >= 60 %}text-warning
-                                                {% else %}text-danger{% endif %}">
+                                            <span class="text-yellow fw-bold">
                                                 {{ "%.1f"|format(evaluation.score) }}%
                                             </span>
                                         </div>
                                     {% else %}
-                                        <span class="text-muted">Not scored</span>
+                                        <span class="text-white-80">Not scored</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-white-80">
                                     {% if evaluation.completed_at %}
                                         {{ evaluation.completed_at.strftime('%m/%d/%y %I:%M %p') }}
                                     {% else %}
-                                        <span class="text-muted">{{ evaluation.created_at.strftime('%m/%d/%y %I:%M %p') }}</span>
+                                        {{ evaluation.created_at.strftime('%m/%d/%y %I:%M %p') }}
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if evaluation.completed_at %}
-                                        <span class="badge bg-success">Completed</span>
+                                        <span class="badge" style="background-color: #00BCD4; color: white;">Completed</span>
                                     {% else %}
-                                        <span class="badge bg-warning">In Progress</span>
+                                        <span class="badge" style="background-color: #FF8A65; color: white;">In Progress</span>
                                     {% endif %}
                                 </td>
                             </tr>
