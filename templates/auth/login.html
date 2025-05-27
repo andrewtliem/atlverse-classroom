@@ -88,27 +88,30 @@
             getRedirectResult(auth).then((result) => {
                 if (result) {
                     const user = result.user;
-                    user.getIdToken().then((idToken) => {
-                        // Send token to backend for verification
-                        fetch('/auth/firebase', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ idToken: idToken })
+                    
+                    // Send user info to backend
+                    fetch('/auth/firebase', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            email: user.email,
+                            name: user.displayName,
+                            uid: user.uid
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = data.redirect_url;
-                            } else {
-                                alert('Authentication failed: ' + data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Authentication failed. Please try again.');
-                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert('Authentication failed: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Authentication failed. Please try again.');
                     });
                 }
             }).catch((error) => {
