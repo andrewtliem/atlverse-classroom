@@ -3,6 +3,7 @@ import json
 import csv
 import io
 from datetime import datetime
+from urllib.parse import urlparse, urljoin
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
@@ -13,6 +14,12 @@ from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
 
 ai_service = AIService()
+
+def is_safe_url(target):
+    """Check if a URL is safe for redirect (same domain only)"""
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 @app.route('/')
 def index():
@@ -37,7 +44,10 @@ def auth_login():
         if user and user.check_password(password):
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            if next_page and is_safe_url(next_page):
+                return redirect(next_page)
+            else:
+                return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'error')
     
