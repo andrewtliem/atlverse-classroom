@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,237 +14,41 @@
     <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
     
-    <!-- Custom Theme with Your Color Scheme -->
-    <style>
-        /* Reset and base styles */
-        * { box-sizing: border-box; }
-        
-        body, html {
-            background: #f8f9fa !important;
-            color: #333 !important;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* Navigation - Your Blue Gradient */
-        .navbar {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-            padding: 1rem;
-        }
-        .navbar-brand, .nav-link { color: white !important; }
-        
-        /* Cards - Mix of Your Colors */
-        .card {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 8px !important;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        /* Teal Cards for variety */
-        .card.teal {
-            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
-        }
-        
-        /* Coral Cards for alerts/warnings */
-        .card.coral {
-            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
-        }
-        
-        /* Buttons - Your Blue Primary */
-        .btn, .btn-primary, button {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-            color: white !important;
-            border: none !important;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-        
-        /* Secondary Buttons - Your Teal */
-        .btn-secondary {
-            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
-        }
-        
-        /* Warning/Danger Buttons - Your Coral */
-        .btn-warning, .btn-danger {
-            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
-        }
-        
-        /* Badges - Your Yellow Accent */
-        .badge {
-            background: #FFC107 !important;
-            color: #333 !important;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-        
-        /* Score badges with your coral */
-        .badge.score {
-            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
-            color: white !important;
-        }
-        
-        /* Text styles */
-        h1, h2, h3, h4, h5, h6 { color: #1976D2 !important; }
-        .text-muted { color: #666 !important; }
-        code { background: rgba(255,193,7,0.2) !important; color: #FFC107 !important; }
-        
-        /* Utility classes */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .row { display: flex; flex-wrap: wrap; margin: -0.5rem; }
-        .col, .col-md-4, .col-md-6, .col-lg-4, .col-lg-6, .col-xl-4 { 
-            padding: 0.5rem; flex: 1; min-width: 300px; 
-        }
-        .d-flex { display: flex; }
-        .justify-content-between { justify-content: space-between; }
-        .align-items-center { align-items: center; }
-        .text-center { text-align: center; }
-        .mb-3 { margin-bottom: 1rem; }
-        .mb-4 { margin-bottom: 1.5rem; }
-        .py-5 { padding: 3rem 0; }
-        .gap-2 > * + * { margin-left: 0.5rem; }
-        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        .fw-bold { font-weight: bold; }
-        .h-100 { height: 100%; }
-        .progress { background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-bar { background: #FFC107; height: 100%; transition: width 0.3s; }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     
-    <!-- Force Color Override -->
-    <script>
-        // Add timestamp to force cache refresh
-        document.addEventListener('DOMContentLoaded', function() {
-            // Force light background immediately
-            document.body.style.setProperty('background-color', '#f8f9fa', 'important');
-            document.body.style.setProperty('color', '#333', 'important');
-            
-            // Apply color scheme directly via JavaScript to override Bootstrap
-            const applyColors = () => {
-                // Blue gradient cards
-                document.querySelectorAll('.gradient-blue').forEach(el => {
-                    el.style.setProperty('background', 'linear-gradient(135deg, #219CF3, #1976D2)', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                });
-                
-                // Teal gradient cards
-                document.querySelectorAll('.gradient-teal').forEach(el => {
-                    el.style.setProperty('background', 'linear-gradient(135deg, #00BCD4, #4DD0E1)', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                });
-                
-                // Coral gradient cards
-                document.querySelectorAll('.gradient-coral').forEach(el => {
-                    el.style.setProperty('background', 'linear-gradient(135deg, #FF8A65, #EF5350)', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                });
-                
-                // Blue gradient buttons
-                document.querySelectorAll('.btn-gradient-blue').forEach(el => {
-                    el.style.setProperty('background', 'linear-gradient(135deg, #219CF3, #1976D2)', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                });
-                
-                // Teal buttons
-                document.querySelectorAll('.btn-gradient-teal').forEach(el => {
-                    el.style.setProperty('background-color', '#00BCD4', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                });
-                
-                // Yellow buttons
-                document.querySelectorAll('.btn-yellow').forEach(el => {
-                    el.style.setProperty('background-color', '#FFC107', 'important');
-                    el.style.setProperty('color', '#1976D2', 'important');
-                    el.style.setProperty('border', 'none', 'important');
-                    el.style.setProperty('font-weight', 'bold', 'important');
-                });
-                
-                // Coral badges
-                document.querySelectorAll('.badge-coral').forEach(el => {
-                    el.style.setProperty('background-color', '#EF5350', 'important');
-                    el.style.setProperty('color', 'white', 'important');
-                });
-                
-                // Text colors
-                document.querySelectorAll('.text-white-80').forEach(el => {
-                    el.style.setProperty('color', 'rgba(255,255,255,0.8)', 'important');
-                });
-                
-                document.querySelectorAll('.text-white-90').forEach(el => {
-                    el.style.setProperty('color', 'rgba(255,255,255,0.9)', 'important');
-                });
-                
-                document.querySelectorAll('.text-yellow').forEach(el => {
-                    el.style.setProperty('color', '#FFC107', 'important');
-                });
-            };
-            
-            // Apply immediately and after any page updates
-            applyColors();
-            
-            // Re-apply after any dynamic content loads
-            const observer = new MutationObserver(applyColors);
-            observer.observe(document.body, { childList: true, subtree: true });
-        });
-    </script>
-    
-    <!-- Custom Color Scheme - Force Override -->
+    <!-- Custom Color Scheme -->
     <style>
-        /* Force override Bootstrap with your beautiful color scheme */
-        .card.gradient-blue,
-        .card.gradient-blue.card,
-        div.card.gradient-blue {
+        /* Override Bootstrap with your beautiful color scheme */
+        .card.gradient-blue {
             background: linear-gradient(135deg, #219CF3, #1976D2) !important;
             color: white !important;
-            border: none !important;
         }
-        .card.gradient-teal,
-        .card.gradient-teal.card,
-        div.card.gradient-teal {
+        .card.gradient-teal {
             background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
             color: white !important;
-            border: none !important;
         }
-        .card.gradient-coral,
-        .card.gradient-coral.card,
-        div.card.gradient-coral {
+        .card.gradient-coral {
             background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
             color: white !important;
-            border: none !important;
         }
-        .btn.btn-gradient-blue,
-        button.btn.btn-gradient-blue,
-        a.btn.btn-gradient-blue {
+        .btn.btn-gradient-blue {
             background: linear-gradient(135deg, #219CF3, #1976D2) !important;
             color: white !important;
             border: none !important;
         }
-        .btn.btn-gradient-teal,
-        button.btn.btn-gradient-teal,
-        a.btn.btn-gradient-teal {
+        .btn.btn-gradient-teal {
             background-color: #00BCD4 !important;
             color: white !important;
             border: none !important;
         }
-        .btn.btn-yellow,
-        button.btn.btn-yellow,
-        a.btn.btn-yellow {
+        .btn.btn-yellow {
             background-color: #FFC107 !important;
             color: #1976D2 !important;
             border: none !important;
             font-weight: bold !important;
         }
-        .badge.badge-coral,
-        span.badge.badge-coral {
+        .badge.badge-coral {
             background-color: #EF5350 !important;
             color: white !important;
         }
@@ -256,17 +60,6 @@
         }
         .text-yellow {
             color: #FFC107 !important;
-        }
-        
-        /* Additional overrides for specific elements */
-        .bg-dark.card.gradient-blue {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-        }
-        .bg-dark.card.gradient-teal {
-            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
-        }
-        .bg-dark.card.gradient-coral {
-            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
         }
     </style>
     
