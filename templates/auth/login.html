@@ -59,12 +59,12 @@
     </div>
 </div>
 
-<!-- Firebase SDK and Authentication -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
 
-    // Firebase configuration will be injected by the backend when available
+<script>
+    // Firebase configuration
     const firebaseConfig = {
         apiKey: "{{ firebase_api_key or '' }}",
         authDomain: "{{ firebase_project_id or '' }}.firebaseapp.com",
@@ -76,87 +76,96 @@
 
     console.log('Firebase config:', firebaseConfig);
 
-    // Only initialize Firebase if we have the required config
     let auth = null;
     let provider = null;
-    
+
+    // Initialize Firebase only if config is available
     if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId) {
-        console.log('Firebase config is complete, initializing...');
+        console.log('Initializing Firebase...');
+        
         try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            provider = new GoogleAuthProvider();
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            provider = new firebase.auth.GoogleAuthProvider();
             
-            // Set auth persistence
-            setPersistence(auth, browserLocalPersistence).then(() => {
-                console.log('Auth persistence set');
-                
-                // Listen for auth state changes
-                onAuthStateChanged(auth, (user) => {
-                    console.log('Auth state changed:', user);
-                    if (user) {
-                        console.log('User is signed in:', user.email);
+            console.log('Firebase initialized successfully');
+            
+            // Set persistence
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    console.log('Auth persistence set to LOCAL');
+                    
+                    // Listen for auth state changes
+                    auth.onAuthStateChanged((user) => {
+                        console.log('Auth state changed:', user ? user.email : 'No user');
                         
-                        // Send user info to backend
-                        fetch('/auth/firebase', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ 
-                                email: user.email,
-                                name: user.displayName,
-                                uid: user.uid
+                        if (user) {
+                            console.log('User authenticated, sending to backend...');
+                            
+                            // Send user info to backend
+                            fetch('/auth/firebase', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ 
+                                    email: user.email,
+                                    name: user.displayName,
+                                    uid: user.uid
+                                })
                             })
-                        })
-                        .then(response => {
-                            console.log('Response status:', response.status);
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('Response data:', data);
-                            if (data.success) {
-                                console.log('Redirecting to:', data.redirect_url);
-                                window.location.href = data.redirect_url;
-                            } else {
-                                console.error('Authentication failed:', data.error);
-                                alert('Authentication failed: ' + data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Fetch error:', error);
-                            alert('Authentication failed. Please try again.');
-                        });
-                    } else {
-                        console.log('User is signed out');
-                    }
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Backend response:', data);
+                                if (data.success) {
+                                    console.log('Redirecting to dashboard...');
+                                    window.location.href = data.redirect_url;
+                                } else {
+                                    console.error('Backend authentication failed:', data.error);
+                                    alert('Authentication failed: ' + data.error);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Backend request failed:', error);
+                                alert('Authentication failed. Please try again.');
+                            });
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Persistence error:', error);
                 });
-            }).catch((error) => {
-                console.error('Persistence error:', error);
-            });
-            
+                
         } catch (error) {
-            console.error('Firebase initialization error:', error);
+            console.error('Firebase initialization failed:', error);
         }
+    } else {
+        console.log('Firebase config incomplete');
     }
 
-    // Google Sign-In button click handler
-    document.getElementById('googleSignInBtn').addEventListener('click', function() {
-        console.log('Google Sign-In button clicked');
-        console.log('Auth object:', auth);
-        console.log('Provider object:', provider);
-        
-        if (auth && provider) {
-            console.log('Starting signInWithRedirect...');
-            signInWithRedirect(auth, provider).then(() => {
-                console.log('Redirect initiated successfully');
-            }).catch((error) => {
-                console.error('Redirect error:', error);
-                alert('Sign-in failed: ' + error.message);
+    // Google Sign-In button handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const signInBtn = document.getElementById('googleSignInBtn');
+        if (signInBtn) {
+            signInBtn.addEventListener('click', function() {
+                console.log('Google Sign-In button clicked');
+                
+                if (auth && provider) {
+                    console.log('Starting Google Sign-In...');
+                    
+                    auth.signInWithRedirect(provider)
+                        .then(() => {
+                            console.log('Redirect initiated');
+                        })
+                        .catch((error) => {
+                            console.error('Sign-in error:', error);
+                            alert('Sign-in failed: ' + error.message);
+                        });
+                } else {
+                    console.log('Firebase not available');
+                    alert('Google Sign-In is not available. Please use email/password sign-in.');
+                }
             });
-        } else {
-            console.log('Firebase not available');
-            alert('Google Sign-In is not available. Please use the regular sign-in form or contact your administrator.');
         }
     });
 </script>
