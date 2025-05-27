@@ -97,6 +97,7 @@ def auth_firebase():
     """Handle Firebase authentication"""
     try:
         data = request.get_json()
+        print(f"Firebase auth request received: {data}")
         
         # For testing purposes, let's also accept user info directly
         # This is a fallback when Firebase Admin SDK isn't available
@@ -105,7 +106,10 @@ def auth_firebase():
         firebase_uid = data.get('uid')
         id_token = data.get('idToken')
         
+        print(f"Extracted data - Email: {email}, Name: {name}, UID: {firebase_uid}")
+        
         if not email:
+            print("Error: No email found in request")
             return jsonify({'success': False, 'error': 'No email found in request'}), 400
         
         # Determine role based on email domain
@@ -118,7 +122,10 @@ def auth_firebase():
         
         # Check if user exists, if not create them
         user = User.query.filter_by(email=email).first()
+        print(f"User lookup result: {user}")
+        
         if not user:
+            print(f"Creating new user with email: {email}, role: {role}")
             user = User(
                 email=email,
                 first_name=first_name,
@@ -129,7 +136,9 @@ def auth_firebase():
             )
             db.session.add(user)
             db.session.commit()
+            print(f"New user created with ID: {user.id}")
         else:
+            print(f"Updating existing user: {user.id}")
             # Update user info if it has changed
             if first_name:
                 user.first_name = first_name
@@ -139,9 +148,12 @@ def auth_firebase():
             if firebase_uid:
                 user.firebase_uid = firebase_uid
             db.session.commit()
+            print("User updated successfully")
         
         # Log the user in
+        print(f"Logging in user: {user.email}")
         login_user(user)
+        print("User logged in successfully")
         
         # Return success response with redirect URL
         if role == 'teacher':
