@@ -73,28 +73,25 @@ class AIService:
         
         elif quiz_type == "true_false":
             prompt = f"""
-            You are an AI tutor that ONLY uses the provided course materials. Do NOT use any external knowledge.
+            Create 5 true/false questions based on the provided course material.
 
-            Based STRICTLY on the following uploaded course materials, create 5 true/false questions:
-
+            MATERIAL CONTENT:
             {content}
 
-            Context: {context}
+            CONTEXT: {context}
 
-            IMPORTANT RULES:
-            - Use ONLY information from the provided materials above
-            - Do NOT add any external knowledge or information
-            - Questions must be answerable from the given content only
-            - If the materials are insufficient for 5 questions, create fewer questions
+            You MUST respond ONLY with a valid JSON array. No other text, no explanations, no markdown formatting.
 
-            Format each question as JSON with this structure:
-            {{
-                "question": "Statement to evaluate (based only on provided materials)",
-                "correct_answer": "True" or "False",
-                "explanation": "Explanation of why this is true or false (referencing only the provided materials)"
-            }}
+            Example format:
+            [
+                {{
+                    "question": "The material states that...",
+                    "correct_answer": "True",
+                    "explanation": "This is correct because..."
+                }}
+            ]
 
-            Return only a JSON array of questions based strictly on the provided content.
+            Generate exactly 5 true/false questions based on the material above. Return ONLY the JSON array.
             """
         
         elif quiz_type == "essay":
