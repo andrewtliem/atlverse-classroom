@@ -143,4 +143,3 @@ While basic security measures are in place, consider enhancing the following:
 
 ## License
 
-[Specify your license here, e.g., MIT, Apache 2.0]
