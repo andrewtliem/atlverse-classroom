@@ -122,8 +122,14 @@
                         {% for evaluation in evaluations %}
                             <tr style="border-bottom: 1px solid rgba(0,0,0,0.1); background-color: rgba(255,255,255,0.9); color: #333;">
                                 <td>
-                                    <h6 class="mb-0">{{ evaluation.quiz.title }}</h6>
-                                    {% if evaluation.quiz.material %}
+                                    <h6 class="mb-0">
+                                        {% if evaluation.quiz %}
+                                            {{ evaluation.quiz.title }}
+                                        {% else %}
+                                            AI Generated Quiz
+                                        {% endif %}
+                                    </h6>
+                                    {% if evaluation.is_ai_generated %}
                                         <small class="text-muted"><i data-feather="zap" class="me-1 text-muted" style="width: 14px; height: 14px;"></i>AI-Generated</small>
                                     {% else %}
                                         <small class="text-muted"><i data-feather="edit-3" class="me-1 text-muted" style="width: 14px; height: 14px;"></i>Teacher-Created</small>
