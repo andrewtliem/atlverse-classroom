@@ -147,6 +147,7 @@ While basic security measures are in place, consider enhancing the following:
 *   More granular Role-Based Access Control if needed.
 
 
+<<<<<<< HEAD
 ## Screenshots
 
 Here's an example screenshot of the application:
@@ -156,3 +157,5 @@ Here's an example screenshot of the application:
 ![Student Dashboard](screenshots/Classroom_Student.png)
 
 ![Teacher Dashboard](screenshots/Dashboard_Teacher.png)
+=======
+>>>>>>> 5d733cf81797dfc5bd79aa3567be41953d8fe0bf
