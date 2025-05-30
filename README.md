@@ -11,6 +11,11 @@ This is a Flask-based web application designed to assist both teachers and stude
 *   **Classroom Management:** Teachers can create classrooms, add/remove students, and manage materials.
 *   **Material Management:** Teachers can upload study materials (PDF, text files) to classrooms.
 *   **AI Study Guide Generation:** Students can generate study guides based on classroom materials using AI.
+
+-   Here's an example of an AI-generated study guide:
+-
+-   ![AI Generated Study Guide](https://firebasestorage.googleapis.com/v0/b/markdown-editor-fa4c0.appspot.com/o/images%2Fai-study-guide.png?alt=media&token=65e3b3b6-8041-4792-a88d-94f8403a361e)
+-
 *   **AI Quiz Generation:** Students can generate quizzes (MCQ, True/False, Essay) based on classroom materials using AI.
 *   **Teacher Quiz Management:** Teachers can create, edit, publish, and delete their own quizzes.
 *   **Quiz Taking and Scoring:** Students can take AI-generated and teacher-created quizzes, with automatic scoring for objective types and AI scoring for essays.
@@ -141,6 +146,13 @@ While basic security measures are in place, consider enhancing the following:
 *   Rate limiting to prevent brute-force attacks on login/registration.
 *   More granular Role-Based Access Control if needed.
 
-## License
 
-[Specify your license here, e.g., MIT, Apache 2.0]
+## Screenshots
+
+Here's an example screenshot of the application:
+
+![AI Generated Study Guide](screenshots/Study_Guide_AI_Student.png)
+
+![Student Dashboard](screenshots/Classroom_Student.png)
+
+![Teacher Dashboard](screenshots/Dashboard_Teacher.png)
