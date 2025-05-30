@@ -12,3 +12,5 @@ pdfminer.six
 defusedcsv
 Werkzeug
 google-ai-generativelanguage
+scikit-learn
+pyPDF2
