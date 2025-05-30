@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Submission Details - {{ student.full_name }} - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="text-white">Submission Details</h1>
+        <h5 class="text-white">Student: {{ student.full_name }} for Quiz: "{{ quiz.title }}"</h5>
+        {% if evaluation.score is not none %}
+            <div class="mt-2">
+                <span class="badge badge-lg text-white 
+                    {% if evaluation.score >= quiz.passing_score %}bg-success
+                    {% else %}bg-danger{% endif %}">
+                    Score: {{ "%.1f"|format(evaluation.score) }}%
+                </span>
+            </div>
+        {% endif %}
+        {% if evaluation.completed_at %}
+            <small class="text-white-80 mt-2 d-block">Completed on {{ evaluation.completed_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
+        <i data-feather="home" class="me-2"></i>Dashboard
+    </a>
+</div>
+
+<div class="card border-0 gradient-blue rounded-4">
+    <div class="card-body">
+        <h6 class="text-white mb-3">Answers and Feedback</h6>
+        
+        {% for question in questions %}
+            {% set question_index = loop.index0 %}
+            {% set answer = answers[question_index] if question_index < answers|length else None %}
+            {% set feedback_item = feedback[question_index] if question_index < feedback|length else None %}
+
+            <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
+                <h5 class="mb-3 text-white">Question {{ loop.index }}. {{ question.question }}</h5>
+                
+                {% if quiz.quiz_type == 'mcq' or quiz.quiz_type == 'true_false' %}
+                    <!-- Objective Question -->
+                    <div class="mb-2 text-white">
+                        <strong>Student's Answer:</strong>
+                        <span class="ms-2 {% if feedback_item and feedback_item.is_correct %}text-success{% elif feedback_item %}text-danger{% endif %}">
+                            {{ answer if answer is not none else "Not answered" }}
+                            {% if feedback_item and feedback_item.is_correct %}
+                                <i data-feather="check-circle" class="ms-1"></i>
+                            {% elif feedback_item %}
+                                <i data-feather="x-circle" class="ms-1"></i>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if feedback_item and not feedback_item.is_correct %}
+                        <div class="mb-2 text-white">
+                            <strong>Correct Answer:</strong>
+                            <span class="text-success ms-2">{{ feedback_item.correct_answer }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if feedback_item and feedback_item.explanation %}
+                        <div class="p-3 mt-2 rounded" style="background-color: rgba(255, 255, 255, 0.1); color: #f8f9fa;">
+                            <strong>Explanation:</strong> {{ feedback_item.explanation }}
+                        </div>
+                    {% endif %}
+                
+                {% elif quiz.quiz_type == 'essay' %}
+                    <!-- Essay Question -->
+                    <div class="mb-3 text-white">
+                        <strong>Student's Answer:</strong>
+                        <div class="border rounded p-3 mt-2 bg-secondary text-white">
+                            {{ answer if answer is not none and answer != '' else "No answer provided" }}
+                        </div>
+                    </div>
+                    
+                    {% if feedback_item %}
+                        <div class="mb-2 text-white">
+                            <strong>Score (out of 100):</strong>
+                            <span class="ms-2 badge
+                                {% if feedback_item.score >= 80 %}bg-success
+                                {% elif feedback_item.score >= 60 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {{ feedback_item.score if feedback_item.score is not none else 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="alert alert-info text-dark">
+                            <strong>Feedback:</strong> {{ feedback_item.feedback if feedback_item.feedback else 'No feedback provided.' }}
+                        </div>
+                    {% endif %}
+                    
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

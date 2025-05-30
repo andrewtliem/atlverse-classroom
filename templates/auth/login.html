@@ -5,36 +5,36 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
-        <div class="card border-0" style="background: linear-gradient(135deg, #219CF3, #1976D2); color: white;">
+        <div class="card border-0 gradient-blue" style="border-radius: 15px;">
             <div class="card-body p-4">
                 <div class="text-center mb-4">
                     <i data-feather="log-in" class="mb-2" style="width: 48px; height: 48px; color: #FFC107;"></i>
                     <h3 class="text-white">Sign In</h3>
-                    <p style="color: rgba(255,255,255,0.8);">Welcome back to AI Classroom</p>
+                    <p class="text-white-80">Welcome back to AI Classroom</p>
                 </div>
 
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <label for="email" class="form-label text-white-80">Email Address</label>
+                        <input type="email" class="form-control bg-dark text-white border-secondary" id="email" name="email" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <label for="password" class="form-label text-white-80">Password</label>
+                        <input type="password" class="form-control bg-dark text-white border-secondary" id="password" name="password" required>
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn" style="background-color: #FFC107; color: #1976D2; border: none; font-weight: bold;">
+                        <button type="submit" class="btn btn-yellow">
                             <i data-feather="log-in" class="me-2"></i>Sign In
                         </button>
                     </div>
                 </form>
 
                 <div class="text-center mt-3">
-                    <p class="text-muted">
+                    <p class="text-white-80">
                         Don't have an account? 
-                        <a href="{{ url_for('auth_register') }}" class="text-decoration-none">Sign up here</a>
+                        <a href="{{ url_for('auth_register') }}" class="text-white text-decoration-none">Sign up here</a>
                     </p>
                 </div>
             </div>

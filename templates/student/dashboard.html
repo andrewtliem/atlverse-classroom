@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>My Classrooms</h1>
-    <button type="button" class="btn" style="background: linear-gradient(135deg, #219CF3, #1976D2); color: white; border: none;" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
+    <h1 class="text-white">My Classrooms</h1>
+    <button type="button" class="btn btn-gradient-blue" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
         <i data-feather="plus" class="me-2"></i>Join Classroom
     </button>
 </div>
@@ -15,32 +15,98 @@
     <div class="row g-4">
         {% for classroom in classrooms %}
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 rounded-4" style="background: linear-gradient(135deg, #00BCD4, #4DD0E1); color: white;">
+                <div class="card h-100 border-0 gradient-blue rounded-4">
                     <div class="card-body">
-                        <h5 class="card-title text-white">{{ classroom.name }}</h5>
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title text-white">{{ classroom.name }}</h5>
+                            {% if classroom.quiz_stats.pending > 0 %}
+                                <span class="badge badge-coral">
+                                    {{ classroom.quiz_stats.pending }} pending {% if classroom.quiz_stats.pending == 1 %}quiz{% else %}quizzes{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
                         
                         {% if classroom.description %}
-                            <p class="card-text" style="color: rgba(255,255,255,0.9);">{{ classroom.description[:100] }}{% if classroom.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text text-white-90">{{ classroom.description[:100] }}{% if classroom.description|length > 100 %}...{% endif %}</p>
                         {% endif %}
                         
                         <div class="mb-3">
-                            <small style="color: rgba(255,255,255,0.8);">
+                            <small class="text-white-80">
                                 <i data-feather="user" class="me-1"></i>
                                 Teacher: {{ classroom.teacher.full_name }}
                             </small>
+                            {% if classroom.quiz_stats.pending > 0 %}
+                                <div class="mt-2">
+                                    <small class="text-yellow">
+                                        <i data-feather="alert-circle" class="me-1"></i>
+                                        You have {{ classroom.quiz_stats.pending }} {% if classroom.quiz_stats.pending == 1 %}quiz{% else %}quizzes{% endif %} to complete
+                                    </small>
+                                </div>
+                            {% endif %}
                         </div>
                         
+                        {% if classroom.quizzes_with_status %}
+                            <div class="mb-3">
+                                <h6 class="text-white mb-2">Class Quizzes:</h6>
+                                <ul class="list-unstyled mb-0">
+                                    {% for quiz_info in classroom.quizzes_with_status %}
+                                        {% set quiz = quiz_info.quiz %}
+                                        {% set status = quiz_info.status %}
+                                        <li>
+                                            <i class="fas fa-clipboard-list me-1 text-white-70"></i>
+                                            <a href="{{ url_for('student_take_teacher_quiz', classroom_id=classroom.id, quiz_id=quiz.id) }}" class="text-white-80 text-decoration-none">
+                                                {{ quiz.title }}
+                                            </a>
+                                            {% if status == 'Available' %}
+                                                {% if quiz.time_limit_minutes %}
+                                                    <small class="text-white-50 me-2">({{ quiz.time_limit_minutes }} min)</small>
+                                                {% endif %}
+                                                <a href="{{ url_for('student_take_teacher_quiz', classroom_id=classroom.id, quiz_id=quiz.id) }}" class="btn btn-sm btn-gradient-teal ms-2">
+                                                    Take Quiz
+                                                </a>
+                                            {% else %}
+                                                {% if status == 'Attempts Used' %}
+                                                    <i class="fas fa-ban text-warning ms-2"></i> {# Attempts Used Icon #}
+                                                {% elif status == 'Completed' %}
+                                                     <span class="badge bg-success ms-2">Completed</span>
+                                                     {# For now, no direct link to view results from dashboard, add if needed later #}
+                                                {% elif status == 'Upcoming' %}
+                                                    <span class="badge bg-info ms-2">Upcoming</span>
+                                                {% elif status == 'Expired' %}
+                                                    <span class="badge bg-danger ms-2">Expired</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary ms-2">{{ status }}</span> {# Fallback #}
+                                                {% endif %}
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-sm" style="background-color: #FFC107; color: #1976D2; border: none; font-weight: bold;">
+                            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-sm btn-yellow">
                                 <i data-feather="book-open" class="me-1"></i>Enter Class
                             </a>
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
-                        <small style="color: rgba(255,255,255,0.7);">
-                            <i data-feather="file-text" class="me-1"></i>
-                            {{ classroom.materials|length }} materials available
-                        </small>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-white-80">
+                                <i data-feather="file-text" class="me-1"></i>
+                                {{ classroom.materials|length }} materials
+                            </small>
+                            <small class="text-white-80">
+                                <i data-feather="help-circle" class="me-1"></i>
+                                {% if classroom.quiz_stats.completed > 0 %}
+                                    {{ classroom.quiz_stats.completed }} completed
+                                {% endif %}
+                                {% if classroom.quiz_stats.pending > 0 %}
+                                    {% if classroom.quiz_stats.completed > 0 %} | {% endif %}
+                                    <span class="text-yellow">{{ classroom.quiz_stats.pending }} pending</span>
+                                {% endif %}
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -48,9 +114,9 @@
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="book-plus" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
-        <h3 class="text-muted">No Classrooms Yet</h3>
-        <p class="text-muted">Join your first classroom using an invitation code from your teacher.</p>
+        <i data-feather="book-plus" class="text-white-50 mb-3" style="width: 64px; height: 64px;"></i>
+        <h3 class="text-white">No Classrooms Yet</h3>
+        <p class="text-white-80">Join your first classroom using an invitation code from your teacher.</p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
             <i data-feather="plus" class="me-2"></i>Join Your First Classroom
         </button>
@@ -60,23 +126,23 @@
 <!-- Join Classroom Modal -->
 <div class="modal fade" id="joinClassroomModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content bg-dark rounded-4">
+        <div class="modal-content rounded-4 gradient-blue">
             <div class="modal-header">
-                <h5 class="modal-title">Join Classroom</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title text-white">Join Classroom</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('student_join_classroom') }}">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="invitation_code" class="form-label">Invitation Code</label>
-                        <input type="text" class="form-control text-uppercase" id="invitation_code" name="invitation_code" 
+                        <label for="invitation_code" class="form-label text-white-80">Invitation Code</label>
+                        <input type="text" class="form-control text-uppercase bg-dark text-white border-secondary" id="invitation_code" name="invitation_code" 
                                maxlength="6" placeholder="Enter 6-character code" required>
-                        <div class="form-text">Ask your teacher for the classroom invitation code</div>
+                        <div class="form-text text-white-50">Ask your teacher for the classroom invitation code</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-light">
                         <i data-feather="plus" class="me-2"></i>Join Classroom
                     </button>
                 </div>

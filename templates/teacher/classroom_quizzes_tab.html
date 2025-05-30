@@ -1,0 +1,79 @@
+<div class="quiz-tab-content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Quizzes</h4>
+        <a href="{{ url_for('teacher_quizzes', classroom_id=classroom.id) }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-list"></i> Manage All Quizzes
+        </a>
+    </div>
+
+    {% if quizzes %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in quizzes %}
+                    <tr>
+                        <td>
+                            <div>{{ quiz.title }}</div>
+                            {% if quiz.is_required %}
+                                <span class="badge badge-info">Required</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if quiz.quiz_type == 'mcq' %}
+                                <span class="badge badge-primary">Multiple Choice</span>
+                            {% elif quiz.quiz_type == 'true_false' %}
+                                <span class="badge badge-secondary">True/False</span>
+                            {% elif quiz.quiz_type == 'essay' %}
+                                <span class="badge badge-warning">Essay</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not quiz.published %}
+                                <span class="badge badge-secondary">Draft</span>
+                            {% elif quiz.is_upcoming() %}
+                                <span class="badge badge-info">Upcoming</span>
+                            {% elif quiz.is_expired() %}
+                                <span class="badge badge-dark">Expired</span>
+                            {% else %}
+                                <span class="badge badge-success">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ quiz.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('teacher_quiz_results', quiz_id=quiz.id) }}" class="btn btn-outline-info" title="Results">
+                                    <i class="fas fa-chart-bar"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No quizzes created yet.
+            <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" class="ml-2">Create your first quiz</a>
+        </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Create New Quiz
+        </a>
+    </div>
+</div>
+

@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}Quizzes - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Temporary styles to force badge rendering */
+    .badge {
+        display: inline-block;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        /* Ensure text is visible */
+        color: #fff !important; /* Default to white text */
+    }
+
+    .badge.badge-primary {
+        background-color: #0d6efd !important;
+    }
+    .badge.badge-secondary {
+        background-color: #17d083 !important;
+        color: #000 !important; /* Dark text for secondary */
+    }
+    .badge.badge-success {
+        background-color: #198754 !important;
+    }
+    .badge.badge-danger {
+        background-color: #dc3545 !important;
+    }
+    .badge.badge-warning {
+        background-color: #ffc107 !important;
+        color: #000 !important; /* Dark text for warning */
+    }
+    .badge.badge-info {
+        background-color: #0dcaf0 !important;
+        color: #000 !important; /* Dark text for info */
+    }
+    .badge.badge-light {
+         background-color: #f8f9fa !important;
+         color: #000 !important; /* Dark text for light */
+    }
+    .badge.badge-dark {
+        background-color: #212529 !important;
+    }
+     .badge.badge-coral {
+        background-color: #EF5350 !important; /* Using the color defined in your custom styles */
+        color: white !important;
+    }
+</style>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Quizzes for {{ classroom.name }}</h2>
+        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
+            <i data-feather="home" class="me-2"></i>Dashboard
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Manage Quizzes</h5>
+                <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Quiz
+                </a>
+            </div>
+        </div>
+        <div class="card-body text-dark">
+            <!-- Filter and sort options -->
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active filter-btn" data-filter="all">All</button>
+                        <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="published">Published</button>
+                        <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="draft">Draft</button>
+                        <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="active">Currently Active</button>
+                        <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="upcoming">Upcoming</button>
+                        <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="expired">Expired</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="sortQuizzes">Sort by</label>
+                        </div>
+                        <select class="custom-select" id="sortQuizzes">
+                            <option value="created_desc" selected>Newest first</option>
+                            <option value="created_asc">Oldest first</option>
+                            <option value="title_asc">Title (A-Z)</option>
+                            <option value="title_desc">Title (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {% if quizzes %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="quizTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Availability</th>
+                                <th>Stats</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-dark">
+                            {% for quiz in quizzes %}
+                            <tr class="quiz-row" 
+                                data-published="{{ 'published' if quiz.published else 'draft' }}"
+                                data-status="{% if not quiz.published %}draft{% elif quiz.is_upcoming() %}upcoming{% elif quiz.is_expired() %}expired{% else %}active{% endif %}"
+                                data-title="{{ quiz.title }}"
+                                data-created="{{ quiz.created_at.isoformat() }}">
+                                <td>
+                                    <div>
+                                        <strong>{{ quiz.title }}</strong>
+                                        {% if quiz.is_required %}
+                                            <span class="badge badge-info ml-1 text-dark">Required</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">Created: {{ quiz.created_at.strftime('%Y-%m-%d') }}</small>
+                                </td>
+                                <td>
+                                    {% if quiz.quiz_type == 'mcq' %}
+                                        <span class="badge badge-primary text-dark">Multiple Choice</span>
+                                    {% elif quiz.quiz_type == 'true_false' %}
+                                        <span class="badge badge-secondary text-dark">True/False</span>
+                                    {% elif quiz.quiz_type == 'essay' %}
+                                        <span class="badge badge-warning text-dark">Essay</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not quiz.published %}
+                                        <span class="badge badge-secondary text-light">Draft</span>
+                                    {% elif quiz.is_upcoming() %}
+                                        <span class="badge badge-info text-dark">Upcoming</span>
+                                    {% elif quiz.is_expired() %}
+                                        <span class="badge badge-coral text-warning">Expired</span>
+                                    {% else %}
+                                        <span class="badge badge-success text-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if quiz.available_from %}
+                                        <div><small>From: {{ quiz.available_from.strftime('%Y-%m-%d %H:%M') }}</small></div>
+                                    {% endif %}
+                                    {% if quiz.available_until %}
+                                        <div><small>Until: {{ quiz.available_until.strftime('%Y-%m-%d %H:%M') }}</small></div>
+                                    {% endif %}
+                                    {% if not quiz.available_from and not quiz.available_until %}
+                                        <small class="text-muted">Always available when published</small>
+                                    {% endif %}
+                                    {% if quiz.time_limit_minutes %}
+                                        <div><small class="text-muted">Time limit: {{ quiz.time_limit_minutes }} min</small></div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set completed_count = quiz.evaluations|selectattr('completed_at', 'defined')|list|length %}
+                                    {% set in_progress_count = quiz.evaluations|selectattr('started_at', 'defined')|selectattr('completed_at', 'undefined')|list|length %}
+                                    {% set total_count = quiz.evaluations|length %}
+                                    
+                                    <div><small><strong>Completed:</strong> {{ completed_count }}</small></div>
+                                    <div><small><strong>In Progress:</strong> {{ in_progress_count }}</small></div>
+                                    {% if completed_count > 0 %}
+                                        <a href="{{ url_for('teacher_quiz_results', quiz_id=quiz.id) }}" class="btn btn-sm btn-link p-0">
+                                            <small>View results</small>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('teacher_preview_quiz', quiz_id=quiz.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Preview">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ url_for('teacher_duplicate_quiz', quiz_id=quiz.id) }}" method="POST" 
+                                              class="d-inline" onsubmit="return confirm('Duplicate this quiz?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Duplicate">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('teacher_publish_quiz', quiz_id=quiz.id) }}" method="POST" 
+                                              class="d-inline" onsubmit="return confirm('{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-{% if quiz.published %}warning{% else %}success{% endif %}" 
+                                                    title="{% if quiz.published %}Unpublish{% else %}Publish{% endif %}">
+                                                <i class="fas {% if quiz.published %}fa-eye-slash{% else %}fa-check{% endif %}"></i>
+                                            </button>
+                                        </form>
+                                        {% if not quiz.published %}
+                                        <form action="{{ url_for('teacher_delete_quiz', quiz_id=quiz.id) }}" method="POST" 
+                                              class="d-inline" onsubmit='return confirm("Are you sure you want to delete the quiz \"{{ quiz.title }}\"? This action cannot be undone.");'>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No quizzes have been created for this classroom yet. 
+                    <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}">Create your first quiz!</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const quizRows = document.querySelectorAll('.quiz-row');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                
+                quizRows.forEach(row => {
+                    if (filterValue === 'all') {
+                        row.style.display = '';
+                    } else if (filterValue === 'published') {
+                        row.style.display = row.getAttribute('data-published') === 'published' ? '' : 'none';
+                    } else if (filterValue === 'draft') {
+                        row.style.display = row.getAttribute('data-published') === 'draft' ? '' : 'none';
+                    } else {
+                        row.style.display = row.getAttribute('data-status') === filterValue ? '' : 'none';
+                    }
+                });
+            });
+        });
+        
+        // Sort functionality
+        const sortSelect = document.getElementById('sortQuizzes');
+        const quizTable = document.getElementById('quizTable');
+        
+        sortSelect.addEventListener('change', function() {
+            const tbody = quizTable.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const sortValue = this.value;
+            
+            rows.sort((a, b) => {
+                if (sortValue === 'created_desc') {
+                    return new Date(b.getAttribute('data-created')) - new Date(a.getAttribute('data-created'));
+                } else if (sortValue === 'created_asc') {
+                    return new Date(a.getAttribute('data-created')) - new Date(b.getAttribute('data-created'));
+                } else if (sortValue === 'title_asc') {
+                    return a.getAttribute('data-title').localeCompare(b.getAttribute('data-title'));
+                } else if (sortValue === 'title_desc') {
+                    return b.getAttribute('data-title').localeCompare(a.getAttribute('data-title'));
+                }
+            });
+            
+            // Clear table and append in new order
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+</script>
+{% endblock %}
+

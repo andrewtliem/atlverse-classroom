@@ -10,6 +10,7 @@ class AIService:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
+        # Configure Google Generative AI with the API key
         genai.configure(api_key=self.api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
         self.vector_search = SimpleVectorSearch()
@@ -23,19 +24,19 @@ class AIService:
 
         {content}
 
-        IMPORTANT RULES:
-        - Use ONLY information from the provided materials above
-        - Do NOT add any external knowledge or information
-        - If the materials are insufficient, state what's missing rather than filling gaps with outside knowledge
-        - Stay strictly within the scope of the uploaded content
+            **Please output the study guide as clean, readable HTML using:**
+        - Headings (`<h2>`, `<h3>`)
+        - Lists (`<ul>`, `<li>`)
+        - Tables if helpful (`<table>`)
+        - Bold and italic for emphasis
 
-        Please structure the study guide with:
-        1. Key concepts and definitions (from the materials only)
-        2. Important topics summary (from the materials only)
-        3. Learning objectives (based on the materials only)
-        4. Review questions for self-assessment (based on the materials only)
+        Organize as:
+        1. Key Concepts and Definitions
+        2. Important Topics Summary
+        3. Learning Objectives
+        4. Review Questions for Self-Assessment
 
-        Make it clear, organized, and helpful for student learning using ONLY the provided course content.
+        **Return ONLY the HTML, with no extra commentary or markdown.**
         """
         
         try:

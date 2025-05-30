@@ -5,17 +5,17 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
-        <h1>{{ classroom.name }}</h1>
+        <h1 class="text-white">{{ classroom.name }}</h1>
         {% if classroom.description %}
-            <p class="text-muted">{{ classroom.description }}</p>
+            <p class="text-white-80">{{ classroom.description }}</p>
         {% endif %}
-        <small class="text-muted">
-            <i data-feather="user" class="me-1"></i>
+        <small class="text-white-80">
+            <i data-feather="user" class="me-1 text-white"></i>
             Teacher: {{ classroom.teacher.full_name }}
         </small>
     </div>
     <a href="{{ url_for('student_dashboard') }}" class="btn btn-gradient-teal">
-        <i data-feather="arrow-left" class="me-2"></i>Back to Dashboard
+        <i data-feather="home" class="me-2"></i>Dashboard
     </a>
 </div>
 
@@ -25,64 +25,66 @@
         <div class="card border-0 gradient-blue mb-4 rounded-4">
             <div class="card-header bg-transparent">
                 <h5 class="mb-0 text-white">
-                    <i data-feather="file-text" class="me-2"></i>Course Materials
+                    <i data-feather="file-text" class="me-2 text-white"></i>Course Materials
                 </h5>
             </div>
             <div class="card-body">
                 {% if materials %}
                     <div class="list-group list-group-flush">
                         {% for material in materials %}
-                            <div class="list-group-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 8px;">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1 text-white">{{ material.title }}</h6>
-                                        <small class="text-white-80">
-                                            <i data-feather="calendar" class="me-1"></i>
-                                            {{ material.uploaded_at.strftime('%B %d, %Y') }}
-                                            {% if material.file_type %}
-                                                | <span class="badge badge-coral">{{ material.file_type.upper() }}</span>
-                                            {% endif %}
-                                        </small>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        {% if material.file_path %}
-                                            <a href="{{ url_for('static', filename='../uploads/' + material.file_path) }}" 
-                                               class="btn btn-sm" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" target="_blank">
-                                                <i data-feather="download" class="me-1"></i>Download
-                                            </a>
+                            <div class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-white">{{ material.title }}</h6>
+                                    <small class="text-white-80">
+                                        <i data-feather="calendar" class="me-1 text-white"></i>
+                                        {{ material.uploaded_at.strftime('%B %d, %Y') }}
+                                        {% if material.file_type %}
+                                            | <span class="badge badge-coral">{{ material.file_type.upper() }}</span>
                                         {% endif %}
-                                        <div class="dropdown">
-                                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                <i data-feather="brain" class="me-1"></i>AI Tools
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-dark">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq', material_id=material.id) }}">
-                                                        <i data-feather="help-circle" class="me-2"></i>MCQ Quiz
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false', material_id=material.id) }}">
-                                                        <i data-feather="check-circle" class="me-2"></i>True/False Quiz
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay', material_id=material.id) }}">
-                                                        <i data-feather="edit-3" class="me-2"></i>Essay Quiz
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                    </small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    {% if material.file_path %}
+                                        <a href="{{ url_for('static', filename='../uploads/' + material.file_path) }}" 
+                                           class="btn btn-outline-light btn-sm" target="_blank">
+                                            <i data-feather="download" class="me-1"></i>Download
+                                        </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id, material_id=material.id) }}" 
+                                       class="btn btn-outline-light btn-sm" onclick="showLoadingOverlay()">
+                                        <i data-feather="book" class="me-1"></i>Study Guide
+                                    </a>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i data-feather="brain" class="me-1"></i>AI Tools
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-dark">
+                                            <li>
+                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                    <i data-feather="help-circle" class="me-2 text-white"></i>MCQ Quiz
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                    <i data-feather="check-circle" class="me-2 text-white"></i>True/False Quiz
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                    <i data-feather="edit-3" class="me-2 text-white"></i>Essay Questions
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="text-center py-4">
-                        <i data-feather="file-text" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
-                        <h6 class="text-muted">No materials available yet</h6>
-                        <p class="text-muted">Your teacher hasn't uploaded any materials for this class.</p>
+                    <div class="text-center py-4 text-white">
+                        <i data-feather="file-text" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-white">No materials available yet</h6>
+                        <p class="text-white-80">Your teacher hasn't uploaded any materials for this class.</p>
                     </div>
                 {% endif %}
             </div>
@@ -90,40 +92,40 @@
 
         <!-- AI Learning Tools -->
         {% if materials %}
-            <div class="card border-0 gradient-teal rounded-4">
+            <div class="card border-0 gradient-teal rounded-4 mb-4">
                 <div class="card-header bg-transparent">
                     <h5 class="mb-0 text-white">
-                        <i data-feather="zap" class="me-2"></i>AI Learning Tools
+                        <i data-feather="zap" class="me-2 text-white"></i>AI Learning Tools
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="d-grid">
-                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-yellow">
+                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-yellow" onclick="showLoadingOverlay()">
                                     <i data-feather="book" class="me-2"></i>Generate Study Guide
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="dropdown d-grid">
-                                <button class="btn dropdown-toggle" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     <i data-feather="help-circle" class="me-2"></i>Create Quiz (All Materials)
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-dark w-100">
                                     <li>
-                                        <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq') }}">
-                                            <i data-feather="help-circle" class="me-2"></i>Multiple Choice
+                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq') }}" onclick="showLoadingOverlay()">
+                                            <i data-feather="help-circle" class="me-2 text-white"></i>Multiple Choice
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false') }}">
-                                            <i data-feather="check-circle" class="me-2"></i>True/False
+                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false') }}" onclick="showLoadingOverlay()">
+                                            <i data-feather="check-circle" class="me-2 text-white"></i>True/False
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay') }}">
-                                            <i data-feather="edit-3" class="me-2"></i>Essay Questions
+                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay') }}" onclick="showLoadingOverlay()">
+                                            <i data-feather="edit-3" class="me-2 text-white"></i>Essay Questions
                                         </a>
                                     </li>
                                 </ul>
@@ -133,69 +135,123 @@
                 </div>
             </div>
         {% endif %}
-    </div>
 
-    <!-- Recent Activities -->
+        <!-- Progress Comparison Card -->
+        {% if student_avg_score is not none or class_avg_score is not none %}
+            <div class="card border-0 rounded-4 gradient-teal mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-chart-bar me-2 text-white"></i>Your Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if student_avg_score is not none %}
+                                <div class="mb-3 mb-md-0">
+                                    <h6 class="text-white">Your Average Score (Teacher Quizzes):</h6>
+                                    <p class="display-6 text-yellow fw-bold">{{ "%.0f"|format(student_avg_score) }}%</p>
+                                </div>
+                            {% else %}
+                                <p class="text-white-80">Complete a teacher quiz to see your average score.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if class_avg_score is not none %}
+                                <div>
+                                    <h6 class="text-white">Class Average Score (Teacher Quizzes):</h6>
+                                    <p class="display-6 text-white-80 fw-bold">{{ "%.0f"|format(class_avg_score) }}%</p>
+                                </div>
+                            {% else %}
+                                <p class="text-white-80">No class average available yet (no completed teacher quizzes).</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if student_avg_score is not none and class_avg_score is not none %}
+                        <div class="mt-3 pt-3 border-top border-secondary">
+                            <h6 class="text-white">Comparison:</h6>
+                            {% if student_avg_score > class_avg_score %}
+                                <p class="text-success fw-bold"><i class="fas fa-arrow-up me-1"></i> Your score is above the class average.</p>
+                            {% elif student_avg_score < class_avg_score %}
+                                <p class="text-danger fw-bold"><i class="fas fa-arrow-down me-1"></i> Your score is below the class average.</p>
+                            {% else %}
+                                <p class="fw-bold text-dark"><i class="fas fa-equals me-1"></i> Your score is equal to the class average.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
     <div class="col-lg-4">
-        <div class="card border-0 rounded-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="card-header bg-transparent">
-                <h5 class="mb-0 text-white">
-                    <i data-feather="activity" class="me-2"></i>Recent Activities
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_evaluations %}
-                    <div class="list-group list-group-flush">
+        <!-- Recent Activities Section -->
+        {% if recent_evaluations %}
+            <div class="card border-0 gradient-purple rounded-4 mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0 text-white">
+                        <i data-feather="activity" class="me-2 text-white"></i>Recent Activities
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
                         {% for evaluation in recent_evaluations %}
-                            <div class="list-group-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 8px;">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="mb-1 text-white">{{ evaluation.quiz_type.title() }} Quiz</h6>
-                                        <small class="text-white-80">
-                                            {% if evaluation.material %}
-                                                {{ evaluation.material.title }}
-                                            {% else %}
-                                                All Materials
-                                            {% endif %}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        {% if evaluation.score is not none %}
-                                            <span class="badge text-yellow fw-bold" style="background-color: rgba(255,255,255,0.2);">
-                                                {{ "%.0f"|format(evaluation.score) }}%
-                                            </span>
+                            <li class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-white">
+                                        {% if evaluation.quiz.material %}
+                                            <i data-feather="zap" class="me-1 text-white-50"></i> {{ evaluation.quiz.material.title }} (AI Quiz)
                                         {% else %}
-                                            <span class="badge" style="background-color: #FF8A65; color: white;">In Progress</span>
+                                            {{ evaluation.quiz.title }}
                                         {% endif %}
-                                    </div>
+                                    </h6>
+                                    <small class="text-white-80 d-flex align-items-center">
+                                        {% if evaluation.submitted_at %}
+                                            Completed: {{ evaluation.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            {% if evaluation.score is not none %}
+                                                | Score: <span class="fw-bold {% if evaluation.score >= 70 %}text-success{% else %}text-danger{% endif %}">{{ "%.0f"|format(evaluation.score) }}%</span>
+                                            {% endif %}
+                                        {% elif evaluation.started_at %}
+                                            Started: {{ evaluation.started_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% else %}
+                                             Not Started
+                                        {% endif %}
+                                    </small>
                                 </div>
-                                <div class="mt-2">
-                                    {% if evaluation.completed_at %}
-                                        <small class="text-white-80">
-                                            <i data-feather="check" class="me-1"></i>
-                                            Completed {{ evaluation.completed_at.strftime('%m/%d/%y') }}
-                                        </small>
-                                        <a href="{{ url_for('student_quiz_result', evaluation_id=evaluation.id) }}" 
-                                           class="btn btn-sm ms-2 btn-yellow">View Result</a>
-                                    {% else %}
-                                        <small class="text-white-80">
-                                            <i data-feather="clock" class="me-1"></i>
-                                            Started {{ evaluation.created_at.strftime('%m/%d/%y') }}
-                                        </small>
-                                    {% endif %}
-                                </div>
-                            </div>
+                                {% if evaluation.submitted_at %}
+                                <a href="{{ url_for('student_view_submission', evaluation_id=evaluation.id) }}" class="btn btn-outline-light btn-sm ms-2">
+                                    View Result
+                                </a>
+                                {% endif %}
+                            </li>
                         {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i data-feather="activity" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
-                        <h6 class="text-muted">No activities yet</h6>
-                        <p class="text-muted">Start learning with AI-generated study guides and quizzes!</p>
-                    </div>
-                {% endif %}
+                    </ul>
+                    {% if recent_evaluations|length >= 4 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('student_all_activities', classroom_id=classroom.id) }}" class="btn btn-outline-light btn-sm">View All Activities</a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-        </div>
+        {% else %}
+             <div class="card border-0 gradient-purple rounded-4 mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0 text-white">
+                        <i data-feather="activity" class="me-2 text-white"></i>Recent Activities
+                    </h5>
+                </div>
+                 <div class="card-body">
+                    <div class="text-center py-4 text-white">
+                        <i data-feather="activity" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-white">No recent activity yet</h6>
+                        <p class="text-white-80">Complete a quiz or other activity to see it here.</p>
+                    </div>
+                 </div>
+             </div>
+        {% endif %}
     </div>
 </div>
+
+</div>
+
 {% endblock %}

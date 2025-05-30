@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Edit Quiz</h2>
+        <div>
+            <a href="{{ url_for('teacher_preview_quiz', quiz_id=quiz.id) }}" class="btn btn-outline-info mr-2">
+                <i class="fas fa-eye"></i> Preview
+            </a>
+            <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
+                <i data-feather="home" class="me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Editing: {{ quiz.title }}</h5>
+                <span class="badge badge-{% if quiz.published %}success{% else %}secondary{% endif %}">
+                    {% if quiz.published %}Published{% else %}Draft{% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <form id="quizForm" action="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" method="POST">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="title"><strong>Quiz Title</strong> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ quiz.title }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="quiz_type"><strong>Quiz Type</strong></label>
+                            <input type="text" class="form-control" value="{% if quiz.quiz_type == 'mcq' %}Multiple Choice{% elif quiz.quiz_type == 'true_false' %}True/False{% else %}Essay{% endif %}" readonly>
+                            <small class="text-muted">Quiz type cannot be changed after creation</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description"><strong>Description</strong></label>
+                    <textarea class="form-control" id="description" name="description" rows="3" 
+                              placeholder="Explain what this quiz is about and any instructions for students">{{ quiz.description }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="time_limit"><strong>Time Limit (minutes)</strong></label>
+                            <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                                   min="1" max="180" placeholder="Leave blank for no time limit" 
+                                   value="{{ quiz.time_limit_minutes }}">
+                            <small class="form-text text-muted">Set a time limit for quiz completion or leave blank for unlimited time.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="passing_score"><strong>Passing Score (%)</strong></label>
+                            <input type="number" class="form-control" id="passing_score" name="passing_score" 
+                                   min="0" max="100" value="{{ quiz.passing_score }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="available_from"><strong>Available From</strong></label>
+                            <input type="datetime-local" class="form-control" id="available_from" name="available_from" 
+                                   value="{{ quiz.available_from.isoformat() if quiz.available_from else '' }}">
+                            <small class="form-text text-muted">When students can start taking this quiz. Leave blank for immediate availability.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="available_until"><strong>Available Until</strong></label>
+                            <input type="datetime-local" class="form-control" id="available_until" name="available_until" 
+                                   value="{{ quiz.available_until.isoformat() if quiz.available_until else '' }}">
+                            <small class="form-text text-muted">When this quiz expires. Leave blank for no expiration.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="max_attempts"><strong>Maximum Attempts</strong></label>
+                            <input type="number" class="form-control" id="max_attempts" name="max_attempts"
+                                   min="1" placeholder="Leave blank for unlimited attempts" value="{{ quiz.max_attempts if quiz.max_attempts is not none else '' }}">
+                            <small class="form-text text-muted">Maximum number of times a student can attempt this quiz. Leave blank for unlimited.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="is_required" name="is_required" 
+                               {% if quiz.is_required %}checked{% endif %}>
+                        <label class="custom-control-label" for="is_required"><strong>Required Quiz</strong> - Students must complete this quiz</label>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h4>Questions</h4>
+                <p class="text-muted">Edit existing questions or add new ones.</p>
+
+                <div id="questions-container">
+                    <!-- Existing questions will be rendered here -->
+                    {% for question in questions %}
+                        <div class="question-block card mb-4" id="question-{{ loop.index0 }}">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Question {{ loop.index }}</h5>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question="{{ loop.index0 }}">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="question_{{ loop.index0 }}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="question_{{ loop.index0 }}" name="question_{{ loop.index0 }}" rows="2" required>{{ question.question }}</textarea>
+                                </div>
+                                
+                                {% if quiz.quiz_type == 'mcq' %}
+                                    <div class="options-container">
+                                        <p><strong>Options</strong> <span class="text-danger">*</span></p>
+                                        {% for option in question.options %}
+                                            <div class="form-group row">
+                                                <label class="col-sm-1 col-form-label text-right">{{ chr(65 + loop.index0) }}</label>
+                                                <div class="col-sm-11">
+                                                    <input type="text" class="form-control" name="question_{{ question.index }}_option_{{ loop.index0 }}" 
+                                                           value="{{ option[3:] }}" required>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="question_{{ loop.index0 }}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="question_{{ loop.index0 }}_correct" name="question_{{ loop.index0 }}_correct" required>
+                                            <option value="">Select correct answer</option>
+                                            <option value="A" {% if question.correct_answer == 'A' %}selected{% endif %}>A</option>
+                                            <option value="B" {% if question.correct_answer == 'B' %}selected{% endif %}>B</option>
+                                            <option value="C" {% if question.correct_answer == 'C' %}selected{% endif %}>C</option>
+                                            <option value="D" {% if question.correct_answer == 'D' %}selected{% endif %}>D</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="question_{{ loop.index0 }}_explanation"><strong>Explanation</strong></label>
+                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation" 
+                                                  name="question_{{ loop.index0 }}_explanation" rows="2" 
+                                                  placeholder="Explain why the correct answer is correct">{{ question.explanation }}</textarea>
+                                    </div>
+                                {% elif quiz.quiz_type == 'true_false' %}
+                                    <div class="form-group">
+                                        <label for="question_{{ loop.index0 }}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="question_{{ loop.index0 }}_correct" name="question_{{ loop.index0 }}_correct" required>
+                                            <option value="">Select correct answer</option>
+                                            <option value="True" {% if question.correct_answer == 'True' %}selected{% endif %}>True</option>
+                                            <option value="False" {% if question.correct_answer == 'False' %}selected{% endif %}>False</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="question_{{ loop.index0 }}_explanation"><strong>Explanation</strong></label>
+                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation" 
+                                                  name="question_{{ loop.index0 }}_explanation" rows="2" 
+                                                  placeholder="Explain why the correct answer is correct">{{ question.explanation }}</textarea>
+                                    </div>
+                                {% elif quiz.quiz_type == 'essay' %}
+                                    <div class="form-group">
+                                        <label for="question_{{ loop.index0 }}_suggested_length"><strong>Suggested Answer Length</strong></label>
+                                        <input type="text" class="form-control" id="question_{{ loop.index0 }}_suggested_length" 
+                                               name="question_{{ loop.index0 }}_suggested_length" 
+                                               placeholder="e.g., 2-3 paragraphs or 200-300 words" 
+                                               value="{{ question.suggested_length }}">
+                                    </div>
+                                    <div class="key-points-container">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label><strong>Key Points</strong> (for grading)</label>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary add-key-point" data-question="{{ loop.index0 }}">
+                                                <i class="fas fa-plus"></i> Add Key Point
+                                            </button>
+                                        </div>
+                                        <div id="key-points-{{ loop.index0 }}">
+                                            {% for key_point in question.key_points %}
+                                                <div class="form-group row key-point-row">
+                                                    <div class="col-11">
+                                                        <input type="text" class="form-control" name="question_{{ question.index }}_key_point_{{ loop.index0 }}" 
+                                                               value="{{ key_point }}">
+                                                    </div>
+                                                    <div class="col-1">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-key-point">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <input type="hidden" id="question_{{ loop.index0 }}_key_points_count" name="question_{{ loop.index0 }}_key_points_count" value="{{ question.key_points|length }}">
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center my-4">
+                    <button type="button" id="add-question-btn" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Add Question
+                    </button>
+                </div>
+
+                <input type="hidden" id="question_count" name="question_count" value="{{ questions|length }}">
+
+                <div class="form-group text-right mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let questionCounter = {{ questions|length }};
+        const questionCountInput = document.getElementById('question_count');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const questionsContainer = document.getElementById('questions-container');
+        const quizType = '{{ quiz.quiz_type }}';
+        
+        // Add event listeners to existing remove buttons
+        const existingRemoveBtns = document.querySelectorAll('.remove-question');
+        existingRemoveBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question');
+                const questionElement = document.getElementById(`question-${questionId}`);
+                questionElement.remove();
+                renumberQuestions();
+            });
+        });
+        
+        // Add event listeners to existing key point buttons (for essay questions)
+        if (quizType === 'essay') {
+            const existingAddKeyPointBtns = document.querySelectorAll('.add-key-point');
+            existingAddKeyPointBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    addKeyPoint(this.getAttribute('data-question'));
+                });
+            });
+            
+            const existingRemoveKeyPointBtns = document.querySelectorAll('.remove-key-point');
+            existingRemoveKeyPointBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.key-point-row').remove();
+                    const questionId = this.closest('.question-block').id.replace('question-', '');
+                    updateKeyPointCount(questionId);
+                });
+            });
+        }
+        
+        // Function to update the hidden question count field
+        function updateQuestionCount() {
+            questionCountInput.value = questionCounter;
+        }
+        
+        // Function to add a new question based on quiz type
+        function addQuestion() {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-block card mb-4';
+            questionDiv.id = `question-${questionCounter}`;
+            
+            let questionHtml = `
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Question ${questionCounter + 1}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question="${questionCounter}">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="question_${questionCounter}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="question_${questionCounter}" name="question_${questionCounter}" rows="2" required></textarea>
+                    </div>
+            `;
+            
+            if (quizType === 'mcq') {
+                questionHtml += `
+                    <div class="options-container">
+                        <p><strong>Options</strong> <span class="text-danger">*</span></p>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">A</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_0" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">B</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_1" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">C</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_2" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">D</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_3" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                        <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
+                            <option value="">Select correct answer</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
+                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
+                                  name="question_${questionCounter}_explanation" rows="2" 
+                                  placeholder="Explain why the correct answer is correct"></textarea>
+                    </div>
+                `;
+            } else if (quizType === 'true_false') {
+                questionHtml += `
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                        <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
+                            <option value="">Select correct answer</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
+                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
+                                  name="question_${questionCounter}_explanation" rows="2" 
+                                  placeholder="Explain why the correct answer is correct"></textarea>
+                    </div>
+                `;
+            } else if (quizType === 'essay') {
+                questionHtml += `
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_suggested_length"><strong>Suggested Answer Length</strong></label>
+                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length" 
+                               name="question_${questionCounter}_suggested_length" placeholder="e.g., 2-3 paragraphs or 200-300 words">
+                    </div>
+                    <div class="key-points-container">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label><strong>Key Points</strong> (for grading)</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-key-point" data-question="${questionCounter}">
+                                <i class="fas fa-plus"></i> Add Key Point
+                            </button>
+                        </div>
+                        <div id="key-points-${questionCounter}">
+                            <div class="form-group row key-point-row">
+                                <div class="col-11">
+                                    <input type="text" class="form-control" name="question_${questionCounter}_key_point_0" 
+                                           placeholder="Important concept that should be included in a good answer">
+                                </div>
+                                <div class="col-1">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-key-point">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="question_${questionCounter}_key_points_count" name="question_${questionCounter}_key_points_count" value="1">
+                    </div>
+                `;
+            }
+            
+            questionHtml += `</div>`;
+            questionDiv.innerHTML = questionHtml;
+            
+            questionsContainer.appendChild(questionDiv);
+            
+            // Add event listeners for dynamic elements
+            const removeBtn = questionDiv.querySelector('.remove-question');
+            removeBtn.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question');
+                const questionElement = document.getElementById(`question-${questionId}`);
+                questionElement.remove();
+                renumberQuestions();
+            });
+            
+            // Add event listeners for key point buttons in essay questions
+            if (quizType === 'essay') {
+                const addKeyPointBtn = questionDiv.querySelector('.add-key-point');
+                addKeyPointBtn.addEventListener('click', function() {
+                    addKeyPoint(this.getAttribute('data-question'));
+                });
+                
+                const removeKeyPointBtns = questionDiv.querySelectorAll('.remove-key-point');
+                removeKeyPointBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        this.closest('.key-point-row').remove();
+                        updateKeyPointCount(questionCounter);
+                    });
+                });
+            }
+            
+            questionCounter++;
+            updateQuestionCount();
+        }
+        
+        // Function to add a key point to an essay question
+        function addKeyPoint(questionId) {
+            const keyPointsContainer = document.getElementById(`key-points-${questionId}`);
+            const keyPointCount = keyPointsContainer.querySelectorAll('.key-point-row').length;
+            
+            const keyPointRow = document.createElement('div');
+            keyPointRow.className = 'form-group row key-point-row';
+            keyPointRow.innerHTML = `
+                <div class="col-11">
+                    <input type="text" class="form-control" name="question_${questionId}_key_point_${keyPointCount}" 
+                           placeholder="Important concept that should be included in a good answer">
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-key-point">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            keyPointsContainer.appendChild(keyPointRow);
+            
+            // Add event listener to the new remove button
+            const removeBtn = keyPointRow.querySelector('.remove-key-point');
+            removeBtn.addEventListener('click', function() {
+                this.closest('.key-point-row').remove();
+                updateKeyPointCount(questionId);
+            });
+            
+            updateKeyPointCount(questionId);
+        }
+        
+        // Function to update the key point count
+        function updateKeyPointCount(questionId) {
+            const keyPointsContainer = document.getElementById(`key-points-${questionId}`);
+            const count = keyPointsContainer.querySelectorAll('.key-point-row').length;
+            document.getElementById(`question_${questionId}_key_points_count`).value = count;
+        }
+        
+        // Function to renumber questions after removal
+        function renumberQuestions() {
+            const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+            questionBlocks.forEach((block, index) => {
+                const header = block.querySelector('.card-header h5');
+                header.textContent = `Question ${index + 1}`;
+            });
+            
+            questionCounter = questionBlocks.length;
+            updateQuestionCount();
+        }
+        
+        // Add event listener for add question button
+        addQuestionBtn.addEventListener('click', addQuestion);
+    });
+</script>
+{% endblock %}

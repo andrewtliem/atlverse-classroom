@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Preview Quiz</h2>
+        <div>
+            <a href="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" class="btn btn-outline-primary mr-2">
+                <i class="fas fa-edit"></i> Edit Quiz
+            </a>
+            <a href="{{ url_for('teacher_quizzes', classroom_id=classroom.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Quizzes
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Quiz Information</h5>
+            <span class="badge badge-{% if quiz.published %}success{% else %}secondary{% endif %}">
+                {% if quiz.published %}Published{% else %}Draft{% endif %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4>{{ quiz.title }}</h4>
+                    {% if quiz.description %}
+                        <p class="text-muted">{{ quiz.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p class="mb-1"><strong>Quiz Type:</strong> 
+                                {% if quiz.quiz_type == 'mcq' %}
+                                    Multiple Choice
+                                {% elif quiz.quiz_type == 'true_false' %}
+                                    True/False
+                                {% elif quiz.quiz_type == 'essay' %}
+                                    Essay
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Questions:</strong> {{ questions|length }}</p>
+                            <p class="mb-1"><strong>Passing Score:</strong> {{ quiz.passing_score }}%</p>
+                            
+                            {% if quiz.time_limit_minutes %}
+                                <p class="mb-1"><strong>Time Limit:</strong> {{ quiz.time_limit_minutes }} minutes</p>
+                            {% else %}
+                                <p class="mb-1"><strong>Time Limit:</strong> No limit</p>
+                            {% endif %}
+                            
+                            <p class="mb-1"><strong>Required:</strong> {{ 'Yes' if quiz.is_required else 'No' }}</p>
+                            
+                            <div class="mt-2">
+                                <p class="mb-1"><strong>Availability:</strong></p>
+                                {% if quiz.available_from %}
+                                    <p class="mb-1 small">From: {{ quiz.available_from.strftime('%Y-%m-%d %H:%M') }}</p>
+                                {% else %}
+                                    <p class="mb-1 small">Available immediately when published</p>
+                                {% endif %}
+                                
+                                {% if quiz.available_until %}
+                                    <p class="mb-1 small">Until: {{ quiz.available_until.strftime('%Y-%m-%d %H:%M') }}</p>
+                                {% else %}
+                                    <p class="mb-1 small">No expiration date</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if quiz.time_limit_minutes %}
+        <div class="alert alert-warning">
+            <i class="fas fa-clock"></i> This quiz has a time limit of <strong>{{ quiz.time_limit_minutes }} minutes</strong>. 
+            Once a student begins, they must complete it within this time frame.
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Preview: Quiz Questions</h5>
+        </div>
+        <div class="card-body">
+            <div class="quiz-preview">
+                {% for question in questions %}
+                    <div class="question card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Question {{ loop.index }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="question-text mb-4">{{ question.question }}</p>
+                            
+                            {% if quiz.quiz_type == 'mcq' %}
+                                <div class="options-list">
+                                    {% for option in question.options %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="preview_question_{{ question.index }}"
+                                                   id="preview_option_{{ question.index }}_{{ loop.index0 }}" value="{{ option[0] }}" disabled>
+                                            <label class="form-check-label" for="preview_option_{{ question.index }}_{{ loop.index0 }}">
+                                                {{ option }}
+                                            </label>
+                                            {% if option[0] == question.correct_answer %}
+                                                <span class="badge badge-success ml-2">Correct Answer</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {% if question.explanation %}
+                                    <div class="alert alert-info mt-3">
+                                        <strong>Explanation:</strong> {{ question.explanation }}
+                                    </div>
+                                {% endif %}
+                                
+                            {% elif quiz.quiz_type == 'true_false' %}
+                                <div class="options-list">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="preview_question_{{ question.index }}"
+                                               id="preview_option_{{ question.index }}_true" value="True" disabled
+                                               {% if question.correct_answer == 'True' %}checked{% endif %}>
+                                        <label class="form-check-label" for="preview_option_{{ question.index }}_true">
+                                            True
+                                        </label>
+                                        {% if question.correct_answer == 'True' %}
+                                            <span class="badge badge-success ml-2">Correct Answer</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="preview_question_{{ question.index }}"
+                                               id="preview_option_{{ question.index }}_false" value="False" disabled
+                                               {% if question.correct_answer == 'False' %}checked{% endif %}>
+                                        <label class="form-check-label" for="preview_option_{{ question.index }}_false">
+                                            False
+                                        </label>
+                                        {% if question.correct_answer == 'False' %}
+                                            <span class="badge badge-success ml-2">Correct Answer</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if question.explanation %}
+                                    <div class="alert alert-info mt-3">
+                                        <strong>Explanation:</strong> {{ question.explanation }}
+                                    </div>
+                                {% endif %}
+                                
+                            {% elif quiz.quiz_type == 'essay' %}
+                                <div class="form-group">
+                                    <label>Write your answer below:</label>
+                                    <textarea class="form-control" rows="5" disabled
+                                              placeholder="Student would type their essay answer here..."></textarea>
+                                </div>
+                                
+                                {% if question.suggested_length %}
+                                    <div class="alert alert-secondary mt-2">
+                                        <strong>Suggested Length:</strong> {{ question.suggested_length }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="card bg-light mt-3">
+                                    <div class="card-header">
+                                        <strong>Grading Key Points</strong> (not visible to students)
+                                    </div>
+                                    <div class="card-body">
+                                        {% if question.key_points %}
+                                            <ul class="mb-0">
+                                                {% for key_point in question.key_points %}
+                                                    <li>{{ key_point }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="text-muted mb-0">No key points specified for grading.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <form action="{{ url_for('teacher_publish_quiz', quiz_id=quiz.id) }}" method="POST" onsubmit="return confirm('{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?');">
+            <button type="submit" class="btn {% if quiz.published %}btn-warning{% else %}btn-success{% endif %} mr-2">
+                <i class="fas {% if quiz.published %}fa-eye-slash{% else %}fa-check{% endif %}"></i> 
+                {% if quiz.published %}Unpublish Quiz{% else %}Publish Quiz{% endif %}
+            </button>
+            <a href="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Quiz
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

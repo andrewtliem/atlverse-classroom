@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - {{ quiz.title }} - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="text-white">Quiz Results</h1>
+        <h5 class="text-white">"{{ quiz.title }}" in {{ classroom.name }}</h5>
+    </div>
+    <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
+        <i data-feather="home" class="me-2"></i>Dashboard
+    </a>
+</div>
+
+<div class="card border-0 gradient-blue rounded-4 mb-4">
+    <div class="card-body">
+        <h6 class="text-white mb-3">Summary Statistics</h6>
+        <div class="row text-white-80">
+            <div class="col-md-3">
+                <strong class="text-white-80">Total Students:</strong> {{ students|length }}
+            </div>
+            <div class="col-md-3">
+                <strong class="text-success">Completed:</strong> {{ completed_count }}
+            </div>
+            <div class="col-md-3">
+                <strong class="text-yellow">In Progress:</strong> {{ in_progress_count }}
+            </div>
+            <div class="col-md-3">
+                <strong class="text-light">Not Started:</strong> {{ not_started_count }}
+            </div>
+        </div>
+        {% if completed_count > 0 %}
+        <div class="row text-white-80 mt-2">
+            <div class="col-md-3">
+                <strong class="text-white-80">Average Score:</strong> {{ "%.1f%%"|format(avg_score) if avg_score is not none else 'N/A' }}
+            </div>
+            <div class="col-md-3">
+                <strong class="text-white">Pass Rate:</strong> {{ "%.1f%%"|format(pass_rate) if pass_rate is not none else 'N/A' }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 gradient-blue rounded-4">
+    <div class="card-body">
+        <h6 class="text-white mb-3">Student Performance</h6>
+        {% if students %}
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-hover text-white-80">
+                <thead>
+                    <tr>
+                        <th class="text-white">Student Name</th>
+                        <th class="text-white">Status</th>
+                        <th class="text-white">Score</th>
+                        <th class="text-white">Completion Date</th>
+                        <th class="text-white">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.full_name }}</td>
+                        <td>
+                            {% set evaluation = evaluations | selectattr('student_id', 'equalto', student.id) | first %}
+                            {% if evaluation %}
+                                {% if evaluation.completed_at %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif evaluation.started_at %}
+                                    <span class="badge bg-warning text-dark">In Progress</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Started</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Not Started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if evaluation and evaluation.completed_at and evaluation.score is not none %}
+                                {{ "%.1f%%"|format(evaluation.score) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if evaluation and evaluation.completed_at %}
+                                {{ evaluation.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if evaluation and evaluation.completed_at %}
+                                <a href="{{ url_for('teacher_view_submission', quiz_id=quiz.id, evaluation_id=evaluation.id) }}" class="btn btn-sm btn-outline-light">
+                                    View Submission
+                                </a>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-secondary" disabled>View Submission</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-white-80">No students enrolled in this classroom yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %} 

@@ -3,26 +3,36 @@
 {% block title %}Results - {{ classroom.name }}{% endblock %}
 
 {% block content %}
+<style>
+    #tableView { display: none; }
+    #cardView { display: block; }
+</style>
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
-        <h1>Student Results</h1>
-        <h5 class="text-muted">{{ classroom.name }}</h5>
+        <h1 class="text-white">Student Results</h1>
+        <h5 class="text-white">{{ classroom.name }}</h5>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ url_for('teacher_export_results', classroom_id=classroom.id) }}" class="btn btn-outline-primary">
+        <!-- View Toggle -->
+        <div class="btn-group" role="group" aria-label="View toggle">
+            <button type="button" class="btn btn-outline-light active" id="cardViewBtn">Card View</button>
+            <button type="button" class="btn btn-outline-light" id="tableViewBtn">Table View</button>
+        </div>
+        <a href="{{ url_for('teacher_export_results', classroom_id=classroom.id) }}" class="btn btn-outline-light">
             <i data-feather="download" class="me-2"></i>Export CSV
         </a>
-        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-secondary">
+        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-primary">
             <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
         </a>
     </div>
 </div>
 
 {% if student_summaries %}
-    <div class="card border-0 bg-dark">
+    <!-- Card View -->
+    <div id="cardView" class="card border-0 gradient-blue">
         <div class="card-header">
-            <h5 class="mb-0">
-                <i data-feather="users" class="me-2"></i>Student Performance Overview
+            <h5 class="mb-0 text-white">
+                <i data-feather="users" class="me-2 text-white"></i>Student Performance Overview
             </h5>
         </div>
         <div class="card-body">
@@ -34,7 +44,7 @@
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <h6 class="card-title mb-1 text-white">{{ student_summary.student.full_name }}</h6>
-                                        <small class="text-white-80">{{ student_summary.student.email }}</small>
+                                        <small class="text-white">{{ student_summary.student.email }}</small>
                                     </div>
                                     <span class="badge badge-coral">{{ student_summary.total_evaluations }} quiz{{ 'zes' if student_summary.total_evaluations != 1 else '' }}</span>
                                 </div>
@@ -48,8 +58,7 @@
                                             </span>
                                         </div>
                                         <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.2);">
-                                            <div class="progress-bar" 
-                                                style="background-color: #FFC107; width: {{ student_summary.avg_score }}%"></div>
+                                            <div class="progress-bar" style="background-color: #FFC107; width: {{ student_summary.avg_score | default(0) }}%;"></div>
                                         </div>
                                     </div>
                                 {% endif %}
@@ -57,21 +66,21 @@
                                 <div class="row text-center mb-3">
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #00BCD4;">{{ student_summary.completed_count }}</div>
-                                        <small class="text-white-80">Completed</small>
+                                        <small class="text-white">Completed</small>
                                     </div>
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #FF8A65;">{{ student_summary.in_progress_count }}</div>
-                                        <small class="text-white-80">In Progress</small>
+                                        <small class="text-white">In Progress</small>
                                     </div>
                                     <div class="col-4">
                                         <div class="fw-bold" style="color: #64B5F6;">{{ student_summary.materials_attempted }}</div>
-                                        <small class="text-white-80">Materials</small>
+                                        <small class="text-white">Materials</small>
                                     </div>
                                 </div>
                                 
                                 <div class="d-grid">
                                     <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}" 
-                                       class="btn btn-sm" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                                       class="btn btn-outline-light btn-sm">
                                         <i data-feather="eye" class="me-1"></i>View Details
                                     </a>
                                 </div>
@@ -83,26 +92,80 @@
         </div>
     </div>
 
+    <!-- Table View -->
+    <div id="tableView" class="card border-0 gradient-blue">
+        <div class="card-header">
+            <h5 class="mb-0 text-white">
+                <i data-feather="users" class="me-2 text-white"></i>Student Performance Overview
+            </h5>
+        </div>
+        <div class="card-body text-dark">
+            <div class="table-responsive">
+                <table class="table table-hover" id="studentResultsTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Total Evaluations</th>
+                            <th>Completed</th>
+                            <th>In Progress</th>
+                            <th>Materials Attempted</th>
+                            <th>Average Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student_summary in student_summaries %}
+                        <tr>
+                            <td class="text-dark">{{ student_summary.student.full_name }}</td>
+                            <td class="text-dark">{{ student_summary.student.email }}</td>
+                            <td class="text-dark text-center">{{ student_summary.total_evaluations }}</td>
+                            <td class="text-success text-center">{{ student_summary.completed_count }}</td>
+                            <td class="text-warning text-dark text-center">{{ student_summary.in_progress_count }}</td>
+                            <td class="text-info text-dark text-center">{{ student_summary.materials_attempted }}</td>
+                            <td class="text-dark text-center">
+                                {% if student_summary.avg_score is not none %}
+                                    <span class="fw-bold">
+                                        {{ "%.1f"|format(student_summary.avg_score) }}%
+                                    </span>
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}" 
+                                   class="btn-info">
+                                    <i data-feather="eye" class="me-1"></i>View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Summary Statistics -->
     <div class="row mt-4">
         <div class="col-md-3">
-            <div class="card border-0 bg-dark text-center">
+            <div class="card border-0 gradient-blue text-center">
                 <div class="card-body">
-                    <h3 class="text-primary">{{ evaluations|length }}</h3>
-                    <p class="text-muted mb-0">Total Evaluations</p>
+                    <h3 class="text-white">{{ evaluations|length }}</h3>
+                    <p class="text-white-80 mb-0">Total Evaluations</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 bg-dark text-center">
+            <div class="card border-0 gradient-teal text-center">
                 <div class="card-body">
-                    <h3 class="text-success">{{ evaluations|selectattr('completed_at')|list|length }}</h3>
-                    <p class="text-muted mb-0">Completed</p>
+                    <h3 class="text-white">{{ evaluations|selectattr('completed_at')|list|length }}</h3>
+                    <p class="text-white-80 mb-0">Completed</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 bg-dark text-center">
+            <div class="card border-0 gradient-coral text-center">
                 <div class="card-body">
                     {% set completed_evaluations = evaluations|selectattr('completed_at')|selectattr('score')|list %}
                     {% if completed_evaluations %}
@@ -114,30 +177,72 @@
                             {{ "%.1f"|format(avg_score) }}%
                         </h3>
                     {% else %}
-                        <h3 class="text-muted">--</h3>
+                        <h3 class="text-white">--</h3>
                     {% endif %}
-                    <p class="text-muted mb-0">Average Score</p>
+                    <p class="text-white-80 mb-0">Average Score</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 bg-dark text-center">
+            <div class="card border-0 gradient-light-blue text-center">
                 <div class="card-body">
                     {% set unique_students = evaluations|map(attribute='student_id')|unique|list|length %}
-                    <h3 class="text-info">{{ unique_students }}</h3>
-                    <p class="text-muted mb-0">Active Students</p>
+                    <h3 class="text-white">{{ unique_students }}</h3>
+                    <p class="text-white-80 mb-0">Active Students</p>
                 </div>
             </div>
         </div>
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="bar-chart-2" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
-        <h3 class="text-muted">No Results Yet</h3>
-        <p class="text-muted">Students haven't completed any self-evaluations yet.</p>
+        <i data-feather="bar-chart-2" class="text-white-50 mb-3" style="width: 64px; height: 64px;"></i>
+        <h3 class="text-white">No Results Yet</h3>
+        <p class="text-white-80">Students haven't completed any self-evaluations yet.</p>
         <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-primary">
             <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
         </a>
     </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+"use strict";
+document.addEventListener('DOMContentLoaded', function() {
+    const cardViewBtn = document.getElementById('cardViewBtn');
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    const cardView = document.getElementById('cardView');
+    const tableView = document.getElementById('tableView');
+
+    if (!cardViewBtn || !tableViewBtn || !cardView || !tableView) return;
+
+    function switchView(viewToShow) {
+        if (viewToShow === 'card') {
+            cardView.style.display = 'block';
+            tableView.style.display = 'none';
+            cardViewBtn.classList.add('active');
+            tableViewBtn.classList.remove('active');
+        } else if (viewToShow === 'table') {
+            cardView.style.display = 'none';
+            tableView.style.display = 'block';
+            cardViewBtn.classList.remove('active');
+            tableViewBtn.classList.add('active');
+        }
+    }
+
+    // Initial view
+    let lastView = localStorage.getItem('resultsView') || 'card';
+    switchView(lastView);
+
+    cardViewBtn.addEventListener('click', function() {
+        switchView('card');
+        localStorage.setItem('resultsView', 'card');
+    });
+
+    tableViewBtn.addEventListener('click', function() {
+        switchView('table');
+        localStorage.setItem('resultsView', 'table');
+    });
+});
+</script>
 {% endblock %}

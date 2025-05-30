@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ classroom.name }} - All Activities{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="text-white">{{ classroom.name }}</h1>
+        {% if classroom.description %}
+            <p class="text-white-80">{{ classroom.description }}</p>
+        {% endif %}
+        <small class="text-white-80">
+            <i data-feather="user" class="me-1 text-white"></i>
+            Teacher: {{ classroom.teacher.full_name }}
+        </small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-light">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+        </a>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-gradient-teal">
+            <i data-feather="home" class="me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 rounded-4 gradient-purple mb-4">
+    <div class="card-header bg-transparent">
+        <h5 class="mb-0 text-white">
+            <i data-feather="activity" class="me-2 text-white"></i>All Activities
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if evaluations %}
+            <div class="list-group list-group-flush">
+                {% for evaluation in evaluations %}
+                    <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                        <div class="flex-grow-1">
+                            {% if evaluation.is_ai_generated %}
+                                <h6 class="mb-1 text-white">
+                                    <i class="fas fa-robot me-1 text-white-70"></i> AI Practice Quiz ({{ evaluation.quiz_type.title() }})
+                                </h6>
+                                <small class="text-white-80">
+                                    {% if evaluation.material %}
+                                        From: {{ evaluation.material.title }}
+                                    {% else %}
+                                        From: All Materials
+                                    {% endif %}
+                                </small>
+                            {% else %}
+                                <h6 class="mb-1 text-white">
+                                    <i class="fas fa-clipboard-list me-1 text-white-70"></i> {{ evaluation.quiz.title }}
+                                </h6>
+                                <small class="text-white-80">Teacher Quiz ({{ evaluation.quiz_type.title() }})</small>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            {% if evaluation.score is not none %}
+                                <span class="badge text-yellow fw-bold" style="background-color: rgba(255,255,255,0.2);">
+                                    {{ "%.0f"|format(evaluation.score) }}%
+                                </span>
+                            {% else %}
+                                <span class="badge text-white" style="background-color: #FF8A65;">In Progress</span>
+                            {% endif %}
+                            {% if evaluation.completed_at %}
+                                <small class="text-white-80 d-block mt-1">
+                                    <i class="fas fa-check me-1 text-white"></i>
+                                    Completed {{ evaluation.completed_at.strftime('%m/%d/%y %H:%M') }}
+                                </small>
+                                <a href="{{ url_for('student_quiz_result', evaluation_id=evaluation.id) }}" class="btn btn-sm mt-1 btn-yellow">View Result</a>
+                            {% elif evaluation.started_at %}
+                                <small class="text-white-80 d-block mt-1">
+                                    <i class="fas fa-clock me-1 text-white"></i>
+                                    Started {{ evaluation.started_at.strftime('%m/%d/%y %H:%M') }}
+                                </small>
+                            {% else %}
+                                <small class="text-white-80 d-block mt-1">
+                                    <i class="fas fa-hourglass-start me-1 text-white-70"></i>
+                                    Not Started
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-white">
+                <i data-feather="activity" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                <h6 class="text-white">No activities yet</h6>
+                <p class="text-white-80">Start learning with AI-generated study guides and quizzes!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

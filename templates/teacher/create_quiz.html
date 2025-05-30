@@ -1,0 +1,614 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Quiz - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Create New Quiz</h2>
+        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
+            <i data-feather="home" class="me-2"></i>Dashboard
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">New Quiz for {{ classroom.name }}</h5>
+        </div>
+        <div class="card-body">
+            <form id="quizForm" action="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" method="POST">
+                <!-- Quiz Basic Information -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="title"><strong>Quiz Title</strong> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="quiz_type"><strong>Quiz Type</strong> <span class="text-danger">*</span></label>
+                            <select class="form-control" id="quiz_type" name="quiz_type" required>
+                                <option value="mcq">Multiple Choice</option>
+                                <option value="true_false">True/False</option>
+                                <option value="essay">Essay</option>
+                            </select>
+                            <small class="form-text text-muted">Quiz type cannot be changed after creation</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description"><strong>Description</strong></label>
+                    <textarea class="form-control" id="description" name="description" rows="3" 
+                              placeholder="Explain what this quiz is about and any instructions for students"></textarea>
+                </div>
+
+                <!-- Quiz Settings -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Quiz Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="time_limit"><strong>Time Limit (minutes)</strong></label>
+                                    <input type="number" class="form-control" id="time_limit" name="time_limit" 
+                                           min="1" max="180" placeholder="Leave blank for no time limit">
+                                    <small class="form-text text-muted">Students must complete the quiz within this time once started</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="passing_score"><strong>Passing Score (%)</strong></label>
+                                    <input type="number" class="form-control" id="passing_score" name="passing_score" 
+                                           min="0" max="100" value="60">
+                                    <small class="form-text text-muted">Minimum score needed to pass the quiz</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="available_from"><strong>Available From</strong></label>
+                                    <input type="datetime-local" class="form-control" id="available_from" name="available_from">
+                                    <small class="form-text text-muted">When students can start taking this quiz. Leave blank for immediate availability.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="available_until"><strong>Available Until</strong></label>
+                                    <input type="datetime-local" class="form-control" id="available_until" name="available_until">
+                                    <small class="form-text text-muted">When this quiz expires. Leave blank for no expiration.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="max_attempts"><strong>Maximum Attempts</strong></label>
+                                    <input type="number" class="form-control" id="max_attempts" name="max_attempts"
+                                           min="1" placeholder="Leave blank for unlimited attempts">
+                                    <small class="form-text text-muted">Maximum number of times a student can attempt this quiz. Leave blank for unlimited.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_required" name="is_required">
+                                <label class="custom-control-label" for="is_required"><strong>Required Quiz</strong> - Students must complete this quiz</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Questions</h5>
+                        <button type="button" id="add-question-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Add Question
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="questions-container">
+                            <!-- Questions will be added here dynamically -->
+                        </div>
+
+                        <div class="text-center my-3" id="no-questions-message">
+                            <p class="text-muted">No questions added yet. Click the "Add Question" button to create your first question.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="question_count" name="question_count" value="0">
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="preview-btn" class="btn btn-outline-info btn-lg" disabled>
+                        <i class="fas fa-eye"></i> Preview Quiz
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Save Quiz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Quiz Preview</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="preview-content">
+                        <!-- Preview content will be inserted here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="save-from-preview">Save Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let questionCounter = 0;
+        const questionCountInput = document.getElementById('question_count');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const questionsContainer = document.getElementById('questions-container');
+        const quizTypeSelect = document.getElementById('quiz_type');
+        const noQuestionsMessage = document.getElementById('no-questions-message');
+        const previewBtn = document.getElementById('preview-btn');
+        const quizForm = document.getElementById('quizForm');
+        const saveFromPreviewBtn = document.getElementById('save-from-preview');
+        
+        // Enable the preview button when there's at least one question
+        function updatePreviewButton() {
+            if (questionCounter > 0) {
+                previewBtn.disabled = false;
+                noQuestionsMessage.style.display = 'none';
+            } else {
+                previewBtn.disabled = true;
+                noQuestionsMessage.style.display = 'block';
+            }
+        }
+        
+        // Function to update the hidden question count field
+        function updateQuestionCount() {
+            questionCountInput.value = questionCounter;
+            updatePreviewButton();
+        }
+        
+        // Function to add a new question based on quiz type
+        function addQuestion() {
+            const quizType = quizTypeSelect.value;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-block card mb-4';
+            questionDiv.id = `question-${questionCounter}`;
+            
+            let questionHtml = `
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Question ${questionCounter + 1}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question="${questionCounter}">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="question_${questionCounter}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="question_${questionCounter}" name="question_${questionCounter}" rows="2" required></textarea>
+                    </div>
+            `;
+            
+            if (quizType === 'mcq') {
+                questionHtml += `
+                    <div class="options-container">
+                        <p><strong>Options</strong> <span class="text-danger">*</span></p>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">A</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_0" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">B</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_1" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">C</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_2" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-1 col-form-label text-right">D</label>
+                            <div class="col-sm-11">
+                                <input type="text" class="form-control" name="question_${questionCounter}_option_3" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                        <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
+                            <option value="">Select correct answer</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
+                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
+                                  name="question_${questionCounter}_explanation" rows="2" 
+                                  placeholder="Explain why the correct answer is correct"></textarea>
+                    </div>
+                `;
+            } else if (quizType === 'true_false') {
+                questionHtml += `
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
+                        <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
+                            <option value="">Select correct answer</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
+                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
+                                  name="question_${questionCounter}_explanation" rows="2" 
+                                  placeholder="Explain why the correct answer is correct"></textarea>
+                    </div>
+                `;
+            } else if (quizType === 'essay') {
+                questionHtml += `
+                    <div class="form-group">
+                        <label for="question_${questionCounter}_suggested_length"><strong>Suggested Answer Length</strong></label>
+                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length" 
+                               name="question_${questionCounter}_suggested_length" placeholder="e.g., 2-3 paragraphs or 200-300 words">
+                    </div>
+                    <div class="key-points-container">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label><strong>Key Points</strong> (for grading)</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-key-point" data-question="${questionCounter}">
+                                <i class="fas fa-plus"></i> Add Key Point
+                            </button>
+                        </div>
+                        <div id="key-points-${questionCounter}">
+                            <div class="form-group row key-point-row">
+                                <div class="col-11">
+                                    <input type="text" class="form-control" name="question_${questionCounter}_key_point_0" 
+                                           placeholder="Important concept that should be included in a good answer">
+                                </div>
+                                <div class="col-1">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-key-point">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="question_${questionCounter}_key_points_count" name="question_${questionCounter}_key_points_count" value="1">
+                    </div>
+                `;
+            }
+            
+            questionHtml += `</div>`;
+            questionDiv.innerHTML = questionHtml;
+            
+            questionsContainer.appendChild(questionDiv);
+            
+            // Add event listeners for dynamic elements
+            const removeBtn = questionDiv.querySelector('.remove-question');
+            removeBtn.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question');
+                const questionElement = document.getElementById(`question-${questionId}`);
+                questionElement.remove();
+                renumberQuestions();
+            });
+            
+            // Add event listeners for key point buttons in essay questions
+            if (quizType === 'essay') {
+                const addKeyPointBtn = questionDiv.querySelector('.add-key-point');
+                addKeyPointBtn.addEventListener('click', function() {
+                    addKeyPoint(this.getAttribute('data-question'));
+                });
+                
+                const removeKeyPointBtns = questionDiv.querySelectorAll('.remove-key-point');
+                removeKeyPointBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        this.closest('.key-point-row').remove();
+                        updateKeyPointCount(questionCounter);
+                    });
+                });
+            }
+            
+            questionCounter++;
+            updateQuestionCount();
+        }
+        
+        // Function to add a key point to an essay question
+        function addKeyPoint(questionId) {
+            const keyPointsContainer = document.getElementById(`key-points-${questionId}`);
+            const keyPointCount = keyPointsContainer.querySelectorAll('.key-point-row').length;
+            
+            const keyPointRow = document.createElement('div');
+            keyPointRow.className = 'form-group row key-point-row';
+            keyPointRow.innerHTML = `
+                <div class="col-11">
+                    <input type="text" class="form-control" name="question_${questionId}_key_point_${keyPointCount}" 
+                           placeholder="Important concept that should be included in a good answer">
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-key-point">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            keyPointsContainer.appendChild(keyPointRow);
+            
+            // Add event listener to the new remove button
+            const removeBtn = keyPointRow.querySelector('.remove-key-point');
+            removeBtn.addEventListener('click', function() {
+                this.closest('.key-point-row').remove();
+                updateKeyPointCount(questionId);
+            });
+            
+            updateKeyPointCount(questionId);
+        }
+        
+        // Function to update the key point count
+        function updateKeyPointCount(questionId) {
+            const keyPointsContainer = document.getElementById(`key-points-${questionId}`);
+            const count = keyPointsContainer.querySelectorAll('.key-point-row').length;
+            document.getElementById(`question_${questionId}_key_points_count`).value = count;
+        }
+        
+        // Function to renumber questions after removal
+        function renumberQuestions() {
+            const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+            questionBlocks.forEach((block, index) => {
+                const header = block.querySelector('.card-header h5');
+                header.textContent = `Question ${index + 1}`;
+            });
+            
+            questionCounter = questionBlocks.length;
+            updateQuestionCount();
+        }
+
+        // Preview quiz function
+        function previewQuiz() {
+            const previewContent = document.getElementById('preview-content');
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const quizType = document.getElementById('quiz_type').value;
+            const timeLimit = document.getElementById('time_limit').value;
+            const passingScore = document.getElementById('passing_score').value;
+            const isRequired = document.getElementById('is_required').checked;
+            
+            let quizTypeText = 'Multiple Choice';
+            if (quizType === 'true_false') quizTypeText = 'True/False';
+            if (quizType === 'essay') quizTypeText = 'Essay';
+            
+            let html = `
+                <div class="preview-quiz">
+                    <div class="mb-4">
+                        <h3>${title}</h3>
+                        <p class="text-muted">${description}</p>
+                        
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Quiz Type:</strong> ${quizTypeText}</p>
+                                <p class="mb-1"><strong>Questions:</strong> ${questionCounter}</p>
+                                <p class="mb-1"><strong>Passing Score:</strong> ${passingScore}%</p>
+                                <p class="mb-1"><strong>Time Limit:</strong> ${timeLimit ? timeLimit + ' minutes' : 'No limit'}</p>
+                                <p class="mb-1"><strong>Required:</strong> ${isRequired ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4>Questions</h4>
+            `;
+            
+            // Add each question to the preview
+            const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+            questionBlocks.forEach((block, index) => {
+                const questionText = block.querySelector(`#question_${block.id.split('-')[1]}`).value;
+                
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Question ${index + 1}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="question-text">${questionText}</p>
+                `;
+                
+                if (quizType === 'mcq') {
+                    const options = [];
+                    for (let i = 0; i < 4; i++) {
+                        const optionInput = block.querySelector(`[name="question_${block.id.split('-')[1]}_option_${i}"]`);
+                        if (optionInput && optionInput.value) {
+                            options.push(optionInput.value);
+                        }
+                    }
+                    
+                    const correctAnswer = block.querySelector(`#question_${block.id.split('-')[1]}_correct`).value;
+                    
+                    html += '<div class="options-list">';
+                    options.forEach((option, i) => {
+                        const letter = String.fromCharCode(65 + i); // A, B, C, D
+                        html += `
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" disabled>
+                                <label class="form-check-label">
+                                    ${letter}) ${option} ${letter === correctAnswer ? '<span class="badge badge-success">Correct</span>' : ''}
+                                </label>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                } else if (quizType === 'true_false') {
+                    const correctAnswer = block.querySelector(`#question_${block.id.split('-')[1]}_correct`).value;
+                    
+                    html += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" disabled ${correctAnswer === 'True' ? 'checked' : ''}>
+                            <label class="form-check-label">
+                                True ${correctAnswer === 'True' ? '<span class="badge badge-success">Correct</span>' : ''}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" disabled ${correctAnswer === 'False' ? 'checked' : ''}>
+                            <label class="form-check-label">
+                                False ${correctAnswer === 'False' ? '<span class="badge badge-success">Correct</span>' : ''}
+                            </label>
+                        </div>
+                    `;
+                    
+                } else if (quizType === 'essay') {
+                    const suggestedLength = block.querySelector(`#question_${block.id.split('-')[1]}_suggested_length`).value;
+                    
+                    html += `
+                        <div class="form-group">
+                            <label>Write your answer below:</label>
+                            <textarea class="form-control" rows="3" disabled placeholder="Student would type their essay answer here..."></textarea>
+                        </div>
+                    `;
+                    
+                    if (suggestedLength) {
+                        html += `<p class="text-muted"><small>Suggested length: ${suggestedLength}</small></p>`;
+                    }
+                    
+                    // Add key points section
+                    const keyPoints = [];
+                    const keyPointInputs = block.querySelectorAll(`[name^="question_${block.id.split('-')[1]}_key_point_"]`);
+                    keyPointInputs.forEach(input => {
+                        if (input.value) {
+                            keyPoints.push(input.value);
+                        }
+                    });
+                    
+                    if (keyPoints.length > 0) {
+                        html += `
+                            <div class="card bg-light mt-3">
+                                <div class="card-header">
+                                    <strong>Grading Key Points</strong> (not visible to students)
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                        `;
+                        
+                        keyPoints.forEach(point => {
+                            html += `<li>${point}</li>`;
+                        });
+                        
+                        html += `
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Add explanation for MCQ and True/False
+                if (quizType === 'mcq' || quizType === 'true_false') {
+                    const explanation = block.querySelector(`#question_${block.id.split('-')[1]}_explanation`).value;
+                    if (explanation) {
+                        html += `
+                            <div class="alert alert-info mt-3">
+                                <strong>Explanation:</strong> ${explanation}
+                            </div>
+                        `;
+                    }
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            previewContent.innerHTML = html;
+            $('#previewModal').modal('show');
+        }
+        
+        // Add first question by default
+        addQuestion();
+        
+        // Add event listener for add question button
+        addQuestionBtn.addEventListener('click', addQuestion);
+        
+        // Change question type when quiz type changes
+        quizTypeSelect.addEventListener('change', function() {
+            // Confirm if there are existing questions
+            if (questionCounter > 0) {
+                if (confirm('Changing quiz type will remove all existing questions. Continue?')) {
+                    // Clear all existing questions
+                    questionsContainer.innerHTML = '';
+                    questionCounter = 0;
+                    
+                    // Add a new question of the correct type
+                    addQuestion();
+                } else {
+                    // Revert selection
+                    const previousValue = this.getAttribute('data-prev-value') || 'mcq';
+                    this.value = previousValue;
+                }
+            } else {
+                // Add a new question of the correct type
+                addQuestion();
+            }
+            
+            // Store current value for future reference
+            this.setAttribute('data-prev-value', this.value);
+        });
+        
+        // Preview quiz
+        previewBtn.addEventListener('click', function() {
+            // Basic form validation
+            const form = document.getElementById('quizForm');
+            if (!form.checkValidity()) {
+                // Create temporary submit button and click it to trigger browser validation
+                const tempSubmit = document.createElement('button');
+                tempSubmit.style.display = 'none';
+                tempSubmit.type = 'submit';
+                form.appendChild(tempSubmit);
+                tempSubmit.click();
+                form.removeChild(tempSubmit);
+                return;
+            }
+            
+            previewQuiz();
+        });
+        
+        // Submit form when saving from preview
+        saveFromPreviewBtn.addEventListener('click', function() {
+            quizForm.submit();
+        });
+        
+        // Store current value for future reference
+        quizTypeSelect.setAttribute('data-prev-value', quizTypeSelect.value);
+    });
+</script>
+{% endblock %}
+

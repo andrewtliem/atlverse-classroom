@@ -8,11 +8,11 @@
 <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
         {% if show_results %}
-            <h1>Quiz Results</h1>
-            <h5 class="text-muted">{{ quiz_type.title() }} Quiz - {{ classroom.name }}</h5>
+            <h1 class="text-white">Quiz Results</h1>
+            <h5 class="text-white">{{ quiz_type.title() }} Quiz - {{ classroom.name }}</h5>
             {% if evaluation.score is not none %}
                 <div class="mt-2">
-                    <span class="badge badge-lg 
+                    <span class="badge badge-lg text-white 
                         {% if evaluation.score >= 80 %}bg-success
                         {% elif evaluation.score >= 60 %}bg-warning
                         {% else %}bg-danger{% endif %}">
@@ -21,16 +21,16 @@
                 </div>
             {% endif %}
         {% else %}
-            <h1>{{ quiz_type.title() }} Quiz</h1>
-            <h5 class="text-muted">{{ classroom.name }}</h5>
+            <h1 class="text-white">{{ quiz_type.title() }} Quiz</h1>
+            <h5 class="text-white">{{ classroom.name }}</h5>
             {% if evaluation.material %}
-                <small class="text-muted">Material: {{ evaluation.material.title }}</small>
+                <small class="text-white-80">Material: {{ evaluation.material.title }}</small>
             {% else %}
-                <small class="text-muted">Based on all class materials</small>
+                <small class="text-white-80">Based on all class materials</small>
             {% endif %}
         {% endif %}
     </div>
-    <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-secondary">
+    <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-primary">
         <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
     </a>
 </div>
@@ -38,53 +38,53 @@
 {% if not show_results %}
     <!-- Quiz Form -->
     <form method="POST" action="{{ url_for('student_submit_quiz', evaluation_id=evaluation.id) }}">
-        <div class="card border-0 bg-dark">
+        <div class="card border-0 gradient-blue">
             <div class="card-body">
                 {% for question in questions %}
-                    {% set outer_loop = loop %}
                     <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                        <h5 class="mb-3">{{ outer_loop.index }}. {{ question.question }}</h5>
+                        <h5 class="mb-3 text-white">Question {{ loop.index }}. {{ question.question }}</h5>
                         
                         {% if quiz_type == 'mcq' %}
+                            {% set question_index = loop.index0 %}
                             {% for option in question.options %}
-                                <div class="form-check mb-2">
+                                <div class="form-check mb-2 text-white">
                                     <input class="form-check-input" type="radio" 
-                                           name="answer_{{ outer_loop.index0 }}" value="{{ option[0] }}" 
-                                           id="q{{ outer_loop.index0 }}_{{ loop.index0 }}" required>
-                                    <label class="form-check-label" for="q{{ outer_loop.index0 }}_{{ loop.index0 }}">
+                                           name="answer_{{ question_index }}" value="{{ option[0] }}"
+                                           id="q{{ question_index }}_opt{{ loop.index0 }}" required>
+                                    <label class="form-check-label" for="q{{ question_index }}_opt{{ loop.index0 }}">
                                         {{ option }}
                                     </label>
                                 </div>
                             {% endfor %}
                         
                         {% elif quiz_type == 'true_false' %}
-                            <div class="form-check mb-2">
+                            <div class="form-check mb-2 text-white">
                                 <input class="form-check-input" type="radio" 
-                                       name="answer_{{ outer_loop.index0 }}" value="True" 
-                                       id="q{{ outer_loop.index0 }}_true" required>
-                                <label class="form-check-label" for="q{{ outer_loop.index0 }}_true">
+                                       name="answer_{{ loop.index0 }}" value="True"
+                                       id="q{{ loop.index0 }}_true" required>
+                                <label class="form-check-label" for="q{{ loop.index0 }}_true">
                                     True
                                 </label>
                             </div>
-                            <div class="form-check mb-2">
+                            <div class="form-check mb-2 text-white">
                                 <input class="form-check-input" type="radio" 
-                                       name="answer_{{ outer_loop.index0 }}" value="False" 
-                                       id="q{{ outer_loop.index0 }}_false" required>
-                                <label class="form-check-label" for="q{{ outer_loop.index0 }}_false">
+                                       name="answer_{{ loop.index0 }}" value="False"
+                                       id="q{{ loop.index0 }}_false" required>
+                                <label class="form-check-label" for="q{{ loop.index0 }}_false">
                                     False
                                 </label>
                             </div>
                         
                         {% elif quiz_type == 'essay' %}
-                            <textarea class="form-control" name="answer_{{ outer_loop.index0 }}" 
+                            <textarea class="form-control bg-dark text-white border-secondary" name="answer_{{ loop.index0 }}"
                                       rows="6" placeholder="Write your answer here..." required></textarea>
                             {% if question.key_points %}
-                                <div class="form-text mt-2">
+                                <div class="form-text mt-2 text-white-80">
                                     <strong>Consider including:</strong> {{ question.key_points|join(', ') }}
                                 </div>
                             {% endif %}
                             {% if question.suggested_length %}
-                                <div class="form-text">
+                                <div class="form-text text-white-80">
                                     <strong>Suggested length:</strong> {{ question.suggested_length }}
                                 </div>
                             {% endif %}
@@ -94,7 +94,7 @@
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
-                    <span class="text-muted">{{ questions|length }} question{{ 's' if questions|length != 1 else '' }}</span>
+                    <span class="text-white-80">{{ questions|length }} question{{ 's' if questions|length != 1 else '' }}</span>
                     <button type="submit" class="btn btn-primary">
                         <i data-feather="check" class="me-2"></i>Submit Quiz
                     </button>
@@ -105,17 +105,17 @@
 
 {% else %}
     <!-- Quiz Results -->
-    <div class="card border-0 bg-dark">
+    <div class="card border-0 gradient-blue">
         <div class="card-body">
             {% for question in questions %}
                 <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
-                    <h5 class="mb-3">{{ loop.index }}. {{ question.question }}</h5>
+                    <h5 class="mb-3 text-white">{{ loop.index }}. {{ question.question }}</h5>
                     
                     {% if quiz_type == 'mcq' or quiz_type == 'true_false' %}
                         {% set feedback_item = feedback[loop.index0] %}
                         
                         <!-- Show user's answer -->
-                        <div class="mb-2">
+                        <div class="mb-2 text-white">
                             <strong>Your answer:</strong>
                             <span class="ms-2 {% if feedback_item.is_correct %}text-success{% else %}text-danger{% endif %}">
                                 {{ answers[loop.index0] if answers[loop.index0] else "Not answered" }}
@@ -129,7 +129,7 @@
                         
                         <!-- Show correct answer if wrong -->
                         {% if not feedback_item.is_correct %}
-                            <div class="mb-2">
+                            <div class="mb-2 text-white">
                                 <strong>Correct answer:</strong>
                                 <span class="text-success ms-2">{{ feedback_item.correct_answer }}</span>
                             </div>
@@ -137,7 +137,7 @@
                         
                         <!-- Show explanation -->
                         {% if feedback_item.explanation %}
-                            <div class="alert alert-info">
+                            <div class="alert alert-info text-dark">
                                 <strong>Explanation:</strong> {{ feedback_item.explanation }}
                             </div>
                         {% endif %}
@@ -146,15 +146,15 @@
                         {% set feedback_item = feedback[loop.index0] %}
                         
                         <!-- Show user's answer -->
-                        <div class="mb-3">
+                        <div class="mb-3 text-white">
                             <strong>Your answer:</strong>
-                            <div class="border rounded p-3 mt-2 bg-secondary">
+                            <div class="border rounded p-3 mt-2 bg-secondary text-white">
                                 {{ answers[loop.index0] if answers[loop.index0] else "No answer provided" }}
                             </div>
                         </div>
                         
                         <!-- Show score and feedback -->
-                        <div class="mb-2">
+                        <div class="mb-2 text-white">
                             <strong>Score:</strong>
                             <span class="ms-2 badge
                                 {% if feedback_item.score >= 80 %}bg-success
@@ -164,7 +164,7 @@
                             </span>
                         </div>
                         
-                        <div class="alert alert-info">
+                        <div class="alert alert-info text-dark">
                             <strong>Feedback:</strong> {{ feedback_item.feedback }}
                         </div>
                     {% endif %}
@@ -174,15 +174,11 @@
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="text-muted">
+                    <span class="text-white-80">
                         Completed on {{ evaluation.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
                     </span>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type=quiz_type) }}" 
-                       class="btn btn-outline-primary">
-                        <i data-feather="refresh-cw" class="me-2"></i>Try Again
-                    </a>
                     <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" 
                        class="btn btn-primary">
                         <i data-feather="book-open" class="me-2"></i>Back to Class
