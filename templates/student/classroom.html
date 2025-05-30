@@ -199,30 +199,41 @@
                             <li class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 text-white">
-                                        {% if evaluation.quiz.material %}
-                                            <i data-feather="zap" class="me-1 text-white-50"></i> {{ evaluation.quiz.material.title }} (AI Quiz)
+                                        {% if evaluation.is_ai_generated %}
+                                            <i data-feather="zap" class="me-1 text-white-50"></i>
+                                            {% if evaluation.material %}
+                                                {{ evaluation.material.title }} (AI Generated Quiz)
+                                            {% else %}
+                                                AI Generated Quiz
+                                            {% endif %}
+                                        {% elif evaluation.quiz %}
+                                            {{ evaluation.quiz.title }} (Teacher Quiz)
                                         {% else %}
-                                            {{ evaluation.quiz.title }}
+                                            Unknown Activity
                                         {% endif %}
                                     </h6>
                                     <small class="text-white-80 d-flex align-items-center">
-                                        {% if evaluation.submitted_at %}
-                                            Completed: {{ evaluation.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% if evaluation.completed_at %}
+                                            Completed: {{ evaluation.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
                                             {% if evaluation.score is not none %}
                                                 | Score: <span class="fw-bold {% if evaluation.score >= 70 %}text-success{% else %}text-danger{% endif %}">{{ "%.0f"|format(evaluation.score) }}%</span>
                                             {% endif %}
-                                        {% elif evaluation.started_at %}
+                                        {% elif evaluation.started_at and not evaluation.completed_at %}
                                             Started: {{ evaluation.started_at.strftime('%B %d, %Y at %I:%M %p') }}
                                         {% else %}
                                              Not Started
                                         {% endif %}
                                     </small>
+
+                                    {# Move View Result button inside for better visual grouping #}
+                                    {% if evaluation.completed_at %}
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('student_quiz_result', evaluation_id=evaluation.id) }}" class="btn btn-outline-light btn-sm">
+                                            View Result
+                                        </a>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% if evaluation.submitted_at %}
-                                <a href="{{ url_for('student_view_submission', evaluation_id=evaluation.id) }}" class="btn btn-outline-light btn-sm ms-2">
-                                    View Result
-                                </a>
-                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>
