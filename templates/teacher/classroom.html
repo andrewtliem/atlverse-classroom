@@ -54,7 +54,7 @@
                                 </div>
                                 <div>
                                     {% if material.file_path %}
-                                        <a href="{{ url_for('static', filename='../uploads/' + material.file_path) }}" 
+                                        <a href="{{ url_for('uploaded_file', filename=material.file_path) }}" 
                                            class="btn btn-outline-light btn-sm" target="_blank">
                                             <i data-feather="download" class="me-1"></i>Download
                                         </a>

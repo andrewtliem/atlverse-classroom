@@ -4,7 +4,7 @@ import defusedcsv as csv
 import io
 from datetime import datetime
 from urllib.parse import urlparse, urljoin
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response, send_from_directory
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -1031,11 +1031,11 @@ def student_classroom(classroom_id):
     classroom = enrollment.classroom
     materials = Material.query.filter_by(classroom_id=classroom_id).all()
     
-    # Get recent completed evaluations only
+    # Get recent completed evaluations
     recent_evaluations = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id,
         student_id=current_user.id
-    ).order_by(SelfEvaluation.started_at.desc()).limit(4).all()
+    ).filter(SelfEvaluation.completed_at.isnot(None)).order_by(SelfEvaluation.completed_at.desc()).limit(4).all()
     
     # Get any available teacher-created quizzes
     available_quizzes = Quiz.query.filter_by(
@@ -1474,6 +1474,15 @@ def student_all_activities(classroom_id):
     return render_template('student/all_activities.html',
                            classroom=classroom,
                            evaluations=all_evaluations)
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded files securely."""
+    try:
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    except FileNotFoundError:
+        flash('File not found.', 'error')
+        return redirect(url_for('index')) # Or a suitable error page
 
 # Error handlers
 @app.errorhandler(404)
