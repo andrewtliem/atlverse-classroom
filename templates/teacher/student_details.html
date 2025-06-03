@@ -101,11 +101,21 @@
 
 <!-- Detailed Quiz History -->
 {% if evaluations %}
-    <div class="card border-0 gradient-teal">
-        <div class="card-header bg-transparent">
+    <div class="card border-0 gradient-teal mb-4">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <h5 class="mb-0 text-white">
                 <i data-feather="list" class="me-2 text-white"></i>Quiz History
             </h5>
+            <div class="col-md-4">
+                 <form id="filterForm" method="GET" action="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student.id) }}">
+                    <select name="material_id" class="form-select form-select-sm bg-white text-dark border-secondary" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Materials</option>
+                        {% for material in materials %}
+                            <option value="{{ material.id }}" {% if filter_material_id == material.id %}selected{% endif %}>{{ material.title }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -127,6 +137,9 @@
                                             {{ evaluation.quiz.title }}
                                         {% else %}
                                             AI Generated Quiz
+                                            {% if evaluation.material %}
+                                                - {{ evaluation.material.title }}
+                                            {% endif %}
                                         {% endif %}
                                     </h6>
                                     {% if evaluation.is_ai_generated %}

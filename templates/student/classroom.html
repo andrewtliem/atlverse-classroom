@@ -99,6 +99,17 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    {% if in_progress_ai_quiz %}
+                        <div class="alert alert-info d-flex align-items-center justify-content-between" role="alert">
+                            <div>
+                                <i class="fas fa-info-circle me-2"></i>
+                                You have an unfinished AI quiz.
+                            </div>
+                            <a href="{{ url_for('student_quiz_result', evaluation_id=in_progress_ai_quiz.id) }}" class="btn btn-info btn-sm">
+                                Resume Quiz
+                            </a>
+                        </div>
+                    {% endif %}
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="d-grid">
@@ -180,6 +191,127 @@
                             {% endif %}
                         </div>
                     {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- AI Quiz Progress Comparison Card -->
+        {% if student_ai_avg_score_overall is not none or class_ai_avg_score_overall is not none or student_ai_performance_by_material or class_ai_performance_by_material %}
+            <div class="card border-0 rounded-4 gradient-blue mb-4">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">
+                        <i data-feather="zap" class="me-2 text-white"></i>AI Quiz Progress
+                    </h5>
+                    <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#aiQuizProgressDetails" aria-expanded="false" aria-controls="aiQuizProgressDetails">
+                        View Details
+                    </button>
+                </div>
+                <div class="collapse" id="aiQuizProgressDetails">
+                    <div class="card-body">
+                        <!-- Overall AI Quiz Comparison -->
+                        {% if student_ai_avg_score_overall is not none or class_ai_avg_score_overall is not none %}
+                            <h6 class="text-white mb-3">Overall AI Quiz Average:</h6>
+                            <div class="row mb-3">
+                                 <div class="col-md-6">
+                                    {% if student_ai_avg_score_overall is not none %}
+                                        <div class="mb-3 mb-md-0">
+                                            <h6 class="text-white-80">Your Average:</h6>
+                                            <p class="display-6 text-yellow fw-bold">{{ "%.0f"|format(student_ai_avg_score_overall) }}%</p>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-white-80">Complete an AI quiz to see your overall average.</p>
+                                    {% endif %}
+                                </div>
+                                 <div class="col-md-6">
+                                    {% if class_ai_avg_score_overall is not none %}
+                                        <div>
+                                            <h6 class="text-white-80">Class Average:</h6>
+                                            <p class="display-6 text-white-80 fw-bold">{{ "%.0f"|format(class_ai_avg_score_overall) }}%</p>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-white-80">No class average available yet (no completed AI quizzes).</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                             {% if student_ai_avg_score_overall is not none and class_ai_avg_score_overall is not none %}
+                                <div class="mt-3 pt-3 border-top border-secondary">
+                                    <h6 class="text-white">Comparison:</h6>
+                                    {% if student_ai_avg_score_overall > class_ai_avg_score_overall %}
+                                        <p class="text-success fw-bold"><i class="fas fa-arrow-up me-1"></i> Your overall AI quiz score is above the class average.</p>
+                                    {% elif student_ai_avg_score_overall < class_ai_avg_score_overall %}
+                                        <p class="text-danger fw-bold"><i class="fas fa-arrow-down me-1"></i> Your overall AI quiz score is below the class average.</p>
+                                    {% else %}
+                                        <p class="fw-bold text-dark"><i class="fas fa-equals me-1"></i> Your overall AI quiz score is equal to the class average.</p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- Per Material AI Quiz Comparison -->
+                        {% if student_ai_performance_by_material or class_ai_performance_by_material %}
+                            <h6 class="text-white mt-4 mb-3">AI Quiz Average by Material:</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for material_id, student_avg in student_ai_performance_by_material.items() %}
+                                    {% set class_avg = class_ai_performance_by_material.get(material_id) %}
+                                    {% if student_avg is not none or class_avg is not none %}
+                                        <li class="list-group-item border-secondary text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                            <h6 class="mb-1 text-white">{{ material_titles.get(material_id, 'Unknown Material') }}</h6>
+                                            <div class="row small">
+                                                <div class="col-md-6">
+                                                    {% if student_avg is not none %}
+                                                        Your Avg: <span class="fw-bold text-yellow">{{ "%.0f"|format(student_avg) }}%</span>
+                                                    {% else %}
+                                                        Your Avg: --
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {% if class_avg is not none %}
+                                                        Class Avg: <span class="fw-bold text-white-80">{{ "%.0f"|format(class_avg) }}%</span>
+                                                    {% else %}
+                                                        Class Avg: --
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if student_avg is not none and class_avg is not none %}
+                                                <div class="mt-2">
+                                                    {% if student_avg > class_avg %}
+                                                        <span class="text-success fw-bold"><i class="fas fa-arrow-up me-1"></i> Above Class Average</span>
+                                                    {% elif student_avg < class_avg %}
+                                                        <span class="text-danger fw-bold"><i class="fas fa-arrow-down me-1"></i> Below Class Average</span>
+                                                    {% else %}
+                                                        <span class="fw-bold text-dark"><i class="fas fa-equals me-1"></i> Equal to Class Average</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {# Also loop through class_ai_performance_by_material to show materials student hasn't attempted #}
+                                {% for material_id, class_avg in class_ai_performance_by_material.items() %}
+                                    {% if material_id not in student_ai_performance_by_material %}
+                                        {% set student_avg = student_ai_performance_by_material.get(material_id) %}
+                                        {% if class_avg is not none %}
+                                             <li class="list-group-item border-secondary text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                                <h6 class="mb-1 text-white">{{ material_titles.get(material_id, 'Unknown Material') }}</h6>
+                                                <div class="row small">
+                                                    <div class="col-md-6">
+                                                        Your Avg: <span class="fw-bold text-yellow">--</span>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        Class Avg: <span class="fw-bold text-white-80">{{ "%.0f"|format(class_avg) }}%</span>
+                                                    </div>
+                                                </div>
+                                                 <div class="mt-2">
+                                                    <span class="text-white-80">Complete an AI quiz on this material to see your comparison.</span>
+                                                 </div>
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                    </div>
                 </div>
             </div>
         {% endif %}

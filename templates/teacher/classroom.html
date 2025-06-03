@@ -144,11 +144,18 @@
                                         <small class="text-white-80">{{ student.email }}</small>
                                     </div>
                                 </div>
-                                <form action="{{ url_for('teacher_remove_student', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove {{ student.full_name }} from this classroom?');">
-                                        <i data-feather="user-minus" class="me-1"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex gap-2">
+                                    <form action="{{ url_for('teacher_reset_student_password', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to reset the password for {{ student.full_name }}?');">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-key me-1"></i>Reset Password
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('teacher_remove_student', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove {{ student.full_name }} from this classroom?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i data-feather="user-minus" class="me-1"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>

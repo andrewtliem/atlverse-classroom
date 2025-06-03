@@ -123,6 +123,43 @@
     </div>
 {% endif %}
 
+<!-- AI Quiz Awards Card -->
+{% if ai_quiz_awards %}
+    <div class="card border-0 gradient-purple rounded-4 mt-4">
+        <div class="card-header bg-transparent">
+            <h5 class="mb-0 text-white">
+                <i data-feather="award" class="me-2 text-white"></i>AI Quiz Awards
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for classroom_id, awards_by_material in ai_quiz_awards.items() %}
+                <h6 class="text-white-80 mb-3">{{ classroom_names.get(classroom_id, 'Unknown Classroom') }}</h6>
+                <ul class="list-group list-group-flush mb-4">
+                    {% for material_id, award_info in awards_by_material.items() %}
+                        <li class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.3); border-radius: 8px;">
+                            <div>
+                                <h6 class="mb-1 text-white">{{ award_info.material_title }}</h6>
+                                <small class="text-white-80">
+                                    Score: {{ "%.1f"|format(award_info.score) }}% | Attempts: {{ award_info.attempts }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if award_info.award == 'gold' %}
+                                    <i class="fas fa-medal text-warning" style="font-size: 1.5rem;" title="Gold Award"></i> {# Gold medal icon #}
+                                {% elif award_info.award == 'silver' %}
+                                    <i class="fas fa-medal text-secondary" style="font-size: 1.5rem;" title="Silver Award"></i> {# Silver medal icon #}
+                                {% elif award_info.award == 'bronze' %}
+                                    <i class="fas fa-medal text-danger" style="font-size: 1.5rem;" title="Bronze Award"></i> {# Bronze medal icon #}
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
 <!-- Join Classroom Modal -->
 <div class="modal fade" id="joinClassroomModal" tabindex="-1">
     <div class="modal-dialog">

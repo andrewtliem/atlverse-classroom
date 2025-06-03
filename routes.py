@@ -383,11 +383,23 @@ def teacher_student_details(classroom_id, student_id):
     classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
     student = User.query.filter_by(id=student_id, role='student').first_or_404()
     
-    # Get student's evaluations for this classroom
-    evaluations = SelfEvaluation.query.filter_by(
+    # Get materials for this classroom (for filter dropdown)
+    materials = Material.query.filter_by(classroom_id=classroom_id).order_by(Material.title).all()
+
+    # Get selected material_id for filtering
+    filter_material_id = request.args.get('material_id', type=int)
+    
+    # Get student's evaluations for this classroom, filtered by material if specified
+    evaluations_query = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id, 
         student_id=student_id
-    ).order_by(SelfEvaluation.created_at.desc()).all()
+    )
+
+    if filter_material_id:
+        # Filter by the specific material_id for both teacher quizzes and AI quizzes
+        evaluations_query = evaluations_query.filter_by(material_id=filter_material_id)
+
+    evaluations = evaluations_query.order_by(SelfEvaluation.created_at.desc()).all()
     
     # Group evaluations by material
     materials_performance = {}
@@ -406,7 +418,10 @@ def teacher_student_details(classroom_id, student_id):
                          classroom=classroom, 
                          student=student, 
                          evaluations=evaluations,
-                         materials_performance=materials_performance)
+                         materials_performance=materials_performance,
+                         materials=materials, # Pass materials to template for filter
+                         filter_material_id=filter_material_id # Pass selected filter to template
+                        )
 
 @app.route('/teacher/classroom/<int:classroom_id>/export_results')
 @login_required
@@ -982,7 +997,69 @@ def student_dashboard():
         }
         classrooms.append(classroom)
     
-    return render_template('student/dashboard.html', classrooms=classrooms)
+    # Calculate AI Quiz Awards
+    ai_quiz_awards = {}
+    all_student_completed_ai_evaluations = SelfEvaluation.query.filter(
+        SelfEvaluation.student_id == current_user.id,
+        SelfEvaluation.is_ai_generated == True,
+        SelfEvaluation.completed_at.isnot(None)
+    ).order_by(SelfEvaluation.created_at).all() # Order by creation date to determine attempt number
+
+    from collections import defaultdict
+    completed_ai_evals_by_material = defaultdict(list)
+
+    for eval in all_student_completed_ai_evaluations:
+        material_id = eval.material_id if eval.material_id else 0 # Use 0 for quizzes not linked to specific material
+        completed_ai_evals_by_material[f'{eval.classroom_id}-{material_id}'].append(eval)
+
+    for material_key, evaluations in completed_ai_evals_by_material.items():
+        classroom_id, material_id = map(int, material_key.split('-'))
+        
+        best_score_attempt = None
+        attempt_count_for_best_score = 0
+        
+        for i, eval in enumerate(evaluations):
+            if eval.score is not None and eval.score >= 80:
+                best_score_attempt = eval
+                attempt_count_for_best_score = i + 1 # 1-based attempt count
+                break # Found the first attempt with >= 80%
+
+        if best_score_attempt:
+            award = None
+            if attempt_count_for_best_score == 1:
+                award = 'gold' # Gold star
+            elif attempt_count_for_best_score in [2, 3]:
+                award = 'silver' # Silver star
+            elif attempt_count_for_best_score > 3:
+                award = 'bronze' # Bronze star
+            
+            if award:
+                if classroom_id not in ai_quiz_awards:
+                    ai_quiz_awards[classroom_id] = {}
+                
+                # Get material title
+                material_title = "All Materials" # Default for material_id 0
+                if material_id != 0:
+                     material = Material.query.get(material_id)
+                     if material:
+                         material_title = material.title
+
+                ai_quiz_awards[classroom_id][material_id] = {
+                    'award': award,
+                    'score': best_score_attempt.score,
+                    'attempts': attempt_count_for_best_score,
+                    'material_title': material_title
+                }
+
+    
+    # Need classroom names for the template
+    classroom_names = {c.id: c.name for c in Classroom.query.all()}
+
+    
+    return render_template('student/dashboard.html', 
+                           classrooms=classrooms,
+                           ai_quiz_awards=ai_quiz_awards,
+                           classroom_names=classroom_names)
 
 @app.route('/student/join_classroom', methods=['POST'])
 @login_required
@@ -1031,6 +1108,14 @@ def student_classroom(classroom_id):
     classroom = enrollment.classroom
     materials = Material.query.filter_by(classroom_id=classroom_id).all()
     
+    # Get any in-progress AI quiz for the current student in this classroom
+    in_progress_ai_quiz = SelfEvaluation.query.filter_by(
+        student_id=current_user.id,
+        classroom_id=classroom_id,
+        is_ai_generated=True,
+        completed_at=None
+    ).first()
+
     # Get recent completed evaluations
     recent_evaluations = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id,
@@ -1064,6 +1149,61 @@ def student_classroom(classroom_id):
     ).all()
     class_avg_score = sum(q.score for q in all_classroom_completed_quizzes) / len(all_classroom_completed_quizzes) if all_classroom_completed_quizzes else None
 
+    # Calculate student's average score for AI-generated quizzes in this classroom (overall)
+    student_completed_ai_quizzes = SelfEvaluation.query.filter(
+        SelfEvaluation.student_id == current_user.id,
+        SelfEvaluation.classroom_id == classroom_id,
+        SelfEvaluation.is_ai_generated == True,
+        SelfEvaluation.completed_at.isnot(None)
+    ).all()
+    student_ai_avg_score_overall = sum(q.score for q in student_completed_ai_quizzes) / len(student_completed_ai_quizzes) if student_completed_ai_quizzes else None
+
+    # Calculate class average score for AI-generated quizzes in this classroom (overall)
+    all_classroom_completed_ai_quizzes = SelfEvaluation.query.filter(
+        SelfEvaluation.classroom_id == classroom_id,
+        SelfEvaluation.is_ai_generated == True,
+        SelfEvaluation.completed_at.isnot(None)
+    ).all()
+
+    # Group completed AI quizzes by material for per-material averages
+    student_ai_performance_by_material = {}
+    class_ai_performance_by_material = {}
+
+    from collections import defaultdict
+    student_ai_scores_by_material = defaultdict(list)
+    class_ai_scores_by_material = defaultdict(list)
+
+    for eval in student_completed_ai_quizzes:
+        material_id = eval.material_id if eval.material_id else 0 # Use 0 for quizzes not linked to specific material
+        if eval.score is not None:
+            student_ai_scores_by_material[material_id].append(eval.score)
+
+    for eval in all_classroom_completed_ai_quizzes:
+        material_id = eval.material_id if eval.material_id else 0
+        if eval.score is not None:
+             class_ai_scores_by_material[material_id].append(eval.score)
+
+    # Calculate averages per material
+    for material_id, scores in student_ai_scores_by_material.items():
+        if scores:
+            student_ai_performance_by_material[material_id] = sum(scores) / len(scores)
+        else:
+            student_ai_performance_by_material[material_id] = None
+
+    for material_id, scores in class_ai_scores_by_material.items():
+        if scores:
+            class_ai_performance_by_material[material_id] = sum(scores) / len(scores)
+        else:
+            class_ai_performance_by_material[material_id] = None
+
+    # Need material titles for the template - fetch materials again or pass a dictionary
+    # Let's pass a dictionary mapping material_id to title
+    material_titles = {m.id: m.title for m in materials}
+    material_titles[0] = "All Materials"
+
+    # Calculate overall class AI average (correctly handling division by zero)
+    class_ai_avg_score_overall = sum(q.score for q in all_classroom_completed_ai_quizzes) / len(all_classroom_completed_ai_quizzes) if all_classroom_completed_ai_quizzes else None
+
     # Check which quizzes the student has already started or completed
     quiz_status = {}
     for quiz in available_quizzes:
@@ -1084,7 +1224,14 @@ def student_classroom(classroom_id):
                          available_quizzes=available_quizzes,
                          quiz_status=quiz_status,
                          student_avg_score=student_avg_score,
-                         class_avg_score=class_avg_score)
+                         class_avg_score=class_avg_score,
+                         in_progress_ai_quiz=in_progress_ai_quiz,
+                         student_ai_avg_score_overall=student_ai_avg_score_overall,
+                         class_ai_avg_score_overall=class_ai_avg_score_overall,
+                         student_ai_performance_by_material=student_ai_performance_by_material,
+                         class_ai_performance_by_material=class_ai_performance_by_material,
+                         material_titles=material_titles
+                        )
 
 @app.route('/student/classroom/<int:classroom_id>/generate_study_guide')
 @login_required
@@ -1166,6 +1313,18 @@ def student_create_quiz(classroom_id):
         student_id=current_user.id
     ).first_or_404()
     
+    # Check for existing incomplete AI quiz for this student in this classroom
+    existing_ai_evaluation = SelfEvaluation.query.filter_by(
+        student_id=current_user.id,
+        classroom_id=classroom_id,
+        is_ai_generated=True,
+        completed_at=None
+    ).first()
+
+    if existing_ai_evaluation:
+        flash('You have an unfinished AI quiz. Please complete it first.', 'warning')
+        return redirect(url_for('student_quiz_result', evaluation_id=existing_ai_evaluation.id))
+
     classroom = enrollment.classroom
     materials = Material.query.filter_by(classroom_id=classroom_id).all()
     quiz_type = request.args.get('type', 'mcq')
@@ -1274,10 +1433,21 @@ def student_quiz_result(evaluation_id):
         student_id=current_user.id
     ).first_or_404()
     
+    # Check if the quiz is completed or in progress
     if not evaluation.completed_at:
-        flash('Quiz not completed yet', 'warning')
-        return redirect(url_for('student_classroom', classroom_id=evaluation.classroom_id))
-    
+        # If not completed, render the quiz taking page
+        questions = json.loads(evaluation.questions_json)
+        return render_template('student/quiz_new.html',
+                             classroom=evaluation.classroom,
+                             evaluation=evaluation,
+                             questions=questions,
+                             quiz_type=evaluation.quiz_type,
+                             # Pass any other necessary data for taking the quiz, like time limit if applicable
+                             time_limit=None, # AI quizzes don't currently have a time limit
+                             started_at=evaluation.started_at.isoformat() if evaluation.started_at else datetime.utcnow().isoformat() # Ensure started_at is set or passed
+                            )
+
+    # If completed, show the results
     questions = json.loads(evaluation.questions_json)
     answers = json.loads(evaluation.answers_json)
     feedback = json.loads(evaluation.feedback_json) if evaluation.feedback_json else []
@@ -1493,3 +1663,89 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return render_template('base.html', error_message='An internal error occurred'), 500
+
+@app.route('/teacher/classroom/<int:classroom_id>/student/<int:student_id>/reset_password', methods=['POST'])
+@login_required
+def teacher_reset_student_password(classroom_id, student_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    student = User.query.filter_by(id=student_id, role='student').first_or_404()
+
+    # Ensure the student is in this classroom
+    enrollment = Enrollment.query.filter_by(classroom_id=classroom.id, student_id=student.id).first()
+    if not enrollment:
+        flash('Student is not in this classroom.', 'error')
+        return redirect(url_for('teacher_classroom', classroom_id=classroom_id))
+
+    try:
+        # Set the new password to '12345'
+        new_password = '12345'
+
+        # Set the new password
+        student.set_password(new_password)
+        db.session.commit()
+
+        flash(f'Password for {student.full_name} reset successfully to: {new_password}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting password: {str(e)}', 'error')
+
+    return redirect(url_for('teacher_classroom', classroom_id=classroom_id))
+
+@app.route('/student/edit_profile', methods=['GET', 'POST'])
+@login_required
+def student_edit_profile():
+    if current_user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        current_user.first_name = request.form.get('first_name')
+        current_user.last_name = request.form.get('last_name')
+
+        try:
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('student_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating profile: {str(e)}', 'error')
+
+    return render_template('student/edit_profile.html', student=current_user)
+
+@app.route('/student/change_password', methods=['GET', 'POST'])
+@login_required
+def student_change_password():
+    if current_user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        # Check if current password is correct
+        if not current_user.check_password(current_password):
+            flash('Incorrect current password', 'error')
+            return render_template('student/change_password.html')
+
+        # Check if new password and confirm password match
+        if new_password != confirm_password:
+            flash('New passwords do not match', 'error')
+            return render_template('student/change_password.html')
+
+        # Update password
+        current_user.set_password(new_password)
+        try:
+            db.session.commit()
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('student_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error changing password: {str(e)}', 'error')
+
+    return render_template('student/change_password.html')
