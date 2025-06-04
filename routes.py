@@ -12,7 +12,7 @@ from app import app, db
 from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
-from firebase_auth import firebase_signin, firebase_signup
+from firebase_auth import firebase_signin, firebase_signup, firebase_google_signin
 
 ai_service = AIService()
 
@@ -61,6 +61,43 @@ def auth_login():
             return redirect(url_for('index'))
     
     return render_template('auth/login.html')
+
+
+@app.route('/login/google', methods=['GET', 'POST'])
+def google_login():
+    """Authenticate user via Google ID token."""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'GET':
+        return render_template('auth/login.html')
+
+    id_token = request.form.get('id_token')
+    if not id_token:
+        flash('Missing Google token', 'error')
+        return redirect(url_for('auth_login'))
+
+    try:
+        resp = firebase_google_signin(id_token)
+    except Exception as e:
+        flash(f'Google login failed: {e}', 'error')
+        return redirect(url_for('auth_login'))
+
+    email = resp.get('email')
+    if not email:
+        flash('Google login failed: email not available', 'error')
+        return redirect(url_for('auth_login'))
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        login_user(user)
+        next_page = request.args.get('next')
+        if next_page and is_safe_url(next_page):
+            return redirect(next_page)
+        return redirect(url_for('index'))
+
+    flash('User not found. Please register first.', 'error')
+    return redirect(url_for('auth_register'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def auth_register():

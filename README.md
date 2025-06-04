@@ -29,7 +29,16 @@ Teachers can create classrooms, upload study material and build quizzes. Student
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-3. Configure environment variables in a `.env` file. You must set `DATABASE_URL`, `SESSION_SECRET` and `GEMINI_API_KEY`.
+3. Configure environment variables in a `.env` file. You must set `DATABASE_URL`, `SESSION_SECRET`, `GEMINI_API_KEY` and `FIREBASE_API_KEY`.
+   For Google sign-in you also need `GOOGLE_CLIENT_ID` which is the OAuth client ID from the Firebase console.
+
+### Google Sign-in Setup
+
+Enable Google authentication in your Firebase project and add the following authorized domain:
+
+- `http://localhost:5001` (or your deployed URL)
+
+The Google JS SDK will obtain an ID token and post it to `/login/google`.
 4. Run initial migrations:
    ```bash
    export FLASK_APP=app.py
