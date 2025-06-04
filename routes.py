@@ -1646,8 +1646,27 @@ def student_all_activities(classroom_id):
                            evaluations=all_evaluations)
 
 @app.route('/uploads/<filename>')
+@login_required
 def uploaded_file(filename):
     """Serve uploaded files securely."""
+    # Optionally verify user authorization to access this file
+    material = Material.query.filter_by(file_path=filename).first()
+    if material:
+        if current_user.role == 'teacher':
+            # Teacher can access only materials from their own classrooms
+            if material.classroom.teacher_id != current_user.id:
+                flash('Access denied', 'error')
+                return redirect(url_for('index'))
+        elif current_user.role == 'student':
+            # Student must be enrolled in the classroom of the material
+            enrollment = Enrollment.query.filter_by(
+                classroom_id=material.classroom_id,
+                student_id=current_user.id
+            ).first()
+            if not enrollment:
+                flash('Access denied', 'error')
+                return redirect(url_for('index'))
+
     try:
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     except FileNotFoundError:
