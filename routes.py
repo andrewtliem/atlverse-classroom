@@ -12,6 +12,7 @@ from app import app, db
 from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
+from firebase_auth import firebase_signin, firebase_signup
 
 ai_service = AIService()
 
@@ -39,17 +40,25 @@ def auth_login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
-            login_user(user)
-            next_page = request.args.get('next')
-            if next_page and is_safe_url(next_page):
-                return redirect(next_page)
-            else:
-                return redirect(url_for('index'))
-        else:
+
+        try:
+            # Verify credentials with Firebase Authentication
+            firebase_signin(email, password)
+        except Exception:
             flash('Invalid email or password', 'error')
+            return render_template('auth/login.html')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('User not found. Please register first.', 'error')
+            return render_template('auth/login.html')
+
+        login_user(user)
+        next_page = request.args.get('next')
+        if next_page and is_safe_url(next_page):
+            return redirect(next_page)
+        else:
+            return redirect(url_for('index'))
     
     return render_template('auth/login.html')
 
@@ -79,7 +88,14 @@ def auth_register():
             flash('Invalid role selected', 'error')
             return render_template('auth/register.html')
         
-        # Create user
+        try:
+            # Create the user in Firebase Authentication
+            firebase_signup(email, password)
+        except Exception as e:
+            flash(f'Error creating user: {e}', 'error')
+            return render_template('auth/register.html')
+
+        # Store user in the local database
         user = User(
             email=email,
             role=role,
@@ -87,10 +103,10 @@ def auth_register():
             last_name=last_name
         )
         user.set_password(password)
-        
+
         db.session.add(user)
         db.session.commit()
-        
+
         login_user(user)
         flash('Registration successful!', 'success')
         return redirect(url_for('index'))

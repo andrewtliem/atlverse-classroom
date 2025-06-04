@@ -15,3 +15,4 @@ google-ai-generativelanguage
 scikit-learn
 pyPDF2
 python-docx
+requests
