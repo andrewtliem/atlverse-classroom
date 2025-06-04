@@ -14,6 +14,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('student_edit_profile') }}">
+                        {{ csrf_token() }}
                         <div class="mb-3">
                             <label for="first_name" class="form-label text-white-80">First Name</label>
                             <input type="text" class="form-control" id="first_name" name="first_name" value="{{ student.first_name }}" required>

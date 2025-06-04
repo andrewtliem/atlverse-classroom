@@ -38,6 +38,7 @@
 {% if not show_results %}
     <!-- Quiz Form -->
     <form method="POST" action="{{ url_for('student_submit_quiz', evaluation_id=evaluation.id) }}">
+        {{ csrf_token() }}
         <div class="card border-0 gradient-blue">
             <div class="card-body">
                 {% for question in questions %}
