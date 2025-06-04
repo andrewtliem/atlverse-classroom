@@ -27,7 +27,7 @@
         </div>
         <div class="card-body">
             <form id="quizForm" action="{{ url_for('teacher_edit_quiz', quiz_id=quiz.id) }}" method="POST">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
