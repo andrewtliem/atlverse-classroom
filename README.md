@@ -31,6 +31,7 @@ Teachers can create classrooms, upload study material and build quizzes. Student
    ```
 3. Configure environment variables in a `.env` file. You must set `DATABASE_URL`, `SESSION_SECRET`, `GEMINI_API_KEY` and `FIREBASE_API_KEY`.
    For Google sign-in you also need `GOOGLE_CLIENT_ID` which is the OAuth client ID from the Firebase console.
+   
 
 ### Google Sign-in Setup
 
