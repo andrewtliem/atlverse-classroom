@@ -9,7 +9,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
-from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz
+from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
 from firebase_auth import firebase_signin, firebase_signup, firebase_google_signin
@@ -286,7 +286,18 @@ def teacher_upload_material(classroom_id):
             
             db.session.add(material)
             db.session.commit()
-            
+
+            # Notify enrolled students of new material
+            enrollments = Enrollment.query.filter_by(classroom_id=classroom_id).all()
+            for enrollment in enrollments:
+                notification = Notification(
+                    user_id=enrollment.student_id,
+                    message=f'New material available: {material.title}',
+                    link=url_for('student_classroom', classroom_id=classroom_id)
+                )
+                db.session.add(notification)
+            db.session.commit()
+
             flash('Material uploaded successfully!', 'success')
         else:
             flash('Invalid file type. Please upload PDF or text files.', 'error')
@@ -827,14 +838,27 @@ def teacher_publish_quiz(quiz_id):
         flash('Access denied: you can only publish your own quizzes', 'error')
         return redirect(url_for('teacher_dashboard'))
     
-    # Set published state
+    # Set published state and track previous value
+    was_published = quiz.published
     quiz.published = not quiz.published  # Toggle publish state
     db.session.commit()
-    
-    if quiz.published:
+
+    if quiz.published and not was_published:
+        # Notify enrolled students about the new quiz
+        enrollments = Enrollment.query.filter_by(classroom_id=quiz.classroom_id).all()
+        for enrollment in enrollments:
+            notification = Notification(
+                user_id=enrollment.student_id,
+                message=f'New quiz available: {quiz.title}',
+                link=url_for('student_classroom', classroom_id=quiz.classroom_id)
+            )
+            db.session.add(notification)
+        db.session.commit()
         flash('Quiz published successfully! Students can now access it.', 'success')
-    else:
+    elif not quiz.published and was_published:
         flash('Quiz unpublished. Students can no longer access it.', 'warning')
+    else:
+        flash('Quiz publish state updated.', 'info')
     
     return redirect(url_for('teacher_quizzes', classroom_id=quiz.classroom_id))
 

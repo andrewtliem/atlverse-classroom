@@ -15,6 +15,7 @@ Teachers can create classrooms, upload study material and build quizzes. Student
 - **Teacher Quizzes** – Teachers can manually create, edit and publish quizzes.
 - **Taking & Scoring Quizzes** – Students attempt quizzes with automatic scoring for objective questions and AI-based scoring for essays.
 - **Progress Tracking** – Teachers view overall results and export them as CSV.
+- **Notifications** – Students are notified when new materials or quizzes are published.
 
 ## Installation
 
