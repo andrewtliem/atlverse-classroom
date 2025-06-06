@@ -8,7 +8,7 @@ load_dotenv()
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_wtf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -64,6 +64,16 @@ csrf.init_app(app)
 login_manager.login_view = 'auth_login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
+
+
+@app.context_processor
+def inject_unread_notifications_count():
+    if current_user.is_authenticated:
+        from models import Notification
+        count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+    else:
+        count = 0
+    return {'unread_notifications_count': count}
 
 # User loader
 @login_manager.user_loader
