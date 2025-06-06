@@ -77,6 +77,13 @@
                                         <small class="text-white">Materials</small>
                                     </div>
                                 </div>
+
+                                <div class="text-center mb-3">
+                                    <span class="text-white">
+                                        <i class="fas fa-star text-warning me-1"></i>
+                                        {{ student_summary.star_total }} star{{ 's' if student_summary.star_total != 1 else '' }} – Rank {{ student_summary.rank }} of {{ student_summary.rank_out_of }}
+                                    </span>
+                                </div>
                                 
                                 <div class="d-grid">
                                     <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}" 
@@ -111,6 +118,8 @@
                             <th>In Progress</th>
                             <th>Materials Attempted</th>
                             <th>Average Score</th>
+                            <th>Total Stars</th>
+                            <th>Rank</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -132,8 +141,10 @@
                                     --
                                 {% endif %}
                             </td>
+                            <td class="text-dark text-center">{{ student_summary.star_total }}</td>
+                            <td class="text-dark text-center">{{ student_summary.rank }} / {{ student_summary.rank_out_of }}</td>
                             <td>
-                                <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}" 
+                                <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}"
                                    class="btn-info">
                                     <i data-feather="eye" class="me-1"></i>View Details
                                 </a>
