@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
 from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification
+from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
 from firebase_auth import firebase_signin, firebase_signup, firebase_google_signin
@@ -417,18 +418,25 @@ def teacher_results(classroom_id):
         if evaluation.material_id:
             students_data[student_id]['materials'].add(evaluation.material_id)
     
+    # Precalculate rankings for star totals
+    rankings, student_count = get_classroom_star_rankings(classroom_id)
+
     # Create summaries
     for student_id, data in students_data.items():
         evaluations_list = data['evaluations']
         completed_evals = [e for e in evaluations_list if e.completed_at and e.score is not None]
         
+        rank_info = rankings.get(student_id, {'star_total': 0, 'rank': student_count})
         summary = type('obj', (object,), {
             'student': data['student'],
             'total_evaluations': len(evaluations_list),
             'completed_count': len(completed_evals),
             'in_progress_count': len(evaluations_list) - len(completed_evals),
             'materials_attempted': len(data['materials']),
-            'avg_score': sum(e.score for e in completed_evals) / len(completed_evals) if completed_evals else None
+            'avg_score': sum(e.score for e in completed_evals) / len(completed_evals) if completed_evals else None,
+            'star_total': rank_info['star_total'],
+            'rank': rank_info['rank'],
+            'rank_out_of': student_count
         })()
         student_summaries.append(summary)
     
@@ -500,8 +508,11 @@ def teacher_export_results(classroom_id):
     output = io.StringIO()
     writer = csv.writer(output)
     
+    # Precompute star totals for each student
+    rankings, _ = get_classroom_star_rankings(classroom_id)
+
     # Write header
-    writer.writerow(['Student Name', 'Student Email', 'Material', 'Quiz Type', 'Score', 'Date Completed'])
+    writer.writerow(['Student Name', 'Student Email', 'Material', 'Quiz Type', 'Score', 'Date Completed', 'Total Stars'])
     
     # Write data
     for evaluation in evaluations:
@@ -511,7 +522,8 @@ def teacher_export_results(classroom_id):
             evaluation.material.title if evaluation.material else 'General',
             evaluation.quiz_type.title(),
             f"{evaluation.score:.1f}%" if evaluation.score else 'Not scored',
-            evaluation.completed_at.strftime('%Y-%m-%d %H:%M') if evaluation.completed_at else 'In progress'
+            evaluation.completed_at.strftime('%Y-%m-%d %H:%M') if evaluation.completed_at else 'In progress',
+            rankings.get(evaluation.student_id, {}).get('star_total', 0)
         ])
     
     output.seek(0)
@@ -1072,6 +1084,13 @@ def student_dashboard():
             'completed': completed_count_stat,
             'pending': available_now # Add pending count
         }
+
+        # Star totals and ranking for this student
+        awards = calculate_awards_for_student(classroom.id, current_user.id)
+        classroom.star_total = calculate_star_total(awards)
+        rankings, student_count = get_classroom_star_rankings(classroom.id)
+        classroom.rank = rankings.get(current_user.id, {}).get('rank', student_count)
+        classroom.num_students = student_count
         classrooms.append(classroom)
     
     # Calculate AI Quiz Awards
