@@ -1845,3 +1845,18 @@ def student_change_password():
             flash(f'Error changing password: {str(e)}', 'error')
 
     return render_template('student/change_password.html')
+
+
+@app.route('/notifications', methods=['GET', 'POST'])
+@login_required
+def notifications():
+    from models import Notification
+    if request.method == 'POST':
+        notif_id = request.form.get('notification_id')
+        notification = Notification.query.filter_by(id=notif_id, user_id=current_user.id).first_or_404()
+        notification.is_read = True
+        db.session.commit()
+        return redirect(url_for('notifications'))
+
+    notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=notifications_list)
