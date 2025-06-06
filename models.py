@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     enrollments = db.relationship('Enrollment', backref='student', lazy=True)
     self_evaluations = db.relationship('SelfEvaluation', backref='student', lazy=True)
     created_quizzes = db.relationship('Quiz', backref='teacher', lazy=True)
+    notifications = db.relationship('Notification', backref='user', lazy=True)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -162,5 +163,3 @@ class Notification(db.Model):
     message = db.Column(db.String(255), nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    user = db.relationship('User', backref=db.backref('notifications', lazy=True))
