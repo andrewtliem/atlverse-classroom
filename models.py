@@ -19,7 +19,7 @@ class User(UserMixin, db.Model):
     enrollments = db.relationship('Enrollment', backref='student', lazy=True)
     self_evaluations = db.relationship('SelfEvaluation', backref='student', lazy=True)
     created_quizzes = db.relationship('Quiz', backref='teacher', lazy=True)
-    notifications = db.relationship('Notification', backref='recipient', lazy=True)
+    notifications = db.relationship('Notification', backref='user', lazy=True)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
