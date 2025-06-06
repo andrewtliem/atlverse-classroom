@@ -33,8 +33,16 @@
                 </form>
 
                 <div class="text-center mt-3">
+                    <div id="g_id_onload"
+                         data-client_id="{{ GOOGLE_CLIENT_ID }}"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false"></div>
+                    <div class="g_id_signin" data-type="standard" data-shape="rectangular"></div>
+                </div>
+
+                <div class="text-center mt-3">
                     <p class="text-white-80">
-                        Don't have an account? 
+                        Don't have an account?
                         <a href="{{ url_for('auth_register') }}" class="text-white text-decoration-none">Sign up here</a>
                     </p>
                 </div>
@@ -42,4 +50,29 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for('google_login') }}';
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = 'id_token';
+            tokenInput.value = response.credential;
+            form.appendChild(tokenInput);
+            const csrf = '{{ csrf_token() }}';
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrf;
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 {% endblock %}
