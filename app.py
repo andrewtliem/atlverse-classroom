@@ -30,12 +30,8 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SESSION_SECRET", "dev-secret-key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Google OAuth client id for frontend
-app.config["GOOGLE_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
-
 # Add chr function to Jinja2 globals
 app.jinja_env.globals['chr'] = chr
-app.jinja_env.globals['GOOGLE_CLIENT_ID'] = app.config["GOOGLE_CLIENT_ID"]
 
 # Configure the database
 database_url = os.getenv("DATABASE_URL")
@@ -64,7 +60,6 @@ csrf.init_app(app)
 login_manager.login_view = 'auth_login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
-
 
 @app.context_processor
 def inject_unread_notifications_count():

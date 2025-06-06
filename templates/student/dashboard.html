@@ -107,8 +107,16 @@
                                 {% endif %}
                             </small>
                             <small class="text-white-80">
-                                <i class="fas fa-star text-warning me-1"></i>
-                                Stars: {{ classroom.star_total }} – Rank {{ classroom.rank }} of {{ classroom.num_students }}
+                                {% if classroom.gold_medal_count is defined and classroom.gold_medal_count > 0 %}
+                                    <i class="fas fa-medal text-warning me-1"></i>
+                                    {{ classroom.gold_medal_count }} Gold Award{{ 's' if classroom.gold_medal_count != 1 else '' }}
+                                    {% if classroom.gold_rank is defined and classroom.num_students_in_ranking is defined and classroom.num_students_in_ranking > 0 %}
+                                        – Rank {{ classroom.gold_rank }} of {{ classroom.num_students_in_ranking }}
+                                    {% endif %}
+                                {% else %}
+                                    <i class="fas fa-medal text-secondary me-1"></i>
+                                    No Gold Awards Yet
+                                {% endif %}
                             </small>
                         </div>
                     </div>

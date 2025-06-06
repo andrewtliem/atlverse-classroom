@@ -27,14 +27,17 @@ def calculate_awards_for_student(classroom_id: int, student_id: int) -> Dict[int
 
     awards = {}
     for material_id, evals in evals_by_material.items():
-        best_eval = None
-        attempt_num = 0
+        best_passing_eval = None
+        # Find the first evaluation with a score >= 80%
         for idx, ev in enumerate(evals):
             if ev.score is not None and ev.score >= 80:
-                best_eval = ev
-                attempt_num = idx + 1
-                break
-        if best_eval:
+                best_passing_eval = ev
+                break # Found the first passing attempt
+
+        if best_passing_eval:
+            # Now find the attempt number for this specific evaluation
+            attempt_num = evals.index(best_passing_eval) + 1 # 1-based index
+
             if attempt_num == 1:
                 award = 'gold'
             elif attempt_num in [2, 3]:
@@ -48,7 +51,7 @@ def calculate_awards_for_student(classroom_id: int, student_id: int) -> Dict[int
                     material_title = material.title
             awards[material_id] = {
                 'award': award,
-                'score': best_eval.score,
+                'score': best_passing_eval.score, # Use the score from the best passing eval
                 'attempts': attempt_num,
                 'material_title': material_title,
             }

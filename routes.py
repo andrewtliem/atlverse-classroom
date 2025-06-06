@@ -13,7 +13,6 @@ from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, 
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
-from firebase_auth import firebase_signin, firebase_signup, firebase_google_signin
 
 ai_service = AIService()
 
@@ -42,16 +41,9 @@ def auth_login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        try:
-            # Verify credentials with Firebase Authentication
-            firebase_signin(email, password)
-        except Exception:
-            flash('Invalid email or password', 'error')
-            return render_template('auth/login.html')
-
         user = User.query.filter_by(email=email).first()
-        if not user:
-            flash('User not found. Please register first.', 'error')
+        if not user or not user.check_password(password):
+            flash('Invalid email or password', 'error')
             return render_template('auth/login.html')
 
         login_user(user)
@@ -62,43 +54,6 @@ def auth_login():
             return redirect(url_for('index'))
     
     return render_template('auth/login.html')
-
-
-@app.route('/login/google', methods=['GET', 'POST'])
-def google_login():
-    """Authenticate user via Google ID token."""
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    if request.method == 'GET':
-        return render_template('auth/login.html')
-
-    id_token = request.form.get('id_token')
-    if not id_token:
-        flash('Missing Google token', 'error')
-        return redirect(url_for('auth_login'))
-
-    try:
-        resp = firebase_google_signin(id_token)
-    except Exception as e:
-        flash(f'Google login failed: {e}', 'error')
-        return redirect(url_for('auth_login'))
-
-    email = resp.get('email')
-    if not email:
-        flash('Google login failed: email not available', 'error')
-        return redirect(url_for('auth_login'))
-
-    user = User.query.filter_by(email=email).first()
-    if user:
-        login_user(user)
-        next_page = request.args.get('next')
-        if next_page and is_safe_url(next_page):
-            return redirect(next_page)
-        return redirect(url_for('index'))
-
-    flash('User not found. Please register first.', 'error')
-    return redirect(url_for('auth_register'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def auth_register():
@@ -125,15 +80,8 @@ def auth_register():
         if role not in ['teacher', 'student']:
             flash('Invalid role selected', 'error')
             return render_template('auth/register.html')
-        
-        try:
-            # Create the user in Firebase Authentication
-            firebase_signup(email, password)
-        except Exception as e:
-            flash(f'Error creating user: {e}', 'error')
-            return render_template('auth/register.html')
 
-        # Store user in the local database
+        # Create user in the local database
         user = User(
             email=email,
             role=role,
@@ -419,14 +367,40 @@ def teacher_results(classroom_id):
             students_data[student_id]['materials'].add(evaluation.material_id)
     
     # Precalculate rankings for star totals
-    rankings, student_count = get_classroom_star_rankings(classroom_id)
+    # rankings, student_count = get_classroom_star_rankings(classroom_id)
+
+    # Create summaries
+    # Calculate gold medal count and rank for all students in this classroom
+    classroom_enrollments = Enrollment.query.filter_by(classroom_id=classroom_id).all()
+    student_gold_counts = []
+    for class_enrollment in classroom_enrollments:
+        student_awards = calculate_awards_for_student(classroom_id, class_enrollment.student_id) # AI Awards for this student in this classroom
+        student_gold_count = sum(1 for award_info in student_awards.values() if award_info.get('award') == 'gold') if student_awards else 0
+        student_gold_counts.append((class_enrollment.student_id, student_gold_count))
+
+    # Sort by gold count descending
+    student_gold_counts.sort(key=lambda x: x[1], reverse=True)
+
+    # Determine ranks
+    gold_rankings = {}
+    last_gold_count = -1
+    rank_counter = 0
+    # Handle empty student_gold_counts list case
+    if student_gold_counts:
+        for rank_idx, (student_id, gold_count) in enumerate(student_gold_counts, start=1):
+            if gold_count != last_gold_count:
+                rank_counter = rank_idx
+                last_gold_count = gold_count
+            gold_rankings[student_id] = {'rank': rank_counter, 'gold_count': gold_count}
 
     # Create summaries
     for student_id, data in students_data.items():
         evaluations_list = data['evaluations']
         completed_evals = [e for e in evaluations_list if e.completed_at and e.score is not None]
-        
-        rank_info = rankings.get(student_id, {'star_total': 0, 'rank': student_count})
+
+        # Get gold medal count and rank for this student
+        gold_info = gold_rankings.get(student_id, {'rank': len(student_gold_counts), 'gold_count': 0})
+
         summary = type('obj', (object,), {
             'student': data['student'],
             'total_evaluations': len(evaluations_list),
@@ -434,15 +408,15 @@ def teacher_results(classroom_id):
             'in_progress_count': len(evaluations_list) - len(completed_evals),
             'materials_attempted': len(data['materials']),
             'avg_score': sum(e.score for e in completed_evals) / len(completed_evals) if completed_evals else None,
-            'star_total': rank_info['star_total'],
-            'rank': rank_info['rank'],
-            'rank_out_of': student_count
+            'gold_medal_count': gold_info['gold_count'], # Add gold count
+            'gold_rank': gold_info['rank'], # Add gold rank
+            'rank_out_of': len(student_gold_counts) # Total students in ranking
         })()
         student_summaries.append(summary)
-    
-    # Sort by student name
-    student_summaries.sort(key=lambda x: x.student.full_name)
-    
+
+    # Sort by student name (already done, keeping sort at the end)
+    # student_summaries.sort(key=lambda x: x.student.full_name)
+
     return render_template('teacher/results.html', classroom=classroom, student_summaries=student_summaries, evaluations=evaluations)
 
 @app.route('/teacher/classroom/<int:classroom_id>/student/<int:student_id>')
@@ -1086,66 +1060,56 @@ def student_dashboard():
         }
 
         # Star totals and ranking for this student
-        awards = calculate_awards_for_student(classroom.id, current_user.id)
-        classroom.star_total = calculate_star_total(awards)
-        rankings, student_count = get_classroom_star_rankings(classroom.id)
-        classroom.rank = rankings.get(current_user.id, {}).get('rank', student_count)
-        classroom.num_students = student_count
+        # Removing star total and ranking for classroom card as requested
+        # awards = calculate_awards_for_student(classroom.id, current_user.id)
+        # classroom.star_total = calculate_star_total(awards)
+        # rankings, student_count = get_classroom_star_rankings(classroom.id)
+        # classroom.rank = rankings.get(current_user.id, {}).get('rank', student_count)
+        # classroom.num_students = student_count
         classrooms.append(classroom)
     
-    # Calculate AI Quiz Awards
-    ai_quiz_awards = {}
-    all_student_completed_ai_evaluations = SelfEvaluation.query.filter(
-        SelfEvaluation.student_id == current_user.id,
-        SelfEvaluation.is_ai_generated == True,
-        SelfEvaluation.completed_at.isnot(None)
-    ).order_by(SelfEvaluation.created_at).all() # Order by creation date to determine attempt number
+    # Calculate AI Quiz Awards and Gold Medal Count for each classroom, and rank
+    ai_quiz_awards_for_current_user = {}
+    for enrollment in enrollments:
+         classroom = enrollment.classroom # Get the classroom object here
+         user_awards = calculate_awards_for_student(classroom.id, current_user.id)
+         if user_awards:
+              ai_quiz_awards_for_current_user[classroom.id] = user_awards
 
-    from collections import defaultdict
-    completed_ai_evals_by_material = defaultdict(list)
+         # Calculate gold medal count for this classroom for the current user
+         gold_count = sum(1 for award_info in user_awards.values() if award_info.get('award') == 'gold') if user_awards else 0
+         classroom.gold_medal_count = gold_count # Add gold count to the classroom object
 
-    for eval in all_student_completed_ai_evaluations:
-        material_id = eval.material_id if eval.material_id else 0 # Use 0 for quizzes not linked to specific material
-        completed_ai_evals_by_material[f'{eval.classroom_id}-{material_id}'].append(eval)
+         # Calculate ranking based on gold medals for this classroom
+         classroom_enrollments = Enrollment.query.filter_by(classroom_id=classroom.id).all()
+         student_gold_counts = []
+         for class_enrollment in classroom_enrollments:
+             student_awards = calculate_awards_for_student(classroom.id, class_enrollment.student_id) # Awards for this student in this classroom
+             student_gold_count = sum(1 for award_info in student_awards.values() if award_info.get('award') == 'gold') if student_awards else 0
+             student_gold_counts.append((class_enrollment.student_id, student_gold_count))
 
-    for material_key, evaluations in completed_ai_evals_by_material.items():
-        classroom_id, material_id = map(int, material_key.split('-'))
-        
-        best_score_attempt = None
-        attempt_count_for_best_score = 0
-        
-        for i, eval in enumerate(evaluations):
-            if eval.score is not None and eval.score >= 80:
-                best_score_attempt = eval
-                attempt_count_for_best_score = i + 1 # 1-based attempt count
-                break # Found the first attempt with >= 80%
+         # Sort by gold count descending
+         student_gold_counts.sort(key=lambda x: x[1], reverse=True)
 
-        if best_score_attempt:
-            award = None
-            if attempt_count_for_best_score == 1:
-                award = 'gold' # Gold star
-            elif attempt_count_for_best_score in [2, 3]:
-                award = 'silver' # Silver star
-            elif attempt_count_for_best_score > 3:
-                award = 'bronze' # Bronze star
-            
-            if award:
-                if classroom_id not in ai_quiz_awards:
-                    ai_quiz_awards[classroom_id] = {}
-                
-                # Get material title
-                material_title = "All Materials" # Default for material_id 0
-                if material_id != 0:
-                     material = Material.query.get(material_id)
-                     if material:
-                         material_title = material.title
+         # Determine rank for the current user
+         current_user_rank = 0
+         last_gold_count = -1
+         rank_counter = 0
+         # Handle empty student_gold_counts list case
+         if student_gold_counts:
+             for rank_idx, (student_id, gold_count) in enumerate(student_gold_counts, start=1):
+                 if gold_count != last_gold_count:
+                     rank_counter = rank_idx
+                     last_gold_count = gold_count
+                 if student_id == current_user.id:
+                     current_user_rank = rank_counter
+                     break # Found the current user's rank
 
-                ai_quiz_awards[classroom_id][material_id] = {
-                    'award': award,
-                    'score': best_score_attempt.score,
-                    'attempts': attempt_count_for_best_score,
-                    'material_title': material_title
-                }
+         classroom.gold_rank = current_user_rank # Add rank to classroom object
+         classroom.num_students_in_ranking = len(student_gold_counts) # Total students in ranking (including those with 0 golds)
+
+         # Note: We already added classroom to the list earlier in the outer loop
+         # classrooms.append(classroom) # No need to append here again
 
     
     # Need classroom names for the template
@@ -1154,7 +1118,7 @@ def student_dashboard():
     
     return render_template('student/dashboard.html', 
                            classrooms=classrooms,
-                           ai_quiz_awards=ai_quiz_awards,
+                           ai_quiz_awards=ai_quiz_awards_for_current_user,
                            classroom_names=classroom_names)
 
 @app.route('/student/join_classroom', methods=['POST'])
