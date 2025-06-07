@@ -46,7 +46,7 @@
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card border-0 text-center" style="background: linear-gradient(135deg, #64B5F6, #42A5F5); color: white;">
+        <div class="card border-0 text-center gradient-light-blue text-white">
             <div class="card-body">
                 <h3 class="text-white">{{ materials_performance|length }}</h3>
                 <p class="text-white-80 mb-0">Materials Attempted</p>
@@ -67,7 +67,7 @@
             <div class="row">
                 {% for material_key, material_data in materials_performance.items() %}
                     <div class="col-lg-6 mb-4">
-                        <div class="card h-100" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="card h-100 bg-white-10-border">
                             <div class="card-body">
                                 <h6 class="card-title text-white">{{ material_data.material_title }}</h6>
                                 
@@ -81,9 +81,9 @@
                                             {{ "%.1f"|format(material_avg) }}%
                                         </span>
                                     </div>
-                                    <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.2);">
+                                    <div class="progress progress-thin-6">
                                         <div class="progress-bar" 
-                                            style="background-color: #FFC107; width: {{ material_avg }}%"></div>
+                                            class="progress-bar-yellow" style="width: {{ material_avg }}%"></div>
                                     </div>
                                 </div>
                                 
@@ -130,7 +130,7 @@
                     </thead>
                     <tbody>
                         {% for evaluation in evaluations %}
-                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.1); background-color: rgba(255,255,255,0.9); color: #333;">
+                            <tr class="row-light">
                                 <td>
                                     <h6 class="mb-0">
                                         {% if evaluation.quiz %}
@@ -143,17 +143,17 @@
                                         {% endif %}
                                     </h6>
                                     {% if evaluation.is_ai_generated %}
-                                        <small class="text-muted"><i data-feather="zap" class="me-1 text-muted" style="width: 14px; height: 14px;"></i>AI-Generated</small>
+                                        <small class="text-muted"><i data-feather="zap" class="me-1 text-muted icon-14"></i>AI-Generated</small>
                                     {% else %}
-                                        <small class="text-muted"><i data-feather="edit-3" class="me-1 text-muted" style="width: 14px; height: 14px;"></i>Teacher-Created</small>
+                                        <small class="text-muted"><i data-feather="edit-3" class="me-1 text-muted icon-14"></i>Teacher-Created</small>
                                     {% endif %}
                                 </td>
                                 <td>
                                     {% if evaluation.score is not none %}
                                         <div class="d-flex align-items-center">
-                                            <div class="progress me-2" style="width: 50px; background-color: rgba(0,0,0,0.1); height: 8px;">
+                                            <div class="progress me-2 progress-small-container">
                                                 <div class="progress-bar" 
-                                                    style="background-color: #FFC107; width: {{ evaluation.score }}%"></div>
+                                                    class="progress-bar-yellow" style="width: {{ evaluation.score }}%"></div>
                                             </div>
                                             <span class="text-yellow fw-bold">
                                                 {{ "%.1f"|format(evaluation.score) }}%
@@ -172,9 +172,9 @@
                                 </td>
                                 <td>
                                     {% if evaluation.completed_at %}
-                                        <span class="badge" style="background-color: #00BCD4; color: white;">Completed</span>
+                                        <span class="badge badge-cyan">Completed</span>
                                     {% else %}
-                                        <span class="badge" style="background-color: #FF8A65; color: white;">In Progress</span>
+                                        <span class="badge badge-coral-bg">In Progress</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -186,7 +186,7 @@
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="clipboard" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+        <i data-feather="clipboard" class="text-muted mb-3 icon-64"></i>
         <h3 class="text-muted">No Quiz Activity</h3>
         <p class="text-muted">This student hasn't taken any quizzes yet.</p>
     </div>

@@ -3,55 +3,6 @@
 {% block title %}Quizzes - {{ classroom.name }}{% endblock %}
 
 {% block content %}
-<style>
-    /* Temporary styles to force badge rendering */
-    .badge {
-        display: inline-block;
-        padding: 0.35em 0.65em;
-        font-size: 0.75em;
-        font-weight: 700;
-        line-height: 1;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: baseline;
-        border-radius: 0.25rem;
-        /* Ensure text is visible */
-        color: #fff !important; /* Default to white text */
-    }
-
-    .badge.badge-primary {
-        background-color: #0d6efd !important;
-    }
-    .badge.badge-secondary {
-        background-color: #17d083 !important;
-        color: #000 !important; /* Dark text for secondary */
-    }
-    .badge.badge-success {
-        background-color: #198754 !important;
-    }
-    .badge.badge-danger {
-        background-color: #dc3545 !important;
-    }
-    .badge.badge-warning {
-        background-color: #ffc107 !important;
-        color: #000 !important; /* Dark text for warning */
-    }
-    .badge.badge-info {
-        background-color: #0dcaf0 !important;
-        color: #000 !important; /* Dark text for info */
-    }
-    .badge.badge-light {
-         background-color: #f8f9fa !important;
-         color: #000 !important; /* Dark text for light */
-    }
-    .badge.badge-dark {
-        background-color: #212529 !important;
-    }
-     .badge.badge-coral {
-        background-color: #EF5350 !important; /* Using the color defined in your custom styles */
-        color: white !important;
-    }
-</style>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-white">Quizzes for {{ classroom.name }}</h2>

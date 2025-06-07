@@ -32,7 +32,7 @@
                 {% if materials %}
                     <div class="list-group list-group-flush">
                         {% for material in materials %}
-                            <div class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                            <div class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white list-bg-dark">
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 text-white">{{ material.title }}</h6>
                                     <small class="text-white-80">
@@ -82,7 +82,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4 text-white">
-                        <i data-feather="file-text" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <i data-feather="file-text" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No materials available yet</h6>
                         <p class="text-white-80">Your teacher hasn't uploaded any materials for this class.</p>
                     </div>
@@ -254,7 +254,7 @@
                                 {% for material_id, student_avg in student_ai_performance_by_material.items() %}
                                     {% set class_avg = class_ai_performance_by_material.get(material_id) %}
                                     {% if student_avg is not none or class_avg is not none %}
-                                        <li class="list-group-item border-secondary text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                        <li class="list-group-item border-secondary text-white list-bg-dark">
                                             <h6 class="mb-1 text-white">{{ material_titles.get(material_id, 'Unknown Material') }}</h6>
                                             <div class="row small">
                                                 <div class="col-md-6">
@@ -291,7 +291,7 @@
                                     {% if material_id not in student_ai_performance_by_material %}
                                         {% set student_avg = student_ai_performance_by_material.get(material_id) %}
                                         {% if class_avg is not none %}
-                                             <li class="list-group-item border-secondary text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                                             <li class="list-group-item border-secondary text-white list-bg-dark">
                                                 <h6 class="mb-1 text-white">{{ material_titles.get(material_id, 'Unknown Material') }}</h6>
                                                 <div class="row small">
                                                     <div class="col-md-6">
@@ -328,7 +328,7 @@
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         {% for evaluation in recent_evaluations %}
-                            <li class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                            <li class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white list-bg-dark">
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 text-white">
                                         {% if evaluation.is_ai_generated %}
@@ -385,7 +385,7 @@
                 </div>
                  <div class="card-body">
                     <div class="text-center py-4 text-white">
-                        <i data-feather="activity" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <i data-feather="activity" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No recent activity yet</h6>
                         <p class="text-white-80">Complete a quiz or other activity to see it here.</p>
                     </div>

@@ -36,7 +36,7 @@
                         <div class="mb-3">
                             <small class="text-white-80">
                                 <strong>Invitation Code:</strong> 
-                                <code style="background-color: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;" class="text-yellow">{{ classroom.invitation_code }}</code>
+                                <code class="text-yellow code-inline">{{ classroom.invitation_code }}</code>
                             </small>
                         </div>
                         
@@ -47,7 +47,7 @@
                             <a href="{{ url_for('teacher_quizzes', classroom_id=classroom.id) }}" class="btn btn-sm btn-yellow">
                                 <i data-feather="help-circle" class="me-1"></i>Quizzes
                             </a>
-                            <a href="{{ url_for('teacher_results', classroom_id=classroom.id) }}" class="btn btn-sm" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                            <a href="{{ url_for('teacher_results', classroom_id=classroom.id) }}" class="btn btn-sm btn-results">
                                 <i data-feather="bar-chart-2" class="me-1"></i>Results
                             </a>
                         </div>
@@ -70,7 +70,7 @@
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="folder-plus" class="text-white-50 mb-3" style="width: 64px; height: 64px;"></i>
+        <i data-feather="folder-plus" class="text-white-50 mb-3 icon-64"></i>
         <h3 class="text-white">No Classrooms Yet</h3>
         <p class="text-white-80">Create your first classroom to start managing students and materials.</p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClassroomModal">

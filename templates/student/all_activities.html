@@ -34,7 +34,7 @@
         {% if evaluations %}
             <div class="list-group list-group-flush">
                 {% for evaluation in evaluations %}
-                    <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white" style="background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px;">
+                    <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white list-bg-dark">
                         <div class="flex-grow-1">
                             {% if evaluation.is_ai_generated %}
                                 <h6 class="mb-1 text-white">
@@ -56,11 +56,11 @@
                         </div>
                         <div class="text-end">
                             {% if evaluation.score is not none %}
-                                <span class="badge text-yellow fw-bold" style="background-color: rgba(255,255,255,0.2);">
+                                <span class="badge text-yellow fw-bold bg-white-20">
                                     {{ "%.0f"|format(evaluation.score) }}%
                                 </span>
                             {% else %}
-                                <span class="badge text-white" style="background-color: #FF8A65;">In Progress</span>
+                                <span class="badge text-white badge-coral-bg">In Progress</span>
                             {% endif %}
                             {% if evaluation.completed_at %}
                                 <small class="text-white-80 d-block mt-1">
@@ -85,7 +85,7 @@
             </div>
         {% else %}
             <div class="text-center py-4 text-white">
-                <i data-feather="activity" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                <i data-feather="activity" class="text-white-50 mb-3 icon-48"></i>
                 <h6 class="text-white">No activities yet</h6>
                 <p class="text-white-80">Start learning with AI-generated study guides and quizzes!</p>
             </div>
