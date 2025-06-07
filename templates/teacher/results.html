@@ -34,23 +34,23 @@
                                     <h4 class="text-warning">
                                         {{ "%.1f"|format(student_summary.avg_score) }}%
                                     </h4>
-                                    <div class="progress" style="height: 5px;">
-                                        <div class="progress-bar" style="background-color: #FFC107; width: {{ student_summary.avg_score | default(0) }}%;"></div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar progress-bar-yellow" style="width: {{ student_summary.avg_score | default(0) }}%;"></div>
                                     </div>
                                 </div>
                             {% endif %}
 
                             <div class="row text-center mb-3">
                                 <div class="col-4">
-                                    <div class="fw-bold" style="color: #00BCD4;">{{ student_summary.completed_count }}</div>
+                                    <div class="fw-bold text-cyan">{{ student_summary.completed_count }}</div>
                                     <small class="text-white">Completed</small>
                                 </div>
                                 <div class="col-4">
-                                    <div class="fw-bold" style="color: #FF8A65;">{{ student_summary.in_progress_count }}</div>
+                                    <div class="fw-bold text-coral">{{ student_summary.in_progress_count }}</div>
                                     <small class="text-white">In Progress</small>
                                 </div>
                                 <div class="col-4">
-                                    <div class="fw-bold" style="color: #64B5F6;">{{ student_summary.materials_attempted }}</div>
+                                    <div class="fw-bold text-light-blue">{{ student_summary.materials_attempted }}</div>
                                     <small class="text-white">Materials</small>
                                 </div>
                             </div>
@@ -190,7 +190,7 @@
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="bar-chart-2" class="text-white-50 mb-3" style="width: 64px; height: 64px;"></i>
+        <i data-feather="bar-chart-2" class="text-white-50 mb-3 icon-64"></i>
         <h3 class="text-white">No Results Yet</h3>
         <p class="text-white-80">Students haven't completed any self-evaluations yet.</p>
         <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-primary">

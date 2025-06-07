@@ -41,7 +41,7 @@
                 {% if materials %}
                     <div class="list-group list-group-flush">
                         {% for material in materials %}
-                            <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white" style="background-color: rgba(0,0,0,0.3);">
+                            <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white">
                                 <div>
                                     <h6 class="mb-1 text-white">{{ material.title }}</h6>
                                     <small class="text-white-80">
@@ -71,7 +71,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4 text-white">
-                        <i data-feather="file-plus" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <i data-feather="file-plus" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No materials uploaded yet</h6>
                         <p class="text-white-80">Upload PDF or text files for your students to access.</p>
                     </div>
@@ -100,7 +100,7 @@
                 {% if quizzes %}
                     <div class="list-group list-group-flush">
                         {% for quiz in quizzes %}
-                            <div class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center" style="background-color: rgba(0,0,0,0.3);">
+                            <div class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-0 text-white">{{ quiz.title }}</h6>
                                     <small class="text-white-80">{{ quiz.quiz_type.title() }}</small>
@@ -113,7 +113,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4 text-white">
-                        <i data-feather="clipboard" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <i data-feather="clipboard" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No quizzes created yet</h6>
                         <p class="text-white-80">Create quizzes for this classroom from the Quizzes page.</p>
                     </div>
@@ -137,7 +137,7 @@
                 {% if students %}
                     <div class="list-group list-group-flush">
                         {% for student in students %}
-                            <div class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center" style="background-color: rgba(0,0,0,0.3);">
+                            <div class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <i data-feather="user" class="me-2 text-white-50"></i>
                                     <div>
@@ -164,7 +164,7 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4 text-white">
-                        <i data-feather="user-plus" class="text-white-50 mb-3" style="width: 48px; height: 48px;"></i>
+                        <i data-feather="user-plus" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No students enrolled</h6>
                         <p class="text-white-80">Add students by email or share the invitation code.</p>
                     </div>

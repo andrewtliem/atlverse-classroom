@@ -20,152 +20,21 @@
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     
     <!-- Custom Color Scheme -->
-    <style>
-        /* Override Bootstrap with your beautiful color scheme */
-        .card.gradient-blue {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-            color: white !important;
-        }
-        .card.gradient-teal {
-            background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
-        }
-        .card.gradient-coral {
-            background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
-            color: white !important;
-        }
-        .btn.btn-gradient-blue {
-            background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-            color: white !important;
-            border: none !important;
-        }
-        .btn.btn-gradient-teal {
-            background-color: #00BCD4 !important;
-            color: white !important;
-            border: none !important;
-        }
-        .btn.btn-yellow {
-            background-color: #FFC107 !important;
-            color: #1976D2 !important;
-            border: none !important;
-            font-weight: bold !important;
-        }
-        .badge.badge-coral {
-            background-color: #EF5350 !important;
-            color: white !important;
-        }
-        .text-white-80 {
-            color: rgba(255,255,255,0.8) !important;
-        }
-        .text-white-90 {
-            color: rgba(255,255,255,0.9) !important;
-        }
-        .text-yellow {
-            color: #FFC107 !important;
-        }
-    </style>
-    
-    <style>
-        /* Custom styles from classroom.html */
-        .gradient-blue {
-            background: linear-gradient(to bottom right, #1976D2, #2196F3) !important;
-        }
-        .card {
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-        }
-        .rounded-4 {
-            border-radius: 1rem;
-        }
-        .text-white-80 {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
-        .text-light-muted {
-            color: #E0E0E0 !important;
-        }
-        .badge-material {
-            background-color: #FFC107 !important;
-            color: #000 !important;
-            font-weight: 600 !important;
-            font-size: 0.75rem !important;
-            padding: 4px 8px !important;
-            border-radius: 0.5rem !important;
-        }
-        .badge-invite {
-            background-color: #F06292 !important;
-            color: #fff !important;
-            font-weight: 600 !important;
-            font-size: 0.75rem !important;
-            padding: 4px 8px !important;
-            border-radius: 0.5rem !important;
-        }
-        .modal-content.gradient-blue {
-            background: linear-gradient(to bottom right, #1976D2, #2196F3) !important;
-            color: white !important;
-        }
-        .modal-content.gradient-blue .form-label,
-        .modal-content.gradient-blue .form-text {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
-        .modal-content.gradient-blue input[type="text"],
-        .modal-content.gradient-blue input[type="file"],
-        .modal-content.gradient-blue input[type="email"] {
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
-            color: white !important;
-        }
-        .modal-content.gradient-blue input::placeholder {
-            color: rgba(255, 255, 255, 0.6) !important;
-        }
-        .gradient-purple {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        }
-        .gradient-light-blue {
-            background: linear-gradient(135deg, #64B5F6, #42A5F5) !important;
-            color: white !important;
-        }
-    </style>
-    
-    <style>
-        /* Custom hover style for AI Tools button */
-        .list-group-item .dropdown .btn.btn-outline-light:hover {
-            color: #1976D2 !important; /* Dark blue for visibility on hover */
-        }
-    </style>
-    
-    <style>
-        /* Ensure Quiz History table text is dark */
-        .card.gradient-teal table, 
-        .card.gradient-teal th, 
-        .card.gradient-teal td {
-            color: #333 !important; /* Dark grey for visibility */
-        }
-    </style>
-    
-    <style>
-        /* Custom styles for delete/remove buttons on classroom page */
-        .list-group-item .btn-outline-danger {
-            background-color: #dc3545 !important; /* Bootstrap red */
-            color: white !important;
-            border-color: #dc3545 !important;
-        }
-
-        .list-group-item .btn-outline-danger:hover,
-        .list-group-item .btn-outline-danger:focus,
-        .list-group-item .btn-outline-danger:active {
-            background-color: transparent !important;
-            color: #dc3545 !important;
-            border-color: #dc3545 !important;
-        }
-    </style>
-    
+        
+        
+        
+        
+        
     <!-- htmx -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 </head>
-<body class="d-flex flex-column min-vh-100" style="background-color: #0b4e91;">
+<body class="d-flex flex-column min-vh-100 bg-dark-blue">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -251,7 +120,7 @@
     <main class="container my-4 flex-grow-1">
         {% if error_message %}
             <div class="text-center py-5">
-                <i data-feather="alert-circle" class="text-warning" style="width: 64px; height: 64px;"></i>
+                <i data-feather="alert-circle" class="text-warning icon-64"></i>
                 <h2 class="mt-3">{{ error_message }}</h2>
                 <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
                     <i data-feather="home" class="me-2"></i>Go Home
@@ -333,22 +202,7 @@
     </script>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease;
-    ">
+    <div id="loadingOverlay" class="loading-overlay">
         <div class="text-center">
             <div class="spinner-border text-light" role="status">
                 <span class="visually-hidden">Loading...</span>

@@ -54,7 +54,7 @@
     <div class="col-md-4">
         <div class="card border-0 gradient-blue h-100">
             <div class="card-body text-center">
-                <i data-feather="help-circle" class="text-white mb-3" style="width: 48px; height: 48px;"></i>
+                <i data-feather="help-circle" class="text-white mb-3 icon-48"></i>
                 <h6 class="text-white">Multiple Choice Quiz</h6>
                 <p class="text-white-80 small">Test your understanding with AI-generated multiple choice questions.</p>
                 <a href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq', material_id=material_id) }}" 
@@ -65,7 +65,7 @@
     <div class="col-md-4">
         <div class="card border-0 gradient-blue h-100">
             <div class="card-body text-center">
-                <i data-feather="check-circle" class="text-white mb-3" style="width: 48px; height: 48px;"></i>
+                <i data-feather="check-circle" class="text-white mb-3 icon-48"></i>
                 <h6 class="text-white">True/False Quiz</h6>
                 <p class="text-white-80 small">Quick assessment with true or false questions.</p>
                 <a href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false', material_id=material_id) }}" 
@@ -76,7 +76,7 @@
     <div class="col-md-4">
         <div class="card border-0 gradient-blue h-100">
             <div class="card-body text-center">
-                <i data-feather="edit-3" class="text-white mb-3" style="width: 48px; height: 48px;"></i>
+                <i data-feather="edit-3" class="text-white mb-3 icon-48"></i>
                 <h6 class="text-white">Essay Questions</h6>
                 <p class="text-white-80 small">Practice writing detailed responses to essay questions.</p>
                 <a href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay', material_id=material_id) }}" 
@@ -86,35 +86,4 @@
     </div>
 </div>
 
-<style>
-@media print {
-    .navbar, .card-header, .card-footer, .btn, .row.mt-4 {
-        display: none !important;
-    }
-    
-    .card {
-        border: none !important;
-        background: white !important;
-        color: black !important;
-    }
-    
-    .study-guide-content {
-        color: black !important;
-    }
-    
-    .text-primary, .text-info, .text-warning, .text-white, .text-white-80, .text-white-50, .text-yellow {
-        color: black !important;
-    }
-    
-    .badge {
-        color: black !important;
-        background-color: #eee !important;
-    }
-    
-    /* Ensure icons are black in print */
-    .study-guide-content i[data-feather] {
-        color: black !important;
-    }
-}
-</style>
 {% endblock %}
