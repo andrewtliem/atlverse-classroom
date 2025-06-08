@@ -12,7 +12,9 @@ from flask_login import LoginManager, current_user
 from flask_wtf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from datetime import date
 
+from ai_service import AIService
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -69,6 +71,24 @@ def inject_unread_notifications_count():
     else:
         count = 0
     return {'unread_notifications_count': count}
+
+
+@app.context_processor
+def inject_daily_quote():
+    from models import DailyQuoteCache
+    today = date.today()
+    cached = DailyQuoteCache.query.filter_by(date=today).first()
+    if cached:
+        quote = cached.quote
+    else:
+        try:
+            quote = AIService().get_daily_quote()
+        except Exception as e:
+            logging.error(f"Daily quote retrieval failed: {e}")
+            quote = "Keep learning!"
+        db.session.add(DailyQuoteCache(date=today, quote=quote))
+        db.session.commit()
+    return {'daily_quote': quote}
 
 # User loader
 @login_manager.user_loader

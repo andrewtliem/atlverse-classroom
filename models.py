@@ -164,3 +164,9 @@ class Notification(db.Model):
     link = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_read = db.Column(db.Boolean, default=False)
+
+
+class DailyQuoteCache(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, unique=True, nullable=False)
+    quote = db.Column(db.String(255), nullable=False)
