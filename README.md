@@ -15,7 +15,7 @@ Teachers can create classrooms, upload study material and build quizzes. Student
 - **Teacher Quizzes** – Teachers can manually create, edit, publish, and view results for quizzes. Students can take these quizzes.
 - **Assignments** – Teachers can create assignments with deadlines, view student submissions, and provide grades and feedback. Students can submit assignments and, if allowed by the teacher, resubmit them before the deadline.
 - **Taking & Scoring Quizzes & Assignments** – Students attempt quizzes with automatic scoring for objective questions and AI-based scoring for essays. Assignment submissions are tracked and can be graded by teachers.
-- **Progress Tracking & Awards** – Teachers view overall results and export them as CSV. Students see color-coded badges for quiz scores and attempts on their dashboards and in recent activities, providing quick visual feedback on performance.
+- **Progress Tracking & Awards** – Teachers view overall results and export them as CSV. Students see color-coded badges for quiz scores (green for 80-100%, yellow for 67-79%, red for <67%) and attempts (green for 1 attempt, yellow for 2-3 attempts, red for >3 attempts) on their dashboards and in recent activities, providing quick visual feedback on performance and encouraging engagement.
 - **Recent Activities Feed** – Students get a comprehensive feed of their latest completed AI quizzes, teacher quizzes, and assignment submissions on their classroom page and a dedicated all activities page.
 - **Notifications** – Students are notified when new materials or quizzes are published.
 - **Streamlined UI** - Improved navigation and visual consistency across student and teacher interfaces, including the removal of redundant buttons.
