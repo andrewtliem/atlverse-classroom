@@ -19,4 +19,4 @@ scikit-learn
 pyPDF2
 python-docx
 requests
-bleach
+bleach==6.1.0
