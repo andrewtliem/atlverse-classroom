@@ -272,3 +272,16 @@ class AIService:
         
         average_score = total_score / len(questions) if questions else 0
         return average_score, feedback
+
+    def get_daily_quote(self) -> str:
+        """Return a short CS quote or fact using Gemini"""
+        prompt = (
+            "Provide a single short inspirational quote or interesting fact about "
+            "computer science. Respond with only the quote or fact in one or two "
+            "sentences."
+        )
+        try:
+            response = self.model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            raise Exception(f"Error getting daily quote: {str(e)}")
