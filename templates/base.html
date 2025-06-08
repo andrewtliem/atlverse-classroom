@@ -227,19 +227,25 @@
         function showLoadingOverlay() {
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
+                overlay.style.display = 'flex';
                 overlay.style.opacity = 1;
                 overlay.style.visibility = 'visible';
             }
         }
-        
-        // Optional: Hide overlay if back button is used after generation (browser behavior)
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.style.opacity = 0;
+                overlay.style.visibility = 'hidden';
+            }
+        }
+
+        // Hide overlay if back button is used after generation (browser behavior)
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {
-                const overlay = document.getElementById('loadingOverlay');
-                 if (overlay) {
-                    overlay.style.opacity = 0;
-                    overlay.style.visibility = 'hidden';
-                }
+                hideLoadingOverlay();
             }
         });
     </script>
