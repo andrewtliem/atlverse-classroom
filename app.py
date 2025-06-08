@@ -7,23 +7,19 @@ from flask_migrate import Migrate
 load_dotenv()
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_wtf import CSRFProtect
-from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import date
+
+from extensions import db, Base # Import db and Base from new extensions.py
 
 from ai_service import AIService
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Base class for SQLAlchemy models
-class Base(DeclarativeBase):
-    pass
-
 # Initialize extensions
-db = SQLAlchemy(model_class=Base)
+# db = SQLAlchemy(model_class=Base) # Removed - now in extensions.py
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
