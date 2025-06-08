@@ -12,7 +12,11 @@
     <ul class="list-group">
         {% for notification in notifications %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
+            {% if notification.link %}
+            <a href="{{ notification.link }}" {% if not notification.is_read %}class="fw-bold"{% endif %}>{{ notification.message }}</a>
+            {% else %}
             <span{% if not notification.is_read %} class="fw-bold"{% endif %}>{{ notification.message }}</span>
+            {% endif %}
             {% if not notification.is_read %}
             <form method="post" class="ms-2">
                 <input type="hidden" name="notification_id" value="{{ notification.id }}">
