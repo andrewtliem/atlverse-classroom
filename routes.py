@@ -8,6 +8,7 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
+import bleach
 from app import app, db
 from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
@@ -1425,12 +1426,27 @@ def student_generate_study_guide(classroom_id):
         if study_guide_content.endswith('```'):
             study_guide_content = study_guide_content[:-len('```')]
 
-        # Pass the generated study guide to the template
-        return render_template('student/study_guide.html', 
-                             classroom=classroom, 
-                             study_guide=study_guide_content,
-                             study_guide_title=study_guide_title,
-                             material_id=material_id)
+        # Sanitize the HTML returned by the AI service
+        allowed_tags = [
+            "p", "br", "h2", "h3", "ul", "ol", "li",
+            "strong", "em", "b", "i",
+            "table", "thead", "tbody", "tr", "th", "td"
+        ]
+        sanitized_content = bleach.clean(
+            study_guide_content,
+            tags=allowed_tags,
+            attributes={},
+            strip=True
+        )
+
+        # Pass the sanitized study guide to the template
+        return render_template(
+            'student/study_guide.html',
+            classroom=classroom,
+            sanitized_study_guide=sanitized_content,
+            study_guide_title=study_guide_title,
+            material_id=material_id
+        )
     
     except Exception as e:
         import traceback
