@@ -16,6 +16,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import date
 from markupsafe import Markup # New import
 import markdown # New import
+import bleach
 # from flask_moment import Moment # Removed: Not using Flask-Moment
 
 print(f"Markdown module imported: {markdown is not None}") # Debug print
@@ -55,7 +56,9 @@ app.jinja_env.globals['chr'] = chr
 
 # Register custom markdown filter
 def markdown_filter(text):
-    return Markup(markdown.markdown(text))
+    html = markdown.markdown(text)
+    sanitized = bleach.clean(html)
+    return Markup(sanitized)
 app.jinja_env.filters['markdown'] = markdown_filter
 
 # Configure the database
