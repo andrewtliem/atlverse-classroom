@@ -1774,6 +1774,58 @@ def teacher_reset_student_password(classroom_id, student_id):
 
     return redirect(url_for('teacher_classroom', classroom_id=classroom_id))
 
+@app.route('/teacher/edit_profile', methods=['GET', 'POST'])
+@login_required
+def teacher_edit_profile():
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        current_user.first_name = request.form.get('first_name')
+        current_user.last_name = request.form.get('last_name')
+
+        try:
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('teacher_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating profile: {str(e)}', 'error')
+
+    return render_template('teacher/edit_profile.html', teacher=current_user)
+
+@app.route('/teacher/change_password', methods=['GET', 'POST'])
+@login_required
+def teacher_change_password():
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not current_user.check_password(current_password):
+            flash('Incorrect current password', 'error')
+            return render_template('teacher/change_password.html')
+
+        if new_password != confirm_password:
+            flash('New passwords do not match', 'error')
+            return render_template('teacher/change_password.html')
+
+        current_user.set_password(new_password)
+        try:
+            db.session.commit()
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('teacher_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error changing password: {str(e)}', 'error')
+
+    return render_template('teacher/change_password.html')
+
 @app.route('/student/edit_profile', methods=['GET', 'POST'])
 @login_required
 def student_edit_profile():
