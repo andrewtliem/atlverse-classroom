@@ -4,6 +4,7 @@ from models import Material
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import logging
 
 class SimpleVectorSearch:
     def __init__(self):
@@ -112,7 +113,7 @@ class SimpleVectorSearch:
             return "\n".join(context_parts)
             
         except Exception as e:
-            print(f"Error in content retrieval: {str(e)}")
+            logging.error(f"Error in content retrieval: {str(e)}")
             # Fallback: return all content concatenated
             content_parts = []
             for material in materials:
