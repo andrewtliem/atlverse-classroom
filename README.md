@@ -12,10 +12,13 @@ Teachers can create classrooms, upload study material and build quizzes. Student
 - **Classrooms** – Teachers create classrooms and invite students.
 - **Study Materials** – Upload PDFs or text files; content is extracted for AI services.
 - **AI Study Guides & Quizzes** – Generate study guides and multiple quiz types (MCQ, true/false, essay) using the Gemini API.
-- **Teacher Quizzes** – Teachers can manually create, edit and publish quizzes.
-- **Taking & Scoring Quizzes** – Students attempt quizzes with automatic scoring for objective questions and AI-based scoring for essays.
-- **Progress Tracking** – Teachers view overall results and export them as CSV.
+- **Teacher Quizzes** – Teachers can manually create, edit, publish, and view results for quizzes. Students can take these quizzes.
+- **Assignments** – Teachers can create assignments with deadlines, view student submissions, and provide grades and feedback. Students can submit assignments and, if allowed by the teacher, resubmit them before the deadline.
+- **Taking & Scoring Quizzes & Assignments** – Students attempt quizzes with automatic scoring for objective questions and AI-based scoring for essays. Assignment submissions are tracked and can be graded by teachers.
+- **Progress Tracking & Awards** – Teachers view overall results and export them as CSV. Students see color-coded badges for quiz scores and attempts on their dashboards and in recent activities, providing quick visual feedback on performance.
+- **Recent Activities Feed** – Students get a comprehensive feed of their latest completed AI quizzes, teacher quizzes, and assignment submissions on their classroom page and a dedicated all activities page.
 - **Notifications** – Students are notified when new materials or quizzes are published.
+- **Streamlined UI** - Improved navigation and visual consistency across student and teacher interfaces, including the removal of redundant buttons.
 
 ## Installation
 
