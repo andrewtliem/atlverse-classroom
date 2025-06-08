@@ -175,6 +175,9 @@
 
 .bg-dark-blue { background-color: #0b4e91; }
 .list-bg-dark { background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px; }
+.list-group-flush > .list-bg-dark {
+    border-radius: 8px;
+}
 .bg-white-10 { background-color: rgba(255,255,255,0.1); }
 .bg-white-10-border { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
 .text-cyan { color: #00BCD4 !important; }
