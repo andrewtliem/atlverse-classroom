@@ -12,6 +12,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
+import logging
 from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
@@ -1463,8 +1464,8 @@ def student_generate_study_guide(classroom_id):
     
     except Exception as e:
         import traceback
-        print(f"Study guide generation error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logging.error(f"Study guide generation error: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
         flash(f'Error generating study guide: {str(e)}', 'error')
         return redirect(url_for('student_classroom', classroom_id=classroom_id))
 
@@ -1541,8 +1542,8 @@ def student_create_quiz(classroom_id):
     
     except Exception as e:
         import traceback
-        print(f"Quiz generation error: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
+        logging.error(f"Quiz generation error: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
         flash(f'Error generating quiz: {str(e)}', 'error')
         return redirect(url_for('student_classroom', classroom_id=classroom_id))
 

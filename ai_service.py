@@ -2,6 +2,7 @@ import os
 import json
 import google.generativeai as genai
 from typing import List, Dict, Tuple
+import logging
 from simple_vector import SimpleVectorSearch
 
 class AIService:
@@ -149,10 +150,10 @@ class AIService:
             return questions
         
         except json.JSONDecodeError as e:
-            print(f"JSON parse error. Response was: {response.text[:500]}...")
+            logging.error(f"JSON parse error. Response was: {response.text[:500]}...")
             raise Exception(f"AI response format error - please try generating the quiz again")
         except Exception as e:
-            print(f"Quiz generation error: {str(e)}")
+            logging.error(f"Quiz generation error: {str(e)}")
             raise Exception(f"Error generating quiz: {str(e)}")
     
     def score_quiz(self, questions: List[Dict], answers: List[str], quiz_type: str) -> Tuple[float, List[Dict]]:

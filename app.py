@@ -18,7 +18,7 @@ import bleach
 import re
 # from flask_moment import Moment # Removed: Not using Flask-Moment
 
-print(f"Markdown module imported: {markdown is not None}") # Debug print
+logging.debug(f"Markdown module imported: {markdown is not None}")
 
 from extensions import db, Base # Import db and Base from new extensions.py
 
