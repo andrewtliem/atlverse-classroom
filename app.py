@@ -12,8 +12,10 @@ from flask_wtf import CSRFProtect
 # from flask_markdown import Markdown # Removed: Using custom markdown filter
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import date
-from markupsafe import Markup # New import
-import markdown # New import
+from markupsafe import Markup
+import markdown
+import bleach
+import re
 # from flask_moment import Moment # Removed: Not using Flask-Moment
 
 print(f"Markdown module imported: {markdown is not None}") # Debug print
@@ -39,9 +41,28 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # Add chr function to Jinja2 globals
 app.jinja_env.globals['chr'] = chr
 
+# Allowed HTML tags and attributes for sanitized markdown
+ALLOWED_TAGS = [
+    'p', 'br', 'div', 'span', 'a', 'ul', 'ol', 'li',
+    'strong', 'em', 'b', 'i', 'u', 'blockquote', 'code', 'pre',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'img', 'hr'
+]
+ALLOWED_ATTRS = {
+    '*': ['class', 'id', 'style', re.compile(r'^data-.*$')],
+    'a': ['href', 'title'],
+    'img': ['src', 'alt', 'title'],
+    'th': ['colspan', 'rowspan', 'style'],
+    'td': ['colspan', 'rowspan', 'style'],
+    'table': ['style', 'border', 'cellpadding', 'cellspacing']
+}
+
 # Register custom markdown filter
 def markdown_filter(text):
-    return Markup(markdown.markdown(text))
+    html = markdown.markdown(text)
+    cleaned = bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS)
+    return Markup(cleaned)
 app.jinja_env.filters['markdown'] = markdown_filter
 
 # Configure the database
