@@ -50,7 +50,7 @@ class AIService:
         
         if quiz_type == "mcq":
             prompt = f"""
-            Create 5 multiple choice questions based on the provided course material.
+            Create 20 higher-order thinking multiple choice questions based on the provided course material.
 
             MATERIAL CONTENT:
             {content}
@@ -69,12 +69,12 @@ class AIService:
                 }}
             ]
 
-            Generate exactly 5 questions based on the material above. Return ONLY the JSON array.
+            Generate exactly 20 questions that require analysis, evaluation or application. Return ONLY the JSON array.
             """
         
         elif quiz_type == "true_false":
             prompt = f"""
-            Create 5 true/false questions based on the provided course material.
+            Create 20 higher-order thinking true/false questions based on the provided course material.
 
             MATERIAL CONTENT:
             {content}
@@ -92,7 +92,7 @@ class AIService:
                 }}
             ]
 
-            Generate exactly 5 true/false questions based on the material above. Return ONLY the JSON array.
+            Generate exactly 20 true/false questions that require analysis, evaluation or application. Return ONLY the JSON array.
             """
         
         elif quiz_type == "essay":
