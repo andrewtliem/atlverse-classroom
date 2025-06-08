@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Assignment - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Create New Assignment for {{ classroom.name }}</h2>
+        <a href="{{ url_for('teacher_assignments', classroom_id=classroom.id) }}" class="btn btn-gradient-teal">
+            <i data-feather="list" class="me-2"></i>Manage Assignments
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Assignment Details</h5>
+        </div>
+        <div class="card-body text-dark">
+            <form method="POST" action="{{ url_for('teacher_create_assignment', classroom_id=classroom.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Assignment Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="deadline" class="form-label">Deadline (Optional)</label>
+                    <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="published" name="published">
+                    <label class="form-check-label" for="published">Publish Assignment (make visible to students)</label>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Assignment
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ assignment.title }} Submissions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">{{ assignment.title }} Submissions</h2>
+        <a href="{{ url_for('teacher_assignments', classroom_id=classroom.id) }}" class="btn btn-gradient-purple">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Assignments
+        </a>
+    </div>
+
+    {% if submissions %}
+    <div class="card shadow-sm">
+        <div class="card-body bg-light text-dark">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted On</th>
+                            <th>Status</th>
+                            <th>Resubmission Allowed</th>
+                            <th>Grade</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.student.full_name }}</td>
+                            <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if submission.status == 'Submitted' %}
+                                    <span class="badge bg-primary">Submitted</span>
+                                {% elif submission.status == 'Resubmitted' %}
+                                    <span class="badge bg-info text-dark">Resubmitted</span>
+                                {% elif submission.status == 'Graded' %}
+                                    <span class="badge bg-success">Graded</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ submission.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if submission.is_resubmission_allowed %}
+                                    <span class="badge bg-success">Yes</span>
+                                {% else %}
+                                    <span class="badge bg-danger">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if submission.grade is not none %}
+                                    {{ submission.grade }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('teacher_grade_submission', classroom_id=classroom.id, assignment_id=assignment.id, submission_id=submission.id) }}" class="btn btn-sm btn-outline-primary">
+                                    {% if submission.grade is not none %}View/Edit Grade{% else %}Grade{% endif %}
+                                </a>
+                                <form action="{{ url_for('teacher_toggle_resubmission', submission_id=submission.id) }}" method="POST" class="d-inline ms-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm {% if submission.is_resubmission_allowed %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                        {% if submission.is_resubmission_allowed %}Disable Resubmission{% else %}Enable Resubmission{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        No submissions yet for this assignment.
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %} 

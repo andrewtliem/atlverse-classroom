@@ -9,8 +9,14 @@ load_dotenv()
 from flask import Flask
 from flask_login import LoginManager, current_user
 from flask_wtf import CSRFProtect
+# from flask_markdown import Markdown # Removed: Using custom markdown filter
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import date
+from markupsafe import Markup # New import
+import markdown # New import
+# from flask_moment import Moment # Removed: Not using Flask-Moment
+
+print(f"Markdown module imported: {markdown is not None}") # Debug print
 
 from extensions import db, Base # Import db and Base from new extensions.py
 
@@ -22,6 +28,8 @@ logging.basicConfig(level=logging.DEBUG)
 # db = SQLAlchemy(model_class=Base) # Removed - now in extensions.py
 login_manager = LoginManager()
 csrf = CSRFProtect()
+# moment = Moment() # Removed: Not using Flask-Moment
+# markdown = Markdown() # Removed: Using custom markdown filter
 
 # Create the Flask app
 app = Flask(__name__)
@@ -30,6 +38,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Add chr function to Jinja2 globals
 app.jinja_env.globals['chr'] = chr
+
+# Register custom markdown filter
+def markdown_filter(text):
+    return Markup(markdown.markdown(text))
+app.jinja_env.filters['markdown'] = markdown_filter
 
 # Configure the database
 database_url = os.getenv("DATABASE_URL")
@@ -55,6 +68,9 @@ db.init_app(app)
 migrate = Migrate(app, db)
 login_manager.init_app(app)
 csrf.init_app(app)
+# moment.init_app(app) # Removed: Not using Flask-Moment
+# markdown.init_app(app) # Removed: Using custom markdown filter
+
 login_manager.login_view = 'auth_login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'

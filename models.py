@@ -44,6 +44,7 @@ class Classroom(db.Model):
     materials = db.relationship('Material', backref='classroom', lazy=True, cascade='all, delete-orphan')
     self_evaluations = db.relationship('SelfEvaluation', backref='classroom', lazy=True, cascade='all, delete-orphan')
     quizzes = db.relationship('Quiz', backref='classroom', lazy=True, cascade='all, delete-orphan')
+    assignments = db.relationship('Assignment', backref='classroom', lazy=True, cascade='all, delete-orphan')
     
     def __init__(self, **kwargs):
         super(Classroom, self).__init__(**kwargs)
@@ -170,3 +171,50 @@ class DailyQuoteCache(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, unique=True, nullable=False)
     quote = db.Column(db.String(255), nullable=False)
+
+class Assignment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    teacher = db.relationship('User', backref='created_assignments', lazy=True)
+    deadline = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    published = db.Column(db.Boolean, default=False)
+
+    # New relationship for submissions
+    submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy=True, cascade='all, delete-orphan')
+    
+    def is_past_deadline(self):
+        """Check if the assignment deadline has passed"""
+        if self.deadline:
+            return datetime.utcnow() > self.deadline
+        return False
+        
+    def is_upcoming(self):
+        """Check if the assignment is published but not yet active"""
+        now = datetime.utcnow()
+        return self.published and self.deadline and now < self.deadline # Assuming upcoming if published and deadline is in future
+    
+    def get_status(self):
+        if not self.published:
+            return "Draft"
+        elif self.is_past_deadline():
+            return "Expired"
+        else:
+            return "Active"
+
+class AssignmentSubmission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    student = db.relationship('User', backref='assignment_submissions', lazy=True)
+    content = db.Column(db.Text, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(50), default='Submitted')  # e.g., 'Submitted', 'Graded', 'Resubmitted'
+    grade = db.Column(db.Float)  # NULLable
+    feedback = db.Column(db.Text)  # NULLable
+    is_resubmission_allowed = db.Column(db.Boolean, default=False)
+
+    __table_args__ = (db.UniqueConstraint('assignment_id', 'student_id', name='unique_assignment_submission'),)

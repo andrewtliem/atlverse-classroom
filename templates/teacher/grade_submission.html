@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Grade Submission - {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">Grade Submission for {{ assignment.title }}</h2>
+        <a href="{{ url_for('teacher_view_submissions', classroom_id=classroom.id, assignment_id=assignment.id) }}" class="btn btn-gradient-purple">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Submissions
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Submission Details - {{ submission.student.full_name }}</h5>
+        </div>
+        <div class="card-body text-dark">
+            <dl class="row">
+                <dt class="col-sm-3">Assignment Title:</dt>
+                <dd class="col-sm-9">{{ assignment.title }}</dd>
+
+                <dt class="col-sm-3">Student Name:</dt>
+                <dd class="col-sm-9">{{ submission.student.full_name }}</dd>
+
+                <dt class="col-sm-3">Submitted On:</dt>
+                <dd class="col-sm-9">{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+                <dt class="col-sm-3">Current Status:</dt>
+                <dd class="col-sm-9">
+                    {% if submission.status == 'Submitted' %}
+                        <span class="badge bg-primary">Submitted</span>
+                    {% elif submission.status == 'Resubmitted' %}
+                        <span class="badge bg-info text-dark">Resubmitted</span>
+                    {% elif submission.status == 'Graded' %}
+                        <span class="badge bg-success">Graded</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ submission.status }}</span>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Current Grade:</dt>
+                <dd class="col-sm-9">
+                    {% if submission.grade is not none %}
+                        {{ submission.grade }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Current Feedback:</dt>
+                <dd class="col-sm-9">{% if submission.feedback %}{{ submission.feedback | markdown }}{% else %}No feedback yet.{% endif %}</dd>
+            </dl>
+
+            <hr>
+
+            <h6>Student's Submission Content:</h6>
+            <div class="card bg-light p-3 border">
+                <p class="mb-0">{{ submission.content | markdown }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Grade Submission</h5>
+        </div>
+        <div class="card-body text-dark">
+            <form action="" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="grade" class="form-label">Grade (e.g., 85, 92.5):</label>
+                    <input type="number" step="0.1" min="0" max="100" class="form-control" id="grade" name="grade" value="{{ submission.grade if submission.grade is not none else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="feedback" class="form-label">Feedback:</label>
+                    <textarea class="form-control" id="feedback" name="feedback" rows="5">{{ submission.feedback if submission.feedback is not none else '' }}</textarea>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="is_resubmission_allowed" name="is_resubmission_allowed" {% if submission.is_resubmission_allowed %}checked{% endif %}>
+                    <label class="form-check-label" for="is_resubmission_allowed">Allow Student Resubmission</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Grade and Feedback</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %} 

@@ -33,54 +33,62 @@
     <div class="card-body">
         {% if evaluations %}
             <div class="list-group list-group-flush">
-                {% for evaluation in evaluations %}
-                    <div class="list-group-item border-secondary d-flex justify-content-between align-items-center text-white list-bg-dark">
+                {% for activity in evaluations %}
+                    <a href="{% if activity.activity_type == 'ai_quiz' or activity.activity_type == 'teacher_quiz' %}{{ url_for('student_quiz_result', evaluation_id=activity.id) }}{% elif activity.activity_type == 'assignment_submission' %}{{ url_for('student_view_assignment', assignment_id=activity.assignment.id) }}{% endif %}" class="list-group-item list-bg-dark border-secondary d-flex justify-content-between align-items-start text-white mb-2 rounded-3 p-3 recent-activity-item text-decoration-none">
                         <div class="flex-grow-1">
-                            {% if evaluation.is_ai_generated %}
+                            {% if activity.activity_type == 'ai_quiz' %}
                                 <h6 class="mb-1 text-white">
-                                    <i class="fas fa-robot me-1 text-white-70"></i> AI Practice Quiz ({{ evaluation.quiz_type.title() }})
+                                    <i data-feather="zap" class="me-1 text-white-50"></i>
+                                    {% if activity.material %}
+                                        {{ activity.material.title }} (AI Generated Quiz)
+                                    {% else %}
+                                        AI Generated Quiz
+                                    {% endif %}
                                 </h6>
                                 <small class="text-white-80">
-                                    {% if evaluation.material %}
-                                        From: {{ evaluation.material.title }}
-                                    {% else %}
-                                        From: All Materials
-                                    {% endif %}
+                                    Completed: {{ activity.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
                                 </small>
-                            {% else %}
+                                {% if activity.score is not none %}
+                                    <div class="mt-1">
+                                        {% set score_class = 'bg-success' if activity.score >= 80 else ('bg-warning text-dark' if activity.score >= 67 else 'bg-danger') %}
+                                        <span class="badge {{ score_class }}">{{ "%.0f"|format(activity.score) }}%</span>
+                                    </div>
+                                {% endif %}
+                            {% elif activity.activity_type == 'teacher_quiz' %}
                                 <h6 class="mb-1 text-white">
-                                    <i class="fas fa-clipboard-list me-1 text-white-70"></i> {{ evaluation.quiz.title }}
+                                    <i data-feather="file-text" class="me-1 text-white-50"></i>
+                                    {{ activity.quiz.title }} (Teacher Quiz)
                                 </h6>
-                                <small class="text-white-80">Teacher Quiz ({{ evaluation.quiz_type.title() }})</small>
+                                <small class="text-white-80">
+                                    Completed: {{ activity.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small>
+                                {% if activity.score is not none %}
+                                    <div class="mt-1">
+                                        {% set score_class = 'bg-success' if activity.score >= 80 else ('bg-warning text-dark' if activity.score >= 67 else 'bg-danger') %}
+                                        <span class="badge {{ score_class }}">{{ "%.0f"|format(activity.score) }}%</span>
+                                    </div>
+                                {% endif %}
+                            {% elif activity.activity_type == 'assignment_submission' %}
+                                <h6 class="mb-1 text-white">
+                                    <i data-feather="file-text" class="me-1 text-white-50"></i>
+                                    {{ activity.assignment.title }} (Assignment Submitted)
+                                </h6>
+                                <small class="text-white-80">
+                                    Submitted: {{ activity.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small>
+                                {% if activity.grade is not none %}
+                                    <div class="mt-1">
+                                        {% set grade_class = 'bg-success' if activity.grade >= 80 else ('bg-warning text-dark' if activity.grade >= 67 else 'bg-danger') %}
+                                        <span class="badge {{ grade_class }}">Grade: {{ "%.0f"|format(activity.grade) }}%</span>
+                                    </div>
+                                {% else %}
+                                    <div class="mt-1">
+                                        <span class="badge bg-secondary">Grading Pending</span>
+                                    </div>
+                                {% endif %}
                             {% endif %}
                         </div>
-                        <div class="text-end">
-                            {% if evaluation.score is not none %}
-                                <span class="badge text-yellow fw-bold bg-white-20">
-                                    {{ "%.0f"|format(evaluation.score) }}%
-                                </span>
-                            {% else %}
-                                <span class="badge text-white badge-coral-bg">In Progress</span>
-                            {% endif %}
-                            {% if evaluation.completed_at %}
-                                <small class="text-white-80 d-block mt-1">
-                                    <i class="fas fa-check me-1 text-white"></i>
-                                    Completed {{ evaluation.completed_at.strftime('%m/%d/%y %H:%M') }}
-                                </small>
-                                <a href="{{ url_for('student_quiz_result', evaluation_id=evaluation.id) }}" class="btn btn-sm mt-1 btn-yellow">View Result</a>
-                            {% elif evaluation.started_at %}
-                                <small class="text-white-80 d-block mt-1">
-                                    <i class="fas fa-clock me-1 text-white"></i>
-                                    Started {{ evaluation.started_at.strftime('%m/%d/%y %H:%M') }}
-                                </small>
-                            {% else %}
-                                <small class="text-white-80 d-block mt-1">
-                                    <i class="fas fa-hourglass-start me-1 text-white-70"></i>
-                                    Not Started
-                                </small>
-                            {% endif %}
-                        </div>
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}

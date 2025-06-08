@@ -24,6 +24,11 @@
                                     {{ classroom.quiz_stats.pending }} pending {% if classroom.quiz_stats.pending == 1 %}quiz{% else %}quizzes{% endif %}
                                 </span>
                             {% endif %}
+                            {% if classroom.assignment_stats.active_now > 0 %}
+                                <span class="badge bg-info">
+                                    {{ classroom.assignment_stats.active_now }} active {% if classroom.assignment_stats.active_now == 1 %}assignment{% else %}assignments{% endif %}
+                                </span>
+                            {% endif %}
                         </div>
                         
                         {% if classroom.description %}
@@ -77,6 +82,36 @@
                                                 {% else %}
                                                     <span class="badge bg-secondary ms-2">{{ status }}</span> {# Fallback #}
                                                 {% endif %}
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if classroom.assignments_with_status %}
+                            <div class="mb-3">
+                                <h6 class="text-white mb-2">Class Assignments:</h6>
+                                <ul class="list-unstyled mb-0">
+                                    {% for assignment_info in classroom.assignments_with_status %}
+                                        {% set assignment = assignment_info.assignment %}
+                                        {% set status = assignment_info.status %}
+                                        <li>
+                                            <i class="fas fa-file-alt me-1 text-white-70"></i>
+                                            <a href="{{ url_for('student_view_assignment', assignment_id=assignment.id) }}" class="text-white-80 text-decoration-none">
+                                                {{ assignment.title }}
+                                            </a>
+                                            {% if status == 'Active' %}
+                                                {% if assignment.deadline %}
+                                                    <small class="text-white-50 ms-2">(Due: {{ assignment.deadline.strftime('%Y-%m-%d %H:%M') }})</small>
+                                                {% else %}
+                                                    <small class="text-white-50 ms-2">(No deadline)</small>
+                                                {% endif %}
+                                                <a href="{{ url_for('student_view_assignment', assignment_id=assignment.id) }}" class="btn btn-sm btn-gradient-teal ms-2">
+                                                    View Assignment
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-secondary ms-2">{{ status }}</span>
                                             {% endif %}
                                         </li>
                                     {% endfor %}
@@ -138,12 +173,15 @@
 <!-- AI Quiz Awards Card -->
 {% if ai_quiz_awards %}
     <div class="card border-0 gradient-purple rounded-4 mt-4">
-        <div class="card-header bg-transparent">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
             <h5 class="mb-0 text-white">
                 <i data-feather="award" class="me-2 text-white"></i>AI Quiz Awards
             </h5>
+            <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#aiQuizAwardsCollapse" aria-expanded="false" aria-controls="aiQuizAwardsCollapse">
+                View Details
+            </button>
         </div>
-        <div class="card-body">
+        <div class="card-body collapse" id="aiQuizAwardsCollapse">
             {% for classroom_id, awards_by_material in ai_quiz_awards.items() %}
                 <h6 class="text-white-80 mb-3">{{ classroom_names.get(classroom_id, 'Unknown Classroom') }}</h6>
                 <ul class="list-group list-group-flush mb-4">
@@ -152,7 +190,23 @@
                             <div>
                                 <h6 class="mb-1 text-white">{{ award_info.material_title }}</h6>
                                 <small class="text-white-80">
-                                    Score: {{ "%.1f"|format(award_info.score) }}% | Attempts: {{ award_info.attempts }}
+                                    Score:
+                                    {% if award_info.score >= 80 %}
+                                        <span class="badge bg-success">{{ "%.1f"|format(award_info.score) }}%</span>
+                                    {% elif award_info.score >= 67 %}
+                                        <span class="badge bg-warning text-dark">{{ "%.1f"|format(award_info.score) }}%</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ "%.1f"|format(award_info.score) }}%</span>
+                                    {% endif %}
+                                    |
+                                    Attempts:
+                                    {% if award_info.attempts == 1 %}
+                                        <span class="badge bg-success">{{ award_info.attempts }}</span>
+                                    {% elif award_info.attempts >= 2 and award_info.attempts <= 3 %}
+                                        <span class="badge bg-warning text-dark">{{ award_info.attempts }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ award_info.attempts }}</span>
+                                    {% endif %}
                                 </small>
                             </div>
                             <div>

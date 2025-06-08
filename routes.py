@@ -9,10 +9,11 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
-from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification
+from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
+from sqlalchemy.orm import joinedload
 
 ai_service = AIService()
 
@@ -126,6 +127,16 @@ def teacher_dashboard():
             'published': len([q for q in quizzes if q.published]),
             'active': len(active_quizzes)
         }
+        
+        # Get assignment counts for this classroom
+        assignments = Assignment.query.filter_by(classroom_id=classroom.id).all()
+        active_assignments = [a for a in assignments if a.published and not a.is_past_deadline()]
+
+        classroom.assignment_stats = {
+            'total': len(assignments),
+            'published': len([a for a in assignments if a.published]),
+            'active': len(active_assignments)
+        }
         classrooms.append(classroom)
     
     return render_template('teacher/dashboard.html', classrooms=classrooms)
@@ -168,12 +179,14 @@ def teacher_classroom(classroom_id):
     enrollments = Enrollment.query.filter_by(classroom_id=classroom_id).all()
     students = [enrollment.student for enrollment in enrollments]
     quizzes = Quiz.query.filter_by(classroom_id=classroom_id).order_by(Quiz.created_at.desc()).all()
+    assignments = Assignment.query.filter_by(classroom_id=classroom_id).order_by(Assignment.created_at.desc()).all() # New: Fetch assignments
     
     return render_template('teacher/classroom.html', 
                          classroom=classroom, 
                          materials=materials,
                          students=students,
-                         quizzes=quizzes)
+                         quizzes=quizzes,
+                         assignments=assignments) # Pass assignments to template
 
 @app.route('/teacher/classroom/<int:classroom_id>/quizzes_tab')
 @login_required
@@ -1108,9 +1121,29 @@ def student_dashboard():
          classroom.gold_rank = current_user_rank # Add rank to classroom object
          classroom.num_students_in_ranking = len(student_gold_counts) # Total students in ranking (including those with 0 golds)
 
-         # Note: We already added classroom to the list earlier in the outer loop
-         # classrooms.append(classroom) # No need to append here again
+         # Fetch published assignments for the classroom
+         all_published_assignments = Assignment.query.filter(
+             Assignment.classroom_id == classroom.id,
+             Assignment.published == True
+         ).all()
+         classroom.assignments_with_status = []
+         for assignment in all_published_assignments:
+             assignment_status = assignment.get_status()
+             classroom.assignments_with_status.append({
+                 'assignment': assignment,
+                 'status': assignment_status
+             })
 
+         # Update assignment stats for dashboard card
+         total_assignments = len(all_published_assignments)
+         active_assignments = len([a for a in classroom.assignments_with_status if a['status'] == 'Active'])
+         classroom.assignment_stats = {
+             'total_published': total_assignments,
+             'active_now': active_assignments
+         }
+
+         # No need to append here again as it's already done in the outer loop
+         # classrooms.append(classroom)
     
     # Need classroom names for the template
     classroom_names = {c.id: c.name for c in Classroom.query.all()}
@@ -1176,11 +1209,43 @@ def student_classroom(classroom_id):
         completed_at=None
     ).first()
 
-    # Get recent completed evaluations
-    recent_evaluations = SelfEvaluation.query.filter_by(
+    # Get recent completed AI quizzes (SelfEvaluation where is_ai_generated is True)
+    recent_ai_quizzes = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id,
-        student_id=current_user.id
-    ).filter(SelfEvaluation.completed_at.isnot(None)).order_by(SelfEvaluation.completed_at.desc()).limit(4).all()
+        student_id=current_user.id,
+        is_ai_generated=True
+    ).filter(SelfEvaluation.completed_at.isnot(None)).all()
+
+    # Get recent completed Teacher quizzes (SelfEvaluation where quiz_id is not None and is_ai_generated is False)
+    recent_teacher_quizzes = SelfEvaluation.query.filter_by(
+        classroom_id=classroom_id,
+        student_id=current_user.id,
+        is_ai_generated=False
+    ).filter(SelfEvaluation.quiz_id.isnot(None), SelfEvaluation.completed_at.isnot(None)).all()
+
+    # Get recent assignment submissions
+    recent_assignment_submissions = AssignmentSubmission.query.filter_by(
+        student_id=current_user.id,
+        assignment_id=classroom_id # Corrected filter to classroom_id instead of undefined assignment.id
+    ).order_by(AssignmentSubmission.submitted_at.desc()).all()
+
+    # Combine all recent activities
+    recent_activities = []
+    for quiz in recent_ai_quizzes:
+        quiz.activity_type = 'ai_quiz'
+        recent_activities.append(quiz)
+    for quiz in recent_teacher_quizzes:
+        quiz.activity_type = 'teacher_quiz'
+        recent_activities.append(quiz)
+    for submission in recent_assignment_submissions:
+        submission.activity_type = 'assignment_submission'
+        recent_activities.append(submission)
+
+    # Sort combined activities by their timestamp (completed_at or submitted_at)
+    recent_activities.sort(key=lambda x: x.completed_at if hasattr(x, 'completed_at') else x.submitted_at, reverse=True)
+    
+    # Limit to top 4 or 5 recent activities
+    recent_activities = recent_activities[:5]
     
     # Get any available teacher-created quizzes
     available_quizzes = Quiz.query.filter_by(
@@ -1191,6 +1256,20 @@ def student_classroom(classroom_id):
         (Quiz.available_until.is_(None) | (Quiz.available_until >= datetime.utcnow()))
     ).all()
     
+    # Get assignments for this classroom and student
+    classroom_assignments = Assignment.query.filter_by(
+        classroom_id=classroom_id,
+        published=True
+    ).order_by(Assignment.deadline.asc()).all()
+
+    assignments_with_submission_status = []
+    for assignment in classroom_assignments:
+        submission = AssignmentSubmission.query.filter_by(
+            assignment_id=assignment.id,
+            student_id=current_user.id
+        ).first()
+        assignments_with_submission_status.append({'assignment': assignment, 'submission': submission})
+
     # Calculate student's average score for teacher-created quizzes in this classroom
     student_completed_quizzes = SelfEvaluation.query.filter(
         SelfEvaluation.student_id == current_user.id,
@@ -1280,7 +1359,7 @@ def student_classroom(classroom_id):
     return render_template('student/classroom.html', 
                          classroom=classroom, 
                          materials=materials,
-                         recent_evaluations=recent_evaluations,
+                         recent_evaluations=recent_activities,
                          available_quizzes=available_quizzes,
                          quiz_status=quiz_status,
                          student_avg_score=student_avg_score,
@@ -1290,8 +1369,8 @@ def student_classroom(classroom_id):
                          class_ai_avg_score_overall=class_ai_avg_score_overall,
                          student_ai_performance_by_material=student_ai_performance_by_material,
                          class_ai_performance_by_material=class_ai_performance_by_material,
-                         material_titles=material_titles
-                        )
+                         material_titles=material_titles,
+                         assignments_with_submission_status=assignments_with_submission_status)
 
 @app.route('/student/classroom/<int:classroom_id>/generate_study_guide')
 @login_required
@@ -1696,14 +1775,41 @@ def student_all_activities(classroom_id):
     classroom = enrollment.classroom
 
     # Get all evaluations for this student in this classroom, ordered by recency
-    all_evaluations = SelfEvaluation.query.filter_by(
+    recent_ai_quizzes = SelfEvaluation.query.filter_by(
         classroom_id=classroom_id,
-        student_id=current_user.id
-    ).order_by(SelfEvaluation.started_at.desc()).all()
+        student_id=current_user.id,
+        is_ai_generated=True
+    ).filter(SelfEvaluation.completed_at.isnot(None)).all()
+
+    recent_teacher_quizzes = SelfEvaluation.query.filter_by(
+        classroom_id=classroom_id,
+        student_id=current_user.id,
+        is_ai_generated=False
+    ).filter(SelfEvaluation.quiz_id.isnot(None), SelfEvaluation.completed_at.isnot(None)).all()
+
+    recent_assignment_submissions = AssignmentSubmission.query.filter_by(
+        student_id=current_user.id,
+        assignment_id=classroom_id  # Filter by classroom_id
+    ).order_by(AssignmentSubmission.submitted_at.desc()).all()
+
+    # Combine all recent activities
+    all_activities = []
+    for quiz in recent_ai_quizzes:
+        quiz.activity_type = 'ai_quiz'
+        all_activities.append(quiz)
+    for quiz in recent_teacher_quizzes:
+        quiz.activity_type = 'teacher_quiz'
+        all_activities.append(quiz)
+    for submission in recent_assignment_submissions:
+        submission.activity_type = 'assignment_submission'
+        all_activities.append(submission)
+
+    # Sort combined activities by their timestamp (completed_at or submitted_at)
+    all_activities.sort(key=lambda x: x.completed_at if hasattr(x, 'completed_at') else x.submitted_at, reverse=True)
 
     return render_template('student/all_activities.html',
                            classroom=classroom,
-                           evaluations=all_evaluations)
+                           evaluations=all_activities)
 
 @app.route('/uploads/<filename>')
 @login_required
@@ -1895,3 +2001,313 @@ def notifications():
 
     notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', notifications=notifications_list)
+
+@app.route('/teacher/classroom/<int:classroom_id>/assignments')
+@login_required
+def teacher_assignments(classroom_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    assignments = Assignment.query.filter_by(classroom_id=classroom_id).order_by(Assignment.created_at.desc()).all()
+    
+    return render_template('teacher/assignments.html', 
+                         classroom=classroom, 
+                         assignments=assignments)
+
+@app.route('/teacher/classroom/<int:classroom_id>/assignment/create', methods=['GET', 'POST'])
+@login_required
+def teacher_create_assignment(classroom_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        deadline_str = request.form.get('deadline')
+        published = 'published' in request.form
+
+        if not title:
+            flash('Assignment title is required.', 'error')
+            return redirect(url_for('teacher_create_assignment', classroom_id=classroom.id))
+
+        deadline = None
+        if deadline_str:
+            try:
+                deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash('Invalid deadline format. Please use YYYY-MM-DDTHH:MM.', 'error')
+                return redirect(url_for('teacher_create_assignment', classroom_id=classroom.id))
+
+        assignment = Assignment(
+            title=title,
+            description=description,
+            classroom_id=classroom.id,
+            teacher_id=current_user.id,
+            deadline=deadline,
+            published=published
+        )
+        db.session.add(assignment)
+        db.session.commit()
+
+        # Notify students if published
+        if published:
+            for enrollment in classroom.enrollments:
+                message = f'New assignment "{assignment.title}" posted in {classroom.name}. Deadline: {assignment.deadline.strftime("%Y-%m-%d %H:%M") if assignment.deadline else "N/A"}'
+                notification = Notification(user_id=enrollment.student.id, message=message, link=url_for('student_view_assignment', assignment_id=assignment.id))
+                db.session.add(notification)
+            db.session.commit()
+
+        flash(f'Assignment "{assignment.title}" created successfully!', 'success')
+        return redirect(url_for('teacher_assignments', classroom_id=classroom.id))
+    
+    return render_template('teacher/create_assignment.html', classroom=classroom)
+
+@app.route('/teacher/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
+@login_required
+def teacher_edit_assignment(assignment_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    assignment = Assignment.query.filter_by(id=assignment_id, teacher_id=current_user.id).first_or_404()
+    classroom = assignment.classroom
+
+    if request.method == 'POST':
+        assignment.title = request.form.get('title')
+        assignment.description = request.form.get('description')
+        deadline_str = request.form.get('deadline')
+        assignment.published = 'published' in request.form
+
+        if not assignment.title:
+            flash('Assignment title is required.', 'error')
+            return redirect(url_for('teacher_edit_assignment', assignment_id=assignment.id))
+
+        assignment.deadline = None
+        if deadline_str:
+            try:
+                assignment.deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash('Invalid deadline format. Please use YYYY-MM-DDTHH:MM.', 'error')
+                return redirect(url_for('teacher_edit_assignment', assignment_id=assignment.id))
+        
+        db.session.commit()
+        flash(f'Assignment "{assignment.title}" updated successfully!', 'success')
+        return redirect(url_for('teacher_assignments', classroom_id=classroom.id))
+
+    return render_template('teacher/edit_assignment.html', assignment=assignment, classroom=classroom)
+
+@app.route('/teacher/assignment/<int:assignment_id>/publish', methods=['POST'])
+@login_required
+def teacher_publish_assignment(assignment_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    assignment = Assignment.query.filter_by(id=assignment_id, teacher_id=current_user.id).first_or_404()
+    classroom = assignment.classroom
+
+    assignment.published = not assignment.published
+    db.session.commit()
+
+    if assignment.published:
+        flash(f'Assignment "{assignment.title}" published successfully!', 'success')
+        # Notify students upon publishing
+        for enrollment in classroom.enrollments:
+            message = f'New assignment "{assignment.title}" posted in {classroom.name}. Deadline: {assignment.deadline.strftime("%Y-%m-%d %H:%M") if assignment.deadline else "N/A"}'
+            notification = Notification(user_id=enrollment.student.id, message=message, link=url_for('student_view_assignment', assignment_id=assignment.id))
+            db.session.add(notification)
+        db.session.commit()
+    else:
+        flash(f'Assignment "{assignment.title}" unpublished.', 'info')
+
+    return redirect(url_for('teacher_assignments', classroom_id=classroom.id))
+
+@app.route('/teacher/assignment/<int:assignment_id>/delete', methods=['POST'])
+@login_required
+def teacher_delete_assignment(assignment_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    assignment = Assignment.query.filter_by(id=assignment_id, teacher_id=current_user.id).first_or_404()
+    classroom_id = assignment.classroom_id
+
+    db.session.delete(assignment)
+    db.session.commit()
+    flash(f'Assignment "{assignment.title}" deleted successfully.', 'success')
+    return redirect(url_for('teacher_assignments', classroom_id=classroom_id))
+
+@app.route('/student/classroom/<int:classroom_id>/assignments')
+@login_required
+def student_assignments(classroom_id):
+    if current_user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    classroom = Classroom.query.filter_by(id=classroom_id).first_or_404()
+    if not Enrollment.query.filter_by(classroom_id=classroom.id, student_id=current_user.id).first():
+        flash('You are not enrolled in this classroom.', 'error')
+        return redirect(url_for('student_dashboard'))
+    
+    assignments = Assignment.query.filter_by(classroom_id=classroom_id).order_by(Assignment.created_at.desc()).all()
+
+    # Fetch submission for each assignment for the current student
+    assignments_with_submissions = []
+    for assignment in assignments:
+        submission = AssignmentSubmission.query.filter_by(assignment_id=assignment.id, student_id=current_user.id).first()
+        assignments_with_submissions.append({'assignment': assignment, 'submission': submission})
+
+    return render_template('student/assignments.html',
+                           classroom=classroom,
+                           assignments_with_submissions=assignments_with_submissions)
+
+@app.route('/student/assignment/<int:assignment_id>', methods=['GET', 'POST'])
+@login_required
+def student_view_assignment(assignment_id):
+    if current_user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    assignment = Assignment.query.get_or_404(assignment_id)
+    if not assignment.published:
+        flash('Assignment not published.', 'error')
+        return redirect(url_for('student_classroom', classroom_id=assignment.classroom_id))
+
+    # Check for existing submission
+    submission = AssignmentSubmission.query.filter_by(
+        assignment_id=assignment.id,
+        student_id=current_user.id
+    ).first()
+
+    # Determine if resubmission is allowed
+    can_resubmit = False
+    if submission: # If there's an existing submission
+        # Resubmission is allowed if teacher explicitly allowed it AND it's before deadline
+        if submission.is_resubmission_allowed and not assignment.is_past_deadline():
+            can_resubmit = True
+    else: # If no submission yet, it's a new submission, allowed if before deadline
+        if not assignment.is_past_deadline():
+            can_resubmit = True
+
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if not content:
+            flash('Submission content cannot be empty.', 'error')
+            return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
+
+        if submission: # Existing submission, so it's a resubmission
+            if not can_resubmit:
+                flash('Resubmission not allowed at this time.', 'error')
+                return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
+            
+            submission.content = content
+            submission.submitted_at = datetime.utcnow()
+            submission.status = 'Resubmitted'
+            submission.grade = None # Clear grade on resubmission
+            submission.feedback = None # Clear feedback on resubmission
+            submission.is_resubmission_allowed = False # Teacher must re-enable if another resubmission is desired
+            db.session.commit()
+            flash('Assignment resubmitted successfully!', 'success')
+        else: # New submission
+            if assignment.is_past_deadline():
+                flash('Cannot submit, deadline has passed.', 'error')
+                return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
+            
+            new_submission = AssignmentSubmission(
+                assignment_id=assignment.id,
+                student_id=current_user.id,
+                content=content,
+                status='Submitted'
+            )
+            db.session.add(new_submission)
+            db.session.commit()
+            flash('Assignment submitted successfully!', 'success')
+
+        return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
+
+    return render_template('student/view_assignment.html',
+                           assignment=assignment,
+                           submission=submission,
+                           can_resubmit=can_resubmit)
+
+@app.route('/teacher/classroom/<int:classroom_id>/assignment/<int:assignment_id>/submissions')
+@login_required
+def teacher_view_submissions(classroom_id, assignment_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    assignment = Assignment.query.filter_by(id=assignment_id, classroom_id=classroom.id).first_or_404()
+    submissions = AssignmentSubmission.query.filter_by(assignment_id=assignment.id).options(joinedload(AssignmentSubmission.student)).order_by(AssignmentSubmission.submitted_at.asc()).all()
+
+    return render_template('teacher/assignment_submissions.html', 
+                           classroom=classroom, 
+                           assignment=assignment, 
+                           submissions=submissions)
+
+@app.route('/teacher/classroom/<int:classroom_id>/assignment/<int:assignment_id>/submission/<int:submission_id>/grade', methods=['GET', 'POST'])
+@login_required
+def teacher_grade_submission(classroom_id, assignment_id, submission_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    assignment = Assignment.query.filter_by(id=assignment_id, classroom_id=classroom.id).first_or_404()
+    submission = AssignmentSubmission.query.options(joinedload(AssignmentSubmission.student)).filter_by(id=submission_id, assignment_id=assignment.id).first_or_404()
+
+    if request.method == 'POST':
+        grade = request.form.get('grade')
+        feedback = request.form.get('feedback')
+        is_resubmission_allowed = request.form.get('is_resubmission_allowed') == 'on'
+
+        if grade:
+            try:
+                submission.grade = float(grade)
+            except ValueError:
+                flash('Invalid grade. Please enter a number.', 'error')
+                return redirect(url_for('teacher_grade_submission', classroom_id=classroom.id, assignment_id=assignment.id, submission_id=submission.id))
+        else:
+            submission.grade = None
+        
+        submission.feedback = feedback
+        submission.status = 'Graded'
+        submission.is_resubmission_allowed = is_resubmission_allowed
+        db.session.commit()
+        flash('Submission graded successfully!', 'success')
+        return redirect(url_for('teacher_view_submissions', classroom_id=classroom.id, assignment_id=assignment.id))
+
+    return render_template('teacher/grade_submission.html',
+                           classroom=classroom,
+                           assignment=assignment,
+                           submission=submission)
+
+@app.route('/teacher/submission/<int:submission_id>/toggle_resubmission', methods=['POST'])
+@login_required
+def teacher_toggle_resubmission(submission_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    submission = AssignmentSubmission.query.get_or_404(submission_id)
+    
+    # Verify that the teacher owns the assignment associated with the submission
+    if submission.assignment.teacher_id != current_user.id:
+        flash('Access denied: You do not own this assignment.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+
+    submission.is_resubmission_allowed = not submission.is_resubmission_allowed
+    db.session.commit()
+
+    if submission.is_resubmission_allowed:
+        flash('Resubmission enabled for this assignment.', 'success')
+    else:
+        flash('Resubmission disabled for this assignment.', 'info')
+    
+    return redirect(url_for('teacher_view_submissions', classroom_id=submission.assignment.classroom_id, assignment_id=submission.assignment.id))

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ assignment.title }} - Assignment Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white">{{ assignment.title }}</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('student_classroom', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-light d-flex align-items-center">
+                <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+            </a>
+            <a href="{{ url_for('student_assignments', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-light d-flex align-items-center">
+                <i data-feather="list" class="me-2"></i>All Assignments
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Assignment Details</h5>
+        </div>
+        <div class="card-body text-dark">
+            <dl class="row">
+                <dt class="col-sm-3">Description:</dt>
+                <dd class="col-sm-9">{% if assignment.description %}{{ assignment.description | markdown }}{% else %}No description provided.{% endif %}</dd>
+
+                <dt class="col-sm-3">Deadline:</dt>
+                <dd class="col-sm-9">{% if assignment.deadline %}{{ assignment.deadline.strftime('%Y-%m-%d %H:%M') }}{% else %}No specific deadline.{% endif %}</dd>
+
+                <dt class="col-sm-3">Status:</dt>
+                <dd class="col-sm-9">
+                    {% if not assignment.published %}
+                        <span class="badge badge-secondary text-light">Draft (Not visible to students)</span>
+                    {% elif assignment.is_past_deadline() %}
+                        <span class="badge badge-coral text-warning">Expired</span>
+                    {% else %}
+                        <span class="badge badge-success text-success">Active</span>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Assigned by:</dt>
+                <dd class="col-sm-9">{{ assignment.teacher.full_name }}</dd>
+
+                <dt class="col-sm-3">Created on:</dt>
+                <dd class="col-sm-9">{{ assignment.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Submission</h5>
+        </div>
+        <div class="card-body text-dark">
+            {% if submission %}
+                <div class="mb-3">
+                    <h6>Your Submission:</h6>
+                    <div class="card bg-light p-3">
+                        <p class="mb-0">{{ submission.content | markdown }}</p>
+                    </div>
+                    <small class="text-muted">Submitted on: {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    {% if submission.grade is not none %}
+                        <p class="mt-3 mb-0"><strong>Grade:</strong> {{ submission.grade }}%</p>
+                    {% endif %}
+                    {% if submission.feedback %}
+                        <p class="mb-0"><strong>Feedback:</strong> {{ submission.feedback | markdown }}</p>
+                    {% endif %}
+                    {% if submission.is_resubmission_allowed %}
+                        <p class="mb-0 text-success">Teacher has allowed resubmission.</p>
+                    {% endif %}
+                </div>
+                {% if can_resubmit %}
+                    <form action="" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Resubmit Assignment:</label>
+                            <textarea class="form-control" id="content" name="content" rows="8" required>{{ submission.content }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Resubmit</button>
+                    </form>
+                {% else %}
+                    {% if assignment.is_past_deadline() %}
+                        <div class="alert alert-warning" role="alert">
+                            The deadline for this assignment has passed. Resubmission is not allowed.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            You have submitted this assignment. Resubmission is currently not allowed by the teacher.
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                {% if can_resubmit %}
+                    <form action="" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Submit your assignment here:</label>
+                            <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Assignment</button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        The deadline for this assignment has passed. Submission is no longer allowed.
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %} 

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white">Assignments for {{ classroom.name }}</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-light d-flex align-items-center">
+                <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+            </a>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light d-flex align-items-center">
+                <i data-feather="home" class="me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card h-100 border-0 gradient-blue rounded-4 mb-4" id="student-assignments-card">
+        <div class="card-body bg-transparent text-white">
+            <h5 class="card-title mb-3 text-white">Your Assignments</h5>
+            {% if assignments_with_submissions %}
+                <ul class="list-group list-group-flush mb-0">
+                    {% for item in assignments_with_submissions %}
+                        {% set assignment = item.assignment %}
+                        {% set submission = item.submission %}
+                        {% if assignment.published %}
+                            <li class="list-group-item border-secondary d-flex justify-content-between align-items-start text-white list-bg-dark mb-2 rounded-3 p-3 assignment-list-item">
+                                <a href="{{ url_for('student_view_assignment', assignment_id=assignment.id) }}" class="d-block w-100 text-decoration-none text-white">
+                                    <div class="d-flex justify-content-between align-items-start w-100">
+                                        <div>
+                                            <h6 class="mb-0 text-white">{{ assignment.title }}</h6>
+                                            <small class="text-white-80">
+                                                {% if assignment.deadline %}
+                                                    Deadline: {{ assignment.deadline.strftime('%Y-%m-%d %H:%M') }}
+                                                {% else %}
+                                                    No deadline
+                                                {% endif %}
+                                            </small>
+                                            {% if submission and submission.grade is not none %}
+                                                <p class="mb-0 text-white-80"><strong>Grade:</strong> {{ submission.grade }}%</p>
+                                            {% endif %}
+                                        </div>
+                                        <!-- No separate button here, the whole card is clickable -->
+                                    </div>
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="info" class="text-white-50 mb-3 icon-64"></i>
+                    <h3 class="text-white">No Assignments Yet</h3>
+                    <p class="text-white-80">No assignments have been created for this classroom yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<style>
+    #student-assignments-card {
+        background: linear-gradient(135deg, #219CF3, #1976D2) !important;
+        color: white !important;
+    }
+    #student-assignments-card .alert.alert-info {
+        color: white !important; /* Ensure alert text is white */
+    }
+</style>
+{% endblock %}
+{% endblock %} 
