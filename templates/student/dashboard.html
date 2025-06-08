@@ -255,7 +255,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Auto-uppercase invitation code input
 document.getElementById('invitation_code').addEventListener('input', function(e) {
     e.target.value = e.target.value.toUpperCase();

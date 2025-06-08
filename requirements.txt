@@ -19,3 +19,4 @@ scikit-learn
 pyPDF2
 python-docx
 requests
+Flask-Talisman==1.1.0

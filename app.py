@@ -9,6 +9,8 @@ load_dotenv()
 from flask import Flask
 from flask_login import LoginManager, current_user
 from flask_wtf import CSRFProtect
+# Security headers
+from flask_talisman import Talisman
 # from flask_markdown import Markdown # Removed: Using custom markdown filter
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import date
@@ -35,6 +37,18 @@ csrf = CSRFProtect()
 app = Flask(__name__)
 app.secret_key = os.getenv("SESSION_SECRET", "dev-secret-key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Configure Content Security Policy
+csp = {
+    'default-src': ["'self'"],
+    'script-src': ["'self'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com', 'https://unpkg.com'],
+    'style-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
+    'img-src': ["'self'", 'data:'],
+    'font-src': ["'self'", 'https://cdnjs.cloudflare.com'],
+    'object-src': ["'none'"]
+}
+
+Talisman(app, content_security_policy=csp)
 
 # Add chr function to Jinja2 globals
 app.jinja_env.globals['chr'] = chr

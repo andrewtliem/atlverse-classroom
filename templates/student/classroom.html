@@ -51,7 +51,7 @@
                                         </a>
                                     {% endif %}
                                     <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id, material_id=material.id) }}" 
-                                       class="btn btn-outline-light btn-sm" onclick="showLoadingOverlay()">
+                                       class="btn btn-outline-light btn-sm show-loading-overlay">
                                         <i data-feather="book" class="me-1"></i>Study Guide
                                     </a>
                                     <div class="dropdown">
@@ -60,17 +60,17 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-dark">
                                             <li>
-                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq', material_id=material.id) }}">
                                                     <i data-feather="help-circle" class="me-2 text-white"></i>MCQ Quiz
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false', material_id=material.id) }}">
                                                     <i data-feather="check-circle" class="me-2 text-white"></i>True/False Quiz
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay', material_id=material.id) }}" onclick="showLoadingOverlay()">
+                                                <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay', material_id=material.id) }}">
                                                     <i data-feather="edit-3" class="me-2 text-white"></i>Essay Questions
                                                 </a>
                                             </li>
@@ -167,7 +167,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="d-grid">
-                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-yellow" onclick="showLoadingOverlay()">
+                                <a href="{{ url_for('student_generate_study_guide', classroom_id=classroom.id) }}" class="btn btn-yellow show-loading-overlay">
                                     <i data-feather="book" class="me-2"></i>Generate Study Guide
                                 </a>
                             </div>
@@ -179,17 +179,17 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-dark w-100">
                                     <li>
-                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq') }}" onclick="showLoadingOverlay()">
+                                        <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='mcq') }}">
                                             <i data-feather="help-circle" class="me-2 text-white"></i>Multiple Choice
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false') }}" onclick="showLoadingOverlay()">
+                                        <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='true_false') }}">
                                             <i data-feather="check-circle" class="me-2 text-white"></i>True/False
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-white" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay') }}" onclick="showLoadingOverlay()">
+                                        <a class="dropdown-item text-white show-loading-overlay" href="{{ url_for('student_create_quiz', classroom_id=classroom.id, type='essay') }}">
                                             <i data-feather="edit-3" class="me-2 text-white"></i>Essay Questions
                                         </a>
                                     </li>

@@ -201,7 +201,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce() }}">
 "use strict";
 document.addEventListener('DOMContentLoaded', function() {
     const cardViewBtn = document.getElementById('cardViewBtn');

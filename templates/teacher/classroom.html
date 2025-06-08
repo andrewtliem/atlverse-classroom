@@ -59,9 +59,9 @@
                                             <i data-feather="download" class="me-1"></i>Download
                                         </a>
                                     {% endif %}
-                                    <form action="{{ url_for('teacher_delete_material', classroom_id=classroom.id, material_id=material.id) }}" method="POST" class="d-inline">
+                                    <form action="{{ url_for('teacher_delete_material', classroom_id=classroom.id, material_id=material.id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to delete this material?">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this material?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
                                             <i data-feather="trash-2" class="me-1"></i>Delete
                                         </button>
                                     </form>
@@ -167,7 +167,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="{{ url_for('teacher_publish_assignment', assignment_id=assignment.id) }}" method="POST"
-                                          class="d-inline" onsubmit="return confirm('{% if assignment.published %}Unpublish{% else %}Publish{% endif %} this assignment?');">
+                                          class="d-inline" data-confirm="{% if assignment.published %}Unpublish{% else %}Publish{% endif %} this assignment?">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-sm btn-outline-{% if assignment.published %}warning{% else %}success{% endif %}"
                                                 title="{% if assignment.published %}Unpublish{% else %}Publish{% endif %}">
@@ -175,7 +175,7 @@
                                         </button>
                                     </form>
                                     <form action="{{ url_for('teacher_delete_assignment', assignment_id=assignment.id) }}" method="POST"
-                                          class="d-inline" onsubmit="return confirm('Are you sure you want to delete this assignment?');">
+                                          class="d-inline" data-confirm="Are you sure you want to delete this assignment?">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
                                             <i class="fas fa-trash"></i>
@@ -220,13 +220,13 @@
                                     </div>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <form action="{{ url_for('teacher_reset_student_password', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to reset the password for {{ student.full_name }}?');">
+                                    <form action="{{ url_for('teacher_reset_student_password', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to reset the password for {{ student.full_name }}?">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-outline-warning btn-sm">
                                             <i class="fas fa-key me-1"></i>Reset Password
                                         </button>
                                     </form>
-                                    <form action="{{ url_for('teacher_remove_student', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove {{ student.full_name }} from this classroom?');">
+                                    <form action="{{ url_for('teacher_remove_student', classroom_id=classroom.id, student_id=student.id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to remove {{ student.full_name }} from this classroom?">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-outline-danger btn-sm">
                                             <i data-feather="user-minus" class="me-1"></i>

@@ -64,7 +64,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ url_for('teacher_publish_assignment', assignment_id=assignment.id) }}" method="POST"
-                                              class="d-inline" onsubmit="return confirm('{% if assignment.published %}Unpublish{% else %}Publish{% endif %} this assignment?');">
+                                              class="d-inline" data-confirm="{% if assignment.published %}Unpublish{% else %}Publish{% endif %} this assignment?">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-{% if assignment.published %}warning{% else %}success{% endif %}" 
                                                     title="{% if assignment.published %}Unpublish{% else %}Publish{% endif %}">
@@ -76,7 +76,7 @@
                                             <i class="fas fa-list-alt"></i>
                                         </a>
                                         <form action="{{ url_for('teacher_delete_assignment', assignment_id=assignment.id) }}" method="POST"
-                                              class="d-inline" onsubmit='return confirm("Are you sure you want to delete the assignment \"{{ assignment.title }}\"? This action cannot be undone.");'>
+                                              class="d-inline" data-confirm="Are you sure you want to delete the assignment \"{{ assignment.title }}\"? This action cannot be undone.">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
                                                 <i class="fas fa-trash"></i>

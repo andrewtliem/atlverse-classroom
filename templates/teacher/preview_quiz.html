@@ -188,7 +188,7 @@
     </div>
 
     <div class="text-center mb-4">
-        <form action="{{ url_for('teacher_publish_quiz', quiz_id=quiz.id) }}" method="POST" onsubmit="return confirm('{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?');">
+        <form action="{{ url_for('teacher_publish_quiz', quiz_id=quiz.id) }}" method="POST" data-confirm="{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn {% if quiz.published %}btn-warning{% else %}btn-success{% endif %} mr-2">
                 <i class="fas {% if quiz.published %}fa-eye-slash{% else %}fa-check{% endif %}"></i>

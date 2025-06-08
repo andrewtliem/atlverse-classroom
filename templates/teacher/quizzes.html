@@ -135,14 +135,14 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ url_for('teacher_duplicate_quiz', quiz_id=quiz.id) }}" method="POST"
-                                              class="d-inline" onsubmit="return confirm('Duplicate this quiz?');">
+                                              class="d-inline" data-confirm="Duplicate this quiz?">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-success" title="Duplicate">
                                                 <i class="fas fa-copy"></i>
                                             </button>
                                         </form>
                                         <form action="{{ url_for('teacher_publish_quiz', quiz_id=quiz.id) }}" method="POST"
-                                              class="d-inline" onsubmit="return confirm('{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?');">
+                                              class="d-inline" data-confirm="{% if quiz.published %}Unpublish{% else %}Publish{% endif %} this quiz?">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-{% if quiz.published %}warning{% else %}success{% endif %}" 
                                                     title="{% if quiz.published %}Unpublish{% else %}Publish{% endif %}">
@@ -151,7 +151,7 @@
                                         </form>
                                         {% if not quiz.published %}
                                         <form action="{{ url_for('teacher_delete_quiz', quiz_id=quiz.id) }}" method="POST"
-                                              class="d-inline" onsubmit='return confirm("Are you sure you want to delete the quiz \"{{ quiz.title }}\"? This action cannot be undone.");'>
+                                              class="d-inline" data-confirm="Are you sure you want to delete the quiz \"{{ quiz.title }}\"? This action cannot be undone.">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
                                                 <i class="fas fa-trash"></i>
@@ -175,7 +175,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function() {
         // Filter functionality
         const filterButtons = document.querySelectorAll('.filter-btn');
