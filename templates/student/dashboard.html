@@ -126,7 +126,7 @@
     </div>
 {% else %}
     <div class="text-center py-5">
-        <i data-feather="book-plus" class="text-white-50 mb-3" class="text-white-50 mb-3 icon-64"></i>
+        <i data-feather="book-plus" class="text-white-50 mb-3 icon-64"></i>
         <h3 class="text-white">No Classrooms Yet</h3>
         <p class="text-white-80">Join your first classroom using an invitation code from your teacher.</p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinClassroomModal">
@@ -148,7 +148,7 @@
                 <h6 class="text-white-80 mb-3">{{ classroom_names.get(classroom_id, 'Unknown Classroom') }}</h6>
                 <ul class="list-group list-group-flush mb-4">
                     {% for material_id, award_info in awards_by_material.items() %}
-                        <li class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center" class="list-bg-dark">
+                        <li class="list-group-item border-secondary text-white d-flex justify-content-between align-items-center list-bg-dark">
                             <div>
                                 <h6 class="mb-1 text-white">{{ award_info.material_title }}</h6>
                                 <small class="text-white-80">
@@ -157,11 +157,11 @@
                             </div>
                             <div>
                                 {% if award_info.award == 'gold' %}
-                                    <i class="fas fa-medal text-warning" class="icon-medal" title="Gold Award"></i> {# Gold medal icon #}
+                                    <i class="fas fa-medal text-warning icon-medal" title="Gold Award"></i> {# Gold medal icon #}
                                 {% elif award_info.award == 'silver' %}
-                                    <i class="fas fa-medal text-secondary" class="icon-medal" title="Silver Award"></i> {# Silver medal icon #}
+                                    <i class="fas fa-medal text-secondary icon-medal" title="Silver Award"></i> {# Silver medal icon #}
                                 {% elif award_info.award == 'bronze' %}
-                                    <i class="fas fa-medal text-danger" class="icon-medal" title="Bronze Award"></i> {# Bronze medal icon #}
+                                    <i class="fas fa-medal text-danger icon-medal" title="Bronze Award"></i> {# Bronze medal icon #}
                                 {% endif %}
                             </div>
                         </li>
