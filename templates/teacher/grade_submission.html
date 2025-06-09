@@ -23,6 +23,11 @@
                 <dt class="col-sm-3">Student Name:</dt>
                 <dd class="col-sm-9">{{ submission.student.full_name }}</dd>
 
+                {% if submission.group_members %}
+                <dt class="col-sm-3">Group Members:</dt>
+                <dd class="col-sm-9">{{ submission.group_members | map(attribute='full_name') | join(', ') }}</dd>
+                {% endif %}
+
                 <dt class="col-sm-3">Submitted On:</dt>
                 <dd class="col-sm-9">{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</dd>
 

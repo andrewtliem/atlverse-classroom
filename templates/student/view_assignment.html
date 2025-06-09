@@ -66,6 +66,9 @@
                     {% if submission.feedback %}
                         <p class="mb-0"><strong>Feedback:</strong> {{ submission.feedback | markdown }}</p>
                     {% endif %}
+                    {% if submission.group_members %}
+                        <p class="mb-0"><strong>Group Members:</strong> {{ submission.group_members | map(attribute='full_name') | join(', ') }}</p>
+                    {% endif %}
                     {% if submission.is_resubmission_allowed %}
                         <p class="mb-0 text-success">Teacher has allowed resubmission.</p>
                     {% endif %}
@@ -98,6 +101,17 @@
                             <label for="content" class="form-label">Submit your assignment here:</label>
                             <textarea class="form-control" id="content" name="content" rows="8" required></textarea>
                         </div>
+                        {% if assignment.allow_group_submission %}
+                        <div class="mb-3">
+                            <label class="form-label">Select group members:</label>
+                            {% for classmate in classmates %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="group_members" value="{{ classmate.id }}" id="gm{{ classmate.id }}">
+                                    <label class="form-check-label" for="gm{{ classmate.id }}">{{ classmate.full_name }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                         <button type="submit" class="btn btn-primary">Submit Assignment</button>
                     </form>
                 {% else %}
