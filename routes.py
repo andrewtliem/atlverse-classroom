@@ -1841,6 +1841,58 @@ def student_all_activities(classroom_id):
                            classroom=classroom,
                            evaluations=all_activities)
 
+@app.route('/student/reports')
+@login_required
+def student_reports():
+    if current_user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    enrollments = Enrollment.query.filter_by(student_id=current_user.id).all()
+    reports = []
+    for enrollment in enrollments:
+        classroom = enrollment.classroom
+
+        teacher_evals = SelfEvaluation.query.filter_by(
+            classroom_id=classroom.id,
+            student_id=current_user.id,
+            is_ai_generated=False
+        ).filter(
+            SelfEvaluation.quiz_id.isnot(None),
+            SelfEvaluation.completed_at.isnot(None),
+            SelfEvaluation.score.isnot(None)
+        ).all()
+        teacher_avg = (sum(e.score for e in teacher_evals) / len(teacher_evals)) if teacher_evals else None
+
+        ai_evals = SelfEvaluation.query.filter_by(
+            classroom_id=classroom.id,
+            student_id=current_user.id,
+            is_ai_generated=True
+        ).filter(
+            SelfEvaluation.completed_at.isnot(None),
+            SelfEvaluation.score.isnot(None)
+        ).all()
+        ai_avg = (sum(e.score for e in ai_evals) / len(ai_evals)) if ai_evals else None
+
+        assignment_grades = (
+            AssignmentSubmission.query.join(Assignment)
+            .filter(
+                AssignmentSubmission.student_id == current_user.id,
+                Assignment.classroom_id == classroom.id,
+                AssignmentSubmission.grade.isnot(None)
+            ).all()
+        )
+        assignment_avg = (sum(a.grade for a in assignment_grades) / len(assignment_grades)) if assignment_grades else None
+
+        reports.append({
+            'classroom': classroom,
+            'teacher_avg': teacher_avg,
+            'ai_avg': ai_avg,
+            'assignment_avg': assignment_avg
+        })
+
+    return render_template('student/reports.html', reports=reports)
+
 @app.route('/uploads/<filename>')
 @login_required
 def uploaded_file(filename):
