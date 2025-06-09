@@ -13,7 +13,11 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
 import logging
-from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission, CPMK
+from models import (
+    User, Classroom, Enrollment, Material, SelfEvaluation, Quiz,
+    Notification, Assignment, AssignmentSubmission, CPMK,
+    quiz_cpmk, assignment_cpmk,
+)
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
