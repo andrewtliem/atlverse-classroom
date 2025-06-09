@@ -1,9 +1,15 @@
-"""add cpmk model"""
+"""Add cpmk model
+
+Revision ID: 1749444480
+Revises: 32b428bffa0f
+Create Date: 2025-06-09 12:59:48.000000
+
+"""
 from alembic import op
 import sqlalchemy as sa
 
-revision = '${alembic_revision}'
-down_revision = 'fd787053c267'
+revision = '1749444480'
+down_revision = '32b428bffa0f'
 branch_labels = None
 depends_on = None
 
