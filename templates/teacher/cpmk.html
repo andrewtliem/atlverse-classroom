@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}CPMK - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">CPMK for {{ classroom.name }}</h2>
+        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-gradient-teal">
+            <i data-feather="folder" class="me-2"></i>Back to Classroom
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Add CPMK</h5>
+        </div>
+        <div class="card-body text-dark">
+            <form method="POST" action="{{ url_for('teacher_cpmk', classroom_id=classroom.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="code" class="form-label">Code</label>
+                    <input type="text" class="form-control" id="code" name="code" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i data-feather="plus" class="me-2"></i>Add CPMK
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Existing CPMK</h5>
+        </div>
+        <div class="card-body text-dark">
+            {% if progress %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Average Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in progress %}
+                            <tr>
+                                <td>{{ item.cpmk.code }}</td>
+                                <td>{{ item.cpmk.description }}</td>
+                                <td>{{ '%.2f%%'|format(item.avg_score) if item.avg_score is not none else 'N/A' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">No CPMK defined.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

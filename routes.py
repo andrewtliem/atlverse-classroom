@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from app import app, db
 import logging
-from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission
+from models import User, Classroom, Enrollment, Material, SelfEvaluation, Quiz, Notification, Assignment, AssignmentSubmission, CPMK
 from awards_utils import calculate_awards_for_student, calculate_star_total, get_classroom_star_rankings
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
@@ -201,13 +201,15 @@ def teacher_classroom(classroom_id):
     students = [enrollment.student for enrollment in enrollments]
     quizzes = Quiz.query.filter_by(classroom_id=classroom_id).order_by(Quiz.created_at.desc()).all()
     assignments = Assignment.query.filter_by(classroom_id=classroom_id).order_by(Assignment.created_at.desc()).all() # New: Fetch assignments
+    cpmks = CPMK.query.filter_by(classroom_id=classroom_id).all()
     
     return render_template('teacher/classroom.html', 
                          classroom=classroom, 
                          materials=materials,
                          students=students,
                          quizzes=quizzes,
-                         assignments=assignments) # Pass assignments to template
+                         assignments=assignments,
+                         cpmks=cpmks) # Pass assignments to template
 
 @app.route('/teacher/classroom/<int:classroom_id>/quizzes_tab')
 @login_required
@@ -239,6 +241,7 @@ def teacher_upload_material(classroom_id):
     
     file = request.files['file']
     title = request.form.get('title')
+    cpmk_id = request.form.get('cpmk_id')
     
     if file.filename == '':
         flash('No file selected', 'error')
@@ -261,6 +264,7 @@ def teacher_upload_material(classroom_id):
             
             material = Material(
                 classroom_id=classroom_id,
+                cpmk_id=cpmk_id if cpmk_id else None,
                 title=title,
                 content=content,
                 file_path=filename,
@@ -576,6 +580,7 @@ def teacher_create_quiz(classroom_id):
         available_from = request.form.get('available_from')
         available_until = request.form.get('available_until')
         max_attempts = request.form.get('max_attempts')
+        cpmk_id = request.form.get('cpmk_id')
         
         # Convert time limit to integer or None
         time_limit = int(time_limit) if time_limit and time_limit.isdigit() else None
@@ -657,6 +662,7 @@ def teacher_create_quiz(classroom_id):
             description=description,
             teacher_id=current_user.id,
             classroom_id=classroom_id,
+            cpmk_id=cpmk_id if cpmk_id else None,
             quiz_type=quiz_type,
             questions_json=json.dumps(questions),
             time_limit_minutes=time_limit,
@@ -674,7 +680,8 @@ def teacher_create_quiz(classroom_id):
         flash('Quiz created successfully! Review and publish when ready.', 'success')
         return redirect(url_for('teacher_edit_quiz', quiz_id=quiz.id))
     
-    return render_template('teacher/create_quiz.html', classroom=classroom)
+    cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+    return render_template('teacher/create_quiz.html', classroom=classroom, cpmks=cpmks)
 
 @app.route('/teacher/quiz/<int:quiz_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -704,6 +711,8 @@ def teacher_edit_quiz(quiz_id):
         quiz.time_limit_minutes = int(request.form.get('time_limit')) if request.form.get('time_limit') and request.form.get('time_limit').isdigit() else None
         quiz.passing_score = float(request.form.get('passing_score', 60.0))
         quiz.is_required = 'is_required' in request.form
+        cpmk_id = request.form.get('cpmk_id')
+        quiz.cpmk_id = cpmk_id if cpmk_id else None
         
         # Convert dates if provided
         available_from = request.form.get('available_from')
@@ -777,10 +786,12 @@ def teacher_edit_quiz(quiz_id):
         flash('Quiz updated successfully!', 'success')
         return redirect(url_for('teacher_quizzes', classroom_id=classroom.id))
     
-    return render_template('teacher/edit_quiz.html', 
-                         classroom=classroom, 
-                         quiz=quiz, 
-                         questions=questions_with_index)
+    cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+    return render_template('teacher/edit_quiz.html',
+                         classroom=classroom,
+                         quiz=quiz,
+                         questions=questions_with_index,
+                         cpmks=cpmks)
 
 @app.route('/teacher/quiz/<int:quiz_id>/duplicate', methods=['POST'])
 @login_required
@@ -2032,6 +2043,39 @@ def notifications():
     notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', notifications=notifications_list)
 
+@app.route('/teacher/classroom/<int:classroom_id>/cpmk', methods=['GET', 'POST'])
+@login_required
+def teacher_cpmk(classroom_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+
+    if request.method == 'POST':
+        code = request.form.get('code')
+        description = request.form.get('description')
+        if not code or not description:
+            flash('Both code and description are required.', 'error')
+        else:
+            cpmk = CPMK(code=code, description=description, classroom_id=classroom.id)
+            db.session.add(cpmk)
+            db.session.commit()
+            flash('CPMK added successfully!', 'success')
+        return redirect(url_for('teacher_cpmk', classroom_id=classroom.id))
+
+    cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+
+    progress = []
+    for c in cpmks:
+        eval_scores = [e.score for e in SelfEvaluation.query.join(Quiz).filter(Quiz.cpmk_id==c.id, SelfEvaluation.completed_at.isnot(None)).all() if e.score is not None]
+        assignment_scores = [s.grade for s in AssignmentSubmission.query.join(Assignment).filter(Assignment.cpmk_id==c.id, AssignmentSubmission.grade.isnot(None)).all() if s.grade is not None]
+        scores = eval_scores + assignment_scores
+        avg_score = sum(scores)/len(scores) if scores else None
+        progress.append({'cpmk': c, 'avg_score': avg_score})
+
+    return render_template('teacher/cpmk.html', classroom=classroom, progress=progress)
+
 @app.route('/teacher/classroom/<int:classroom_id>/assignments')
 @login_required
 def teacher_assignments(classroom_id):
@@ -2061,6 +2105,7 @@ def teacher_create_assignment(classroom_id):
         deadline_str = request.form.get('deadline')
         published = 'published' in request.form
         allow_group = 'allow_group_submission' in request.form
+        cpmk_id = request.form.get('cpmk_id')
 
         if not title:
             flash('Assignment title is required.', 'error')
@@ -2078,6 +2123,7 @@ def teacher_create_assignment(classroom_id):
             title=title,
             description=description,
             classroom_id=classroom.id,
+            cpmk_id=cpmk_id if cpmk_id else None,
             teacher_id=current_user.id,
             deadline=deadline,
             published=published,
@@ -2097,7 +2143,8 @@ def teacher_create_assignment(classroom_id):
         flash(f'Assignment "{assignment.title}" created successfully!', 'success')
         return redirect(url_for('teacher_assignments', classroom_id=classroom.id))
     
-    return render_template('teacher/create_assignment.html', classroom=classroom)
+    cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+    return render_template('teacher/create_assignment.html', classroom=classroom, cpmks=cpmks)
 
 @app.route('/teacher/assignment/<int:assignment_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -2115,6 +2162,8 @@ def teacher_edit_assignment(assignment_id):
         deadline_str = request.form.get('deadline')
         assignment.published = 'published' in request.form
         assignment.allow_group_submission = 'allow_group_submission' in request.form
+        cpmk_id = request.form.get('cpmk_id')
+        assignment.cpmk_id = cpmk_id if cpmk_id else None
 
         if not assignment.title:
             flash('Assignment title is required.', 'error')
@@ -2132,7 +2181,8 @@ def teacher_edit_assignment(assignment_id):
         flash(f'Assignment "{assignment.title}" updated successfully!', 'success')
         return redirect(url_for('teacher_assignments', classroom_id=classroom.id))
 
-    return render_template('teacher/edit_assignment.html', assignment=assignment, classroom=classroom)
+    cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+    return render_template('teacher/edit_assignment.html', assignment=assignment, classroom=classroom, cpmks=cpmks)
 
 @app.route('/teacher/assignment/<int:assignment_id>/publish', methods=['POST'])
 @login_required
