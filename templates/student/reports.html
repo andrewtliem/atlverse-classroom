@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}My Reports{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-white">My Subject Reports</h1>
+</div>
+
+{% if reports %}
+    <div class="row g-4">
+        {% for info in reports %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 gradient-blue rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title text-white">{{ info.classroom.name }}</h5>
+                        <ul class="list-unstyled mt-3 text-white-80">
+                            <li>
+                                Teacher Quiz Avg:
+                                {% if info.teacher_avg is not none %}
+                                    <span class="fw-bold text-yellow">{{ "%.0f"|format(info.teacher_avg) }}%</span>
+                                {% else %}
+                                    <span class="text-white-50">--</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                AI Quiz Avg:
+                                {% if info.ai_avg is not none %}
+                                    <span class="fw-bold text-yellow">{{ "%.0f"|format(info.ai_avg) }}%</span>
+                                {% else %}
+                                    <span class="text-white-50">--</span>
+                                {% endif %}
+                            </li>
+                            <li>
+                                Assignment Avg:
+                                {% if info.assignment_avg is not none %}
+                                    <span class="fw-bold text-yellow">{{ "%.0f"|format(info.assignment_avg) }}%</span>
+                                {% else %}
+                                    <span class="text-white-50">--</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i data-feather="bar-chart-2" class="text-white-50 mb-3 icon-64"></i>
+        <h3 class="text-white">No Reports Available</h3>
+        <p class="text-white-80">Join a classroom to start tracking your progress.</p>
+    </div>
+{% endif %}
+{% endblock %}
