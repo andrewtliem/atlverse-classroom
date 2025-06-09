@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import string
+import json
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -182,6 +183,7 @@ class Assignment(db.Model):
     deadline = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     published = db.Column(db.Boolean, default=False)
+    allow_group_submission = db.Column(db.Boolean, default=False)
 
     # New relationship for submissions
     submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy=True, cascade='all, delete-orphan')
@@ -211,6 +213,7 @@ class AssignmentSubmission(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     student = db.relationship('User', backref='assignment_submissions', lazy=True)
     content = db.Column(db.Text, nullable=False)
+    group_member_ids = db.Column(db.Text)  # JSON list of all participating student IDs
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(50), default='Submitted')  # e.g., 'Submitted', 'Graded', 'Resubmitted'
     grade = db.Column(db.Float)  # NULLable
@@ -218,3 +221,14 @@ class AssignmentSubmission(db.Model):
     is_resubmission_allowed = db.Column(db.Boolean, default=False)
 
     __table_args__ = (db.UniqueConstraint('assignment_id', 'student_id', name='unique_assignment_submission'),)
+
+    @property
+    def group_members(self):
+        """Return User objects for all group members."""
+        if not self.group_member_ids:
+            return []
+        try:
+            ids = json.loads(self.group_member_ids)
+        except Exception:
+            return []
+        return User.query.filter(User.id.in_(ids)).all()

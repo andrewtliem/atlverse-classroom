@@ -2060,6 +2060,7 @@ def teacher_create_assignment(classroom_id):
         description = request.form.get('description')
         deadline_str = request.form.get('deadline')
         published = 'published' in request.form
+        allow_group = 'allow_group_submission' in request.form
 
         if not title:
             flash('Assignment title is required.', 'error')
@@ -2079,7 +2080,8 @@ def teacher_create_assignment(classroom_id):
             classroom_id=classroom.id,
             teacher_id=current_user.id,
             deadline=deadline,
-            published=published
+            published=published,
+            allow_group_submission=allow_group
         )
         db.session.add(assignment)
         db.session.commit()
@@ -2112,6 +2114,7 @@ def teacher_edit_assignment(assignment_id):
         assignment.description = request.form.get('description')
         deadline_str = request.form.get('deadline')
         assignment.published = 'published' in request.form
+        assignment.allow_group_submission = 'allow_group_submission' in request.form
 
         if not assignment.title:
             flash('Assignment title is required.', 'error')
@@ -2186,10 +2189,19 @@ def student_assignments(classroom_id):
     
     assignments = Assignment.query.filter_by(classroom_id=classroom_id).order_by(Assignment.created_at.desc()).all()
 
-    # Fetch submission for each assignment for the current student
     assignments_with_submissions = []
     for assignment in assignments:
-        submission = AssignmentSubmission.query.filter_by(assignment_id=assignment.id, student_id=current_user.id).first()
+        submission = None
+        for sub in AssignmentSubmission.query.filter_by(assignment_id=assignment.id).all():
+            member_ids = []
+            if sub.group_member_ids:
+                try:
+                    member_ids = json.loads(sub.group_member_ids)
+                except Exception:
+                    member_ids = []
+            if current_user.id == sub.student_id or current_user.id in member_ids:
+                submission = sub
+                break
         assignments_with_submissions.append({'assignment': assignment, 'submission': submission})
 
     return render_template('student/assignments.html',
@@ -2208,11 +2220,22 @@ def student_view_assignment(assignment_id):
         flash('Assignment not published.', 'error')
         return redirect(url_for('student_classroom', classroom_id=assignment.classroom_id))
 
-    # Check for existing submission
-    submission = AssignmentSubmission.query.filter_by(
-        assignment_id=assignment.id,
-        student_id=current_user.id
-    ).first()
+    submission = None
+    for sub in AssignmentSubmission.query.filter_by(assignment_id=assignment.id).all():
+        member_ids = []
+        if sub.group_member_ids:
+            try:
+                member_ids = json.loads(sub.group_member_ids)
+            except Exception:
+                member_ids = []
+        if current_user.id == sub.student_id or current_user.id in member_ids:
+            submission = sub
+            break
+
+    classmates = []
+    if assignment.allow_group_submission and not submission:
+        enrollments = Enrollment.query.filter_by(classroom_id=assignment.classroom_id).all()
+        classmates = [e.student for e in enrollments if e.student_id != current_user.id]
 
     # Determine if resubmission is allowed
     can_resubmit = False
@@ -2247,12 +2270,27 @@ def student_view_assignment(assignment_id):
             if assignment.is_past_deadline():
                 flash('Cannot submit, deadline has passed.', 'error')
                 return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
-            
+
+            for sub in AssignmentSubmission.query.filter_by(assignment_id=assignment.id).all():
+                members = []
+                if sub.group_member_ids:
+                    try:
+                        members = json.loads(sub.group_member_ids)
+                    except Exception:
+                        members = []
+                if current_user.id == sub.student_id or current_user.id in members:
+                    flash('You are already part of an existing submission.', 'error')
+                    return redirect(url_for('student_view_assignment', assignment_id=assignment.id))
+
+            selected = request.form.getlist('group_members')
+            member_ids = [current_user.id] + [int(s) for s in selected if s]
+
             new_submission = AssignmentSubmission(
                 assignment_id=assignment.id,
                 student_id=current_user.id,
                 content=content,
-                status='Submitted'
+                status='Submitted',
+                group_member_ids=json.dumps(member_ids)
             )
             db.session.add(new_submission)
             db.session.commit()
@@ -2263,7 +2301,8 @@ def student_view_assignment(assignment_id):
     return render_template('student/view_assignment.html',
                            assignment=assignment,
                            submission=submission,
-                           can_resubmit=can_resubmit)
+                           can_resubmit=can_resubmit,
+                           classmates=classmates)
 
 @app.route('/teacher/classroom/<int:classroom_id>/assignment/<int:assignment_id>/submissions')
 @login_required

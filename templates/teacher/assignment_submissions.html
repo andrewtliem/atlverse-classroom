@@ -19,6 +19,7 @@
                     <thead>
                         <tr>
                             <th>Student</th>
+                            <th>Group Members</th>
                             <th>Submitted On</th>
                             <th>Status</th>
                             <th>Resubmission Allowed</th>
@@ -30,6 +31,11 @@
                         {% for submission in submissions %}
                         <tr>
                             <td>{{ submission.student.full_name }}</td>
+                            <td>
+                                {% if submission.group_members %}
+                                    {{ submission.group_members | map(attribute='full_name') | join(', ') }}
+                                {% else %}-{% endif %}
+                            </td>
                             <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
                                 {% if submission.status == 'Submitted' %}
