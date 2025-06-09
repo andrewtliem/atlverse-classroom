@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 
+os.environ["GEMINI_API_KEY"] = "dummy"
 from app import app, db, inject_daily_quote
 
 class QuoteContextProcessorTest(unittest.TestCase):
