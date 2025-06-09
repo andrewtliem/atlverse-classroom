@@ -45,6 +45,7 @@
                             <th>Code</th>
                             <th>Description</th>
                             <th>Average Score</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,6 +54,9 @@
                                 <td>{{ item.cpmk.code }}</td>
                                 <td>{{ item.cpmk.description }}</td>
                                 <td>{{ '%.2f%%'|format(item.avg_score) if item.avg_score is not none else 'N/A' }}</td>
+                                <td>
+                                    <a href="{{ url_for('teacher_cpmk', classroom_id=classroom.id, cpmk_id=item.cpmk.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -62,5 +66,36 @@
             {% endif %}
         </div>
     </div>
+
+    {% if selected_cpmk %}
+        <div class="card mt-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-dark">Student Progress for {{ selected_cpmk.code }}</h5>
+                <a href="{{ url_for('teacher_cpmk', classroom_id=classroom.id) }}" class="btn btn-sm btn-secondary">Back</a>
+            </div>
+            <div class="card-body text-dark">
+                {% if student_progress %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Average Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sp in student_progress %}
+                                <tr>
+                                    <td>{{ sp.student.full_name }}</td>
+                                    <td>{{ '%.2f%%'|format(sp.avg_score) if sp.avg_score is not none else 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-info">No scores available for this CPMK.</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
