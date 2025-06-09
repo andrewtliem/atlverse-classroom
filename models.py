@@ -46,6 +46,7 @@ class Classroom(db.Model):
     self_evaluations = db.relationship('SelfEvaluation', backref='classroom', lazy=True, cascade='all, delete-orphan')
     quizzes = db.relationship('Quiz', backref='classroom', lazy=True, cascade='all, delete-orphan')
     assignments = db.relationship('Assignment', backref='classroom', lazy=True, cascade='all, delete-orphan')
+    cpmks = db.relationship('CPMK', backref='classroom', lazy=True, cascade='all, delete-orphan')
     
     def __init__(self, **kwargs):
         super(Classroom, self).__init__(**kwargs)
@@ -68,9 +69,16 @@ class Enrollment(db.Model):
     
     __table_args__ = (db.UniqueConstraint('classroom_id', 'student_id', name='unique_enrollment'),)
 
+class CPMK(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+    code = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+
 class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'))
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text)
     file_path = db.Column(db.String(500))
@@ -79,6 +87,7 @@ class Material(db.Model):
     
     # Relationships
     self_evaluations = db.relationship('SelfEvaluation', backref='material', lazy=True)
+    cpmk = db.relationship('CPMK', backref='materials', lazy=True)
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,6 +95,7 @@ class Quiz(db.Model):
     description = db.Column(db.Text)
     teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'))
     quiz_type = db.Column(db.String(20), nullable=False)  # 'mcq', 'true_false', 'essay'
     questions_json = db.Column(db.Text, nullable=False)
     time_limit_minutes = db.Column(db.Integer)  # NULL means no time limit
@@ -99,6 +109,7 @@ class Quiz(db.Model):
     
     # Relationships
     evaluations = db.relationship('SelfEvaluation', backref='quiz', lazy=True)
+    cpmk = db.relationship('CPMK', backref='quizzes', lazy=True)
 
     def is_available(self):
         """Check if the quiz is available for students to take"""
@@ -178,6 +189,7 @@ class Assignment(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'))
     teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     teacher = db.relationship('User', backref='created_assignments', lazy=True)
     deadline = db.Column(db.DateTime)
@@ -187,6 +199,7 @@ class Assignment(db.Model):
 
     # New relationship for submissions
     submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy=True, cascade='all, delete-orphan')
+    cpmk = db.relationship('CPMK', backref='assignments', lazy=True)
     
     def is_past_deadline(self):
         """Check if the assignment deadline has passed"""

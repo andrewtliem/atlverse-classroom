@@ -30,6 +30,15 @@
                     <label for="deadline" class="form-label">Deadline (Optional)</label>
                     <input type="datetime-local" class="form-control" id="deadline" name="deadline" value="{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') if assignment.deadline else '' }}">
                 </div>
+                <div class="mb-3">
+                    <label for="cpmk_id" class="form-label">CPMK</label>
+                    <select class="form-control" id="cpmk_id" name="cpmk_id">
+                        <option value="">-- Select CPMK --</option>
+                        {% for cpmk in cpmks %}
+                            <option value="{{ cpmk.id }}" {% if assignment.cpmk_id == cpmk.id %}selected{% endif %}>{{ cpmk.code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="published" name="published" {% if assignment.published %}checked{% endif %}>
                     <label class="form-check-label" for="published">Publish Assignment (make visible to students)</label>

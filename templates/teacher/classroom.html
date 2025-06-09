@@ -16,6 +16,9 @@
         </div>
     </div>
     <div class="d-flex gap-2">
+        <a href="{{ url_for('teacher_cpmk', classroom_id=classroom.id) }}" class="btn btn-outline-light">
+            <i data-feather="target" class="me-2"></i>CPMK
+        </a>
         <a href="{{ url_for('teacher_results', classroom_id=classroom.id) }}" class="btn btn-outline-light">
             <i data-feather="bar-chart-2" class="me-2"></i>View Results
         </a>
@@ -267,6 +270,15 @@
                         <label for="file" class="form-label">File</label>
                         <input type="file" class="form-control" id="file" name="file" accept=".pdf,.txt,.doc,.docx" required>
                         <div class="form-text">Supported formats: PDF, TXT, DOC, DOCX (Max 16MB)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cpmk_id" class="form-label">CPMK</label>
+                        <select class="form-control" id="cpmk_id" name="cpmk_id">
+                            <option value="">-- Select CPMK --</option>
+                            {% for cpmk in cpmks %}
+                                <option value="{{ cpmk.id }}">{{ cpmk.code }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
