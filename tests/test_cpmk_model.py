@@ -1,5 +1,6 @@
 import os
 import unittest
+os.environ["GEMINI_API_KEY"] = "dummy"
 from app import app, db
 from models import User, Classroom, CPMK, Material, Quiz, Assignment
 
@@ -27,17 +28,21 @@ class CPMKModelTest(unittest.TestCase):
 
     def test_cpmk_associations(self):
         with app.app_context():
-            cpmk = CPMK(code="C1", description="desc", classroom_id=self.classroom_id)
-            db.session.add(cpmk)
+            c1 = CPMK(code="C1", description="desc", classroom_id=self.classroom_id)
+            c2 = CPMK(code="C2", description="desc2", classroom_id=self.classroom_id)
+            db.session.add_all([c1, c2])
             db.session.commit()
-            material = Material(title="m1", classroom_id=self.classroom_id, cpmk_id=cpmk.id)
-            quiz = Quiz(title="q1", description="", teacher_id=self.teacher_id, classroom_id=self.classroom_id, quiz_type="mcq", questions_json="[]", cpmk_id=cpmk.id)
-            assignment = Assignment(title="a1", classroom_id=self.classroom_id, teacher_id=self.teacher_id, cpmk_id=cpmk.id)
+            material = Material(title="m1", classroom_id=self.classroom_id)
+            material.cpmks = [c1, c2]
+            quiz = Quiz(title="q1", description="", teacher_id=self.teacher_id, classroom_id=self.classroom_id, quiz_type="mcq", questions_json="[]")
+            quiz.cpmks = [c1, c2]
+            assignment = Assignment(title="a1", classroom_id=self.classroom_id, teacher_id=self.teacher_id)
+            assignment.cpmks = [c1, c2]
             db.session.add_all([material, quiz, assignment])
             db.session.commit()
-            self.assertEqual(material.cpmk.id, cpmk.id)
-            self.assertEqual(quiz.cpmk.id, cpmk.id)
-            self.assertEqual(assignment.cpmk.id, cpmk.id)
+            self.assertEqual(set(material.cpmks), {c1, c2})
+            self.assertEqual(set(quiz.cpmks), {c1, c2})
+            self.assertEqual(set(assignment.cpmks), {c1, c2})
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,13 +2,13 @@ import os
 import json
 import unittest
 
+os.environ["GEMINI_API_KEY"] = "dummy"
 from app import app, db
 from models import User, Classroom, Enrollment, Assignment, AssignmentSubmission
 
 class GroupAssignmentTest(unittest.TestCase):
     def setUp(self):
         os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-        os.environ["GEMINI_API_KEY"] = "dummy"
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
         app.config["TESTING"] = True
         with app.app_context():

@@ -241,7 +241,7 @@ def teacher_upload_material(classroom_id):
     
     file = request.files['file']
     title = request.form.get('title')
-    cpmk_id = request.form.get('cpmk_id')
+    cpmk_ids = request.form.getlist('cpmk_ids')
     
     if file.filename == '':
         flash('No file selected', 'error')
@@ -264,13 +264,14 @@ def teacher_upload_material(classroom_id):
             
             material = Material(
                 classroom_id=classroom_id,
-                cpmk_id=cpmk_id if cpmk_id else None,
                 title=title,
                 content=content,
                 file_path=filename,
                 file_type=file.filename.split('.')[-1].lower()
             )
-            
+            if cpmk_ids:
+                material.cpmks = CPMK.query.filter(CPMK.id.in_(cpmk_ids)).all()
+
             db.session.add(material)
             db.session.commit()
 
@@ -580,7 +581,7 @@ def teacher_create_quiz(classroom_id):
         available_from = request.form.get('available_from')
         available_until = request.form.get('available_until')
         max_attempts = request.form.get('max_attempts')
-        cpmk_id = request.form.get('cpmk_id')
+        cpmk_ids = request.form.getlist('cpmk_ids')
         
         # Convert time limit to integer or None
         time_limit = int(time_limit) if time_limit and time_limit.isdigit() else None
@@ -662,7 +663,6 @@ def teacher_create_quiz(classroom_id):
             description=description,
             teacher_id=current_user.id,
             classroom_id=classroom_id,
-            cpmk_id=cpmk_id if cpmk_id else None,
             quiz_type=quiz_type,
             questions_json=json.dumps(questions),
             time_limit_minutes=time_limit,
@@ -674,6 +674,9 @@ def teacher_create_quiz(classroom_id):
             max_attempts=max_attempts
         )
         
+        if cpmk_ids:
+            quiz.cpmks = CPMK.query.filter(CPMK.id.in_(cpmk_ids)).all()
+
         db.session.add(quiz)
         db.session.commit()
         
@@ -711,8 +714,11 @@ def teacher_edit_quiz(quiz_id):
         quiz.time_limit_minutes = int(request.form.get('time_limit')) if request.form.get('time_limit') and request.form.get('time_limit').isdigit() else None
         quiz.passing_score = float(request.form.get('passing_score', 60.0))
         quiz.is_required = 'is_required' in request.form
-        cpmk_id = request.form.get('cpmk_id')
-        quiz.cpmk_id = cpmk_id if cpmk_id else None
+        cpmk_ids = request.form.getlist('cpmk_ids')
+        if cpmk_ids:
+            quiz.cpmks = CPMK.query.filter(CPMK.id.in_(cpmk_ids)).all()
+        else:
+            quiz.cpmks = []
         
         # Convert dates if provided
         available_from = request.form.get('available_from')
@@ -2068,8 +2074,8 @@ def teacher_cpmk(classroom_id):
 
     progress = []
     for c in cpmks:
-        eval_scores = [e.score for e in SelfEvaluation.query.join(Quiz).filter(Quiz.cpmk_id==c.id, SelfEvaluation.completed_at.isnot(None)).all() if e.score is not None]
-        assignment_scores = [s.grade for s in AssignmentSubmission.query.join(Assignment).filter(Assignment.cpmk_id==c.id, AssignmentSubmission.grade.isnot(None)).all() if s.grade is not None]
+        eval_scores = [e.score for e in SelfEvaluation.query.join(Quiz).join(quiz_cpmk).filter(quiz_cpmk.c.cpmk_id==c.id, SelfEvaluation.completed_at.isnot(None)).all() if e.score is not None]
+        assignment_scores = [s.grade for s in AssignmentSubmission.query.join(Assignment).join(assignment_cpmk).filter(assignment_cpmk.c.cpmk_id==c.id, AssignmentSubmission.grade.isnot(None)).all() if s.grade is not None]
         scores = eval_scores + assignment_scores
         avg_score = sum(scores)/len(scores) if scores else None
         progress.append({'cpmk': c, 'avg_score': avg_score})
@@ -2105,7 +2111,7 @@ def teacher_create_assignment(classroom_id):
         deadline_str = request.form.get('deadline')
         published = 'published' in request.form
         allow_group = 'allow_group_submission' in request.form
-        cpmk_id = request.form.get('cpmk_id')
+        cpmk_ids = request.form.getlist('cpmk_ids')
 
         if not title:
             flash('Assignment title is required.', 'error')
@@ -2123,12 +2129,14 @@ def teacher_create_assignment(classroom_id):
             title=title,
             description=description,
             classroom_id=classroom.id,
-            cpmk_id=cpmk_id if cpmk_id else None,
             teacher_id=current_user.id,
             deadline=deadline,
             published=published,
             allow_group_submission=allow_group
         )
+        if cpmk_ids:
+            assignment.cpmks = CPMK.query.filter(CPMK.id.in_(cpmk_ids)).all()
+
         db.session.add(assignment)
         db.session.commit()
 
@@ -2162,8 +2170,11 @@ def teacher_edit_assignment(assignment_id):
         deadline_str = request.form.get('deadline')
         assignment.published = 'published' in request.form
         assignment.allow_group_submission = 'allow_group_submission' in request.form
-        cpmk_id = request.form.get('cpmk_id')
-        assignment.cpmk_id = cpmk_id if cpmk_id else None
+        cpmk_ids = request.form.getlist('cpmk_ids')
+        if cpmk_ids:
+            assignment.cpmks = CPMK.query.filter(CPMK.id.in_(cpmk_ids)).all()
+        else:
+            assignment.cpmks = []
 
         if not assignment.title:
             flash('Assignment title is required.', 'error')

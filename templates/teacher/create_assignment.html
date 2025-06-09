@@ -31,9 +31,8 @@
                     <input type="datetime-local" class="form-control" id="deadline" name="deadline">
                 </div>
                 <div class="mb-3">
-                    <label for="cpmk_id" class="form-label">CPMK</label>
-                    <select class="form-control" id="cpmk_id" name="cpmk_id">
-                        <option value="">-- Select CPMK --</option>
+                    <label for="cpmk_ids" class="form-label">CPMK</label>
+                    <select class="form-control" id="cpmk_ids" name="cpmk_ids" multiple>
                         {% for cpmk in cpmks %}
                             <option value="{{ cpmk.id }}">{{ cpmk.code }}</option>
                         {% endfor %}
