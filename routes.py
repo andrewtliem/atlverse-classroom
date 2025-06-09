@@ -2101,6 +2101,42 @@ def notifications():
     notifications_list = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', notifications=notifications_list)
 
+def calculate_cpmk_student_scores(cpmk_id):
+    """Return average score per student for the given CPMK."""
+    progress_map = {}
+    evaluations = (
+        SelfEvaluation.query
+        .join(Quiz)
+        .filter(
+            Quiz.cpmk_id == cpmk_id,
+            SelfEvaluation.completed_at.isnot(None),
+            SelfEvaluation.score.isnot(None)
+        )
+        .all()
+    )
+    for e in evaluations:
+        progress_map.setdefault(e.student_id, []).append(e.score)
+
+    submissions = (
+        AssignmentSubmission.query
+        .join(Assignment)
+        .filter(
+            Assignment.cpmk_id == cpmk_id,
+            AssignmentSubmission.grade.isnot(None)
+        )
+        .all()
+    )
+    for s in submissions:
+        progress_map.setdefault(s.student_id, []).append(s.grade)
+
+    results = []
+    for student_id, scores in progress_map.items():
+        avg = sum(scores) / len(scores) if scores else None
+        student = User.query.get(student_id)
+        results.append({'student': student, 'avg_score': avg})
+    results.sort(key=lambda r: r['student'].full_name if r['student'] else '')
+    return results
+
 @app.route('/teacher/classroom/<int:classroom_id>/cpmk', methods=['GET', 'POST'])
 @login_required
 def teacher_cpmk(classroom_id):
@@ -2132,7 +2168,17 @@ def teacher_cpmk(classroom_id):
         avg_score = sum(scores)/len(scores) if scores else None
         progress.append({'cpmk': c, 'avg_score': avg_score})
 
-    return render_template('teacher/cpmk.html', classroom=classroom, progress=progress)
+    selected_cpmk = None
+    student_progress = None
+    cpmk_id = request.args.get('cpmk_id', type=int)
+    if cpmk_id:
+        selected_cpmk = CPMK.query.filter_by(id=cpmk_id, classroom_id=classroom.id).first_or_404()
+        student_progress = calculate_cpmk_student_scores(selected_cpmk.id)
+
+    return render_template('teacher/cpmk.html', classroom=classroom,
+                           progress=progress,
+                           selected_cpmk=selected_cpmk,
+                           student_progress=student_progress)
 
 @app.route('/teacher/classroom/<int:classroom_id>/assignments')
 @login_required
