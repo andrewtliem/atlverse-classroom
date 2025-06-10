@@ -14,7 +14,9 @@ Teachers can create classrooms, upload study material and build quizzes. Student
 - **AI Study Guides & Quizzes** – Generate study guides and multiple quiz types (MCQ, true/false, essay) using the Gemini API.
 - **Teacher Quizzes** – Teachers can manually create, edit, publish, and view results for quizzes. Students can take these quizzes.
 - **Assignments** – Teachers can create assignments with deadlines, view student submissions, and provide grades and feedback. Students can submit assignments and, if allowed by the teacher, resubmit them before the deadline.
-- **CPMK Tracking** – Teachers define course learning outcomes (CPMK) for each classroom. Materials, quizzes and assignments can be linked to a CPMK and progress toward each outcome is summarized on a dedicated page.
+- **CPMK Tracking** – Teachers define course learning outcomes (CPMK) for each classroom. Materials, quizzes and assignments can be linked to a CPMK. Teachers can now delete CPMK entries. Progress toward each outcome is visualized through: 
+    - An **Overall CPMK Performance Radar Chart** on the main CPMK page, comparing average scores across all defined CPMKs in the classroom. 
+    - A **Student-Specific CPMK Performance Radar Chart** on individual student detail pages, showing a student's performance on each CPMK against the class average for that CPMK.
 - **Taking & Scoring Quizzes & Assignments** – Students attempt quizzes with automatic scoring for objective questions and AI-based scoring for essays. Assignment submissions are tracked and can be graded by teachers.
 - **Progress Tracking & Awards** – Teachers view overall results and export them as CSV. Students see color-coded badges for quiz scores (green for 80-100%, yellow for 67-79%, red for <67%) and attempts (green for 1 attempt, yellow for 2-3 attempts, red for >3 attempts) on their dashboards and in recent activities, providing quick visual feedback on performance and encouraging engagement.
 - **Recent Activities Feed** – Students get a comprehensive feed of their latest completed AI quizzes, teacher quizzes, and assignment submissions on their classroom page and a dedicated all activities page.
