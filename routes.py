@@ -2,7 +2,7 @@ import os
 import json
 import defusedcsv as csv
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlparse, urljoin
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response, send_from_directory
 from markupsafe import Markup
@@ -22,6 +22,11 @@ from awards_utils import calculate_awards_for_student, calculate_star_total, get
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
 from sqlalchemy.orm import joinedload
+import base64
+import matplotlib
+matplotlib.use('Agg') # Use the Agg backend for non-interactive plotting
+import matplotlib.pyplot as plt
+from math import pi
 
 ai_service = AIService()
 
@@ -2110,9 +2115,10 @@ def calculate_cpmk_student_scores(cpmk_id):
     progress_map = {}
     evaluations = (
         SelfEvaluation.query
-        .join(Quiz)
+        .join(Quiz, SelfEvaluation.quiz_id == Quiz.id)
+        .join(quiz_cpmk, Quiz.id == quiz_cpmk.c.quiz_id)
         .filter(
-            Quiz.cpmk_id == cpmk_id,
+            quiz_cpmk.c.cpmk_id == cpmk_id,
             SelfEvaluation.completed_at.isnot(None),
             SelfEvaluation.score.isnot(None)
         )
@@ -2123,9 +2129,10 @@ def calculate_cpmk_student_scores(cpmk_id):
 
     submissions = (
         AssignmentSubmission.query
-        .join(Assignment)
+        .join(Assignment, AssignmentSubmission.assignment_id == Assignment.id)
+        .join(assignment_cpmk, Assignment.id == assignment_cpmk.c.assignment_id)
         .filter(
-            Assignment.cpmk_id == cpmk_id,
+            assignment_cpmk.c.cpmk_id == cpmk_id,
             AssignmentSubmission.grade.isnot(None)
         )
         .all()
@@ -2172,6 +2179,37 @@ def teacher_cpmk(classroom_id):
         avg_score = sum(scores)/len(scores) if scores else None
         progress.append({'cpmk': c, 'avg_score': avg_score})
 
+    # Generate radar chart for all CPMKs
+    labels = []
+    class_avg_scores = []
+
+    for item in progress:
+        labels.append(item['cpmk'].code)
+        class_avg_scores.append(item['avg_score'] if item['avg_score'] is not None else 0)
+
+    if not labels:
+        radar_chart_img = None
+    else:
+        angles = [n / float(len(labels)) * 2 * pi for n in range(len(labels))]
+        angles += angles[:1]
+        class_avg_scores += class_avg_scores[:1]
+
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        ax.fill(angles, class_avg_scores, color='blue', alpha=0.25, label='Class Average')
+        ax.plot(angles, class_avg_scores, color='blue', linewidth=2)
+
+        ax.set_yticklabels([])
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(labels)
+        ax.set_title('Overall CPMK Performance Radar Chart', va='bottom')
+        ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
+        buf.seek(0)
+        radar_chart_img = base64.b64encode(buf.read()).decode('utf-8')
+        plt.close(fig)
+
     selected_cpmk = None
     student_progress = None
     cpmk_id = request.args.get('cpmk_id', type=int)
@@ -2179,10 +2217,32 @@ def teacher_cpmk(classroom_id):
         selected_cpmk = CPMK.query.filter_by(id=cpmk_id, classroom_id=classroom.id).first_or_404()
         student_progress = calculate_cpmk_student_scores(selected_cpmk.id)
 
-    return render_template('teacher/cpmk.html', classroom=classroom,
-                           progress=progress,
-                           selected_cpmk=selected_cpmk,
-                           student_progress=student_progress)
+    return render_template('teacher/cpmk.html', classroom=classroom, cpmks=cpmks, 
+                           progress=progress, selected_cpmk=selected_cpmk, 
+                           student_progress=student_progress, radar_chart_img=radar_chart_img)
+
+@app.route('/teacher/classroom/<int:classroom_id>/cpmk/<int:cpmk_id>/delete', methods=['POST'])
+@login_required
+def teacher_delete_cpmk(classroom_id, cpmk_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    cpmk = CPMK.query.filter_by(id=cpmk_id, classroom_id=classroom.id).first_or_404()
+
+    # Remove associations with materials, quizzes, and assignments
+    for material in cpmk.materials:
+        material.cpmks.remove(cpmk)
+    for quiz in cpmk.quizzes:
+        quiz.cpmks.remove(cpmk)
+    for assignment in cpmk.assignments:
+        assignment.cpmks.remove(cpmk)
+
+    db.session.delete(cpmk)
+    db.session.commit()
+    flash('CPMK deleted successfully!', 'success')
+    return redirect(url_for('teacher_cpmk', classroom_id=classroom.id))
 
 @app.route('/teacher/classroom/<int:classroom_id>/assignments')
 @login_required
@@ -2543,3 +2603,179 @@ def teacher_toggle_resubmission(submission_id):
         flash('Resubmission disabled for this assignment.', 'info')
     
     return redirect(url_for('teacher_view_submissions', classroom_id=submission.assignment.classroom_id, assignment_id=submission.assignment.id))
+
+@app.route('/teacher/classroom/<int:classroom_id>/cpmk/<int:cpmk_id>/details')
+@login_required
+def teacher_cpmk_details(classroom_id, cpmk_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    cpmk = CPMK.query.filter_by(id=cpmk_id, classroom_id=classroom.id).first_or_404()
+
+    student_progress = calculate_cpmk_student_scores(cpmk.id)
+
+    # Calculate overall class average for this CPMK
+    all_scores = []
+    for sp in student_progress:
+        if sp['avg_score'] is not None:
+            all_scores.append(sp['avg_score'])
+    overall_avg_score = sum(all_scores) / len(all_scores) if all_scores else None
+
+    # Generate bar chart for student performance on this CPMK
+    student_labels = []
+    student_scores = []
+    for sp in student_progress:
+        student_labels.append(sp['student'].full_name if sp['student'] else 'N/A')
+        student_scores.append(sp['avg_score'] if sp['avg_score'] is not None else 0)
+    
+    student_performance_chart_img = None
+    if student_labels:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        y_pos = range(len(student_labels))
+        ax.barh(y_pos, student_scores, color='skyblue')
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(student_labels)
+        ax.set_xlabel('Average Score (%)')
+    # Generate radar chart
+    labels = []
+    stats = []
+    class_avg_scores = []
+
+    all_cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+
+    for c in all_cpmks:
+        labels.append(c.code)
+        
+        # Calculate average score for each CPMK across all students
+        cpmk_scores = []
+        for sp in calculate_cpmk_student_scores(c.id):
+            if sp['avg_score'] is not None:
+                cpmk_scores.append(sp['avg_score'])
+        
+        cpmk_overall_avg = sum(cpmk_scores) / len(cpmk_scores) if cpmk_scores else 0
+        class_avg_scores.append(cpmk_overall_avg)
+
+        # Find the specific CPMK's score for the radar chart (this will be the overall_avg_score calculated earlier for the selected cpmk)
+        if c.id == cpmk.id:
+            stats.append(overall_avg_score if overall_avg_score is not None else 0)
+        else:
+            stats.append(cpmk_overall_avg)
+
+    # Handle cases where there's only one CPMK or no data
+    if not labels:
+        radar_chart_img = None
+    else:
+        # Ensure lists are not empty for plotting
+        if not stats or not class_avg_scores:
+            radar_chart_img = None
+        else:
+            angles = [n / float(len(labels)) * 2 * pi for n in range(len(labels))]
+            angles += angles[:1]
+            stats += stats[:1]
+            class_avg_scores += class_avg_scores[:1]
+
+            fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+            ax.fill(angles, stats, color='red', alpha=0.25, label=f'{cpmk.code} Performance')
+            ax.plot(angles, stats, color='red', linewidth=2)
+
+            ax.fill(angles, class_avg_scores, color='blue', alpha=0.25, label='Class Average')
+            ax.plot(angles, class_avg_scores, color='blue', linewidth=2)
+
+            ax.set_yticklabels([]) # Hide radial labels
+            ax.set_xticks(angles[:-1])
+            ax.set_xticklabels(labels)
+            ax.set_title('CPMK Performance Radar Chart', va='bottom')
+            ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
+
+            # Save the chart to a BytesIO object and encode to base64
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
+            buf.seek(0)
+            radar_chart_img = base64.b64encode(buf.read()).decode('utf-8')
+            plt.close(fig) # Close the figure to free up memory
+
+    return render_template('teacher/cpmk_details.html', 
+                           classroom=classroom, 
+                           cpmk=cpmk, 
+                           student_progress=student_progress,
+                           overall_avg_score=overall_avg_score,
+                           radar_chart_img=radar_chart_img)
+
+@app.route('/teacher/classroom/<int:classroom_id>/student/<int:student_id>/cpmk_performance')
+@login_required
+def teacher_student_cpmk_performance(classroom_id, student_id):
+    if current_user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    classroom = Classroom.query.filter_by(id=classroom_id, teacher_id=current_user.id).first_or_404()
+    student = User.query.filter_by(id=student_id, role='student').first_or_404()
+
+    # Get all CPMKs for the classroom
+    all_cpmks = CPMK.query.filter_by(classroom_id=classroom.id).all()
+
+    # Prepare data for radar chart and table
+    labels = []
+    student_scores = []
+    class_avg_scores = []
+    cpmk_data_for_table = []
+
+    for cpmk in all_cpmks:
+        labels.append(cpmk.code)
+        
+        # Calculate student's score for this CPMK
+        student_cpmk_eval_scores = [e.score for e in SelfEvaluation.query.join(Quiz).join(quiz_cpmk).filter(quiz_cpmk.c.cpmk_id==cpmk.id, SelfEvaluation.student_id==student.id, SelfEvaluation.completed_at.isnot(None)).all() if e.score is not None]
+        student_cpmk_assignment_scores = [s.grade for s in AssignmentSubmission.query.join(Assignment).join(assignment_cpmk).filter(assignment_cpmk.c.cpmk_id==cpmk.id, AssignmentSubmission.student_id==student.id, AssignmentSubmission.grade.isnot(None)).all() if s.grade is not None]
+        student_cpmk_scores = student_cpmk_eval_scores + student_cpmk_assignment_scores
+        student_avg = sum(student_cpmk_scores) / len(student_cpmk_scores) if student_cpmk_scores else 0
+        student_scores.append(student_avg)
+
+        # Calculate class average for this CPMK
+        all_cpmk_scores_in_class = []
+        for classroom_student_id in [e.student_id for e in classroom.enrollments]: # Get all student IDs in the classroom
+            class_cpmk_eval_scores = [e.score for e in SelfEvaluation.query.join(Quiz).join(quiz_cpmk).filter(quiz_cpmk.c.cpmk_id==cpmk.id, SelfEvaluation.student_id==classroom_student_id, SelfEvaluation.completed_at.isnot(None)).all() if e.score is not None]
+            class_cpmk_assignment_scores = [s.grade for s in AssignmentSubmission.query.join(Assignment).join(assignment_cpmk).filter(assignment_cpmk.c.cpmk_id==cpmk.id, AssignmentSubmission.student_id==classroom_student_id, AssignmentSubmission.grade.isnot(None)).all() if s.grade is not None]
+            all_cpmk_scores_in_class.extend(class_cpmk_eval_scores + class_cpmk_assignment_scores)
+        
+        class_avg = sum(all_cpmk_scores_in_class) / len(all_cpmk_scores_in_class) if all_cpmk_scores_in_class else 0
+        class_avg_scores.append(class_avg)
+        
+        cpmk_data_for_table.append({
+            'cpmk': cpmk,
+            'student_score': student_avg,
+            'class_average': class_avg
+        })
+
+    radar_chart_img = None
+    if labels:
+        angles = [n / float(len(labels)) * 2 * pi for n in range(len(labels))]
+        angles += angles[:1]
+        student_scores += student_scores[:1]
+        class_avg_scores += class_avg_scores[:1]
+
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        ax.fill(angles, student_scores, color='red', alpha=0.25, label=f'{student.full_name} Performance')
+        ax.plot(angles, student_scores, color='red', linewidth=2)
+
+        ax.fill(angles, class_avg_scores, color='blue', alpha=0.25, label='Class Average')
+        ax.plot(angles, class_avg_scores, color='blue', linewidth=2)
+
+        ax.set_yticklabels([])
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(labels)
+        ax.set_title(f'CPMK Performance for {student.full_name}', va='bottom')
+        ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
+        buf.seek(0)
+        radar_chart_img = base64.b64encode(buf.read()).decode('utf-8')
+        plt.close(fig)
+
+    return render_template('teacher/student_cpmk_performance.html',
+                           classroom=classroom,
+                           student=student,
+                           cpmk_data_for_table=cpmk_data_for_table,
+                           radar_chart_img=radar_chart_img)

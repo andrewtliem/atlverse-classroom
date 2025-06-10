@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}CPMK Performance - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white">CPMK Performance for {{ student.full_name }} in {{ classroom.name }}</h2>
+        <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-gradient-teal">
+            <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Overall CPMK Performance Comparison</h5>
+        </div>
+        <div class="card-body text-dark">
+            {% if radar_chart_img %}
+            <div class="mt-3 text-center">
+                <img src="data:image/png;base64,{{ radar_chart_img }}" alt="Student CPMK Performance Radar Chart" class="img-fluid">
+            </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                No data available to generate CPMK performance chart for this student.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 text-dark">Detailed CPMK Scores</h5>
+        </div>
+        <div class="card-body text-dark">
+            {% if cpmk_data_for_table %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>CPMK Code</th>
+                            <th>Student Score</th>
+                            <th>Class Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cpmk_data_for_table %}
+                            <tr>
+                                <td>{{ item.cpmk.code }}</td>
+                                <td>{{ '%.2f%%'|format(item.student_score) if item.student_score is not none else 'N/A' }}</td>
+                                <td>{{ '%.2f%%'|format(item.class_average) if item.class_average is not none else 'N/A' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">No CPMK data available for this student.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

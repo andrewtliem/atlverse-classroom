@@ -372,33 +372,33 @@
     </div>
     <div class="col-lg-4">
         <!-- Recent Activities Section -->
-        <div class="card border-0 gradient-purple rounded-4 mb-4">
+            <div class="card border-0 gradient-purple rounded-4 mb-4">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 text-white">
-                    <i data-feather="activity" class="me-2 text-white"></i>Recent Activities
-                </h5>
-            </div>
-            <div class="card-body">
+                    <h5 class="mb-0 text-white">
+                        <i data-feather="activity" class="me-2 text-white"></i>Recent Activities
+                    </h5>
+                </div>
+                <div class="card-body">
                 {% if recent_evaluations %}
                     <ul class="list-group list-group-flush">
                         {% for activity in recent_evaluations %}
                             <li class="list-group-item list-bg-dark border-secondary d-flex justify-content-between align-items-start text-white mb-2 rounded-3 p-3 recent-activity-item">
                                 {% if activity.activity_type == 'ai_quiz' or activity.activity_type == 'teacher_quiz' %}
                                     <a href="{{ url_for('student_quiz_result', evaluation_id=activity.id) }}" class="d-block w-100 text-decoration-none text-white">
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1 text-white">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-white">
                                                 {% if activity.activity_type == 'ai_quiz' %}
-                                                    <i data-feather="zap" class="me-1 text-white-50"></i>
+                                            <i data-feather="zap" class="me-1 text-white-50"></i>
                                                     {% if activity.material %}
                                                         {{ activity.material.title }} (AI Generated Quiz)
-                                                    {% else %}
-                                                        AI Generated Quiz
-                                                    {% endif %}
-                                                {% else %}
+                                            {% else %}
+                                                AI Generated Quiz
+                                            {% endif %}
+                                        {% else %}
                                                     <i data-feather="file-text" class="me-1 text-white-50"></i>
                                                     {{ activity.quiz.title }} (Teacher Quiz)
-                                                {% endif %}
-                                            </h6>
+                                        {% endif %}
+                                    </h6>
                                             <small class="text-white-80">
                                                 Completed: {{ activity.completed_at.strftime('%B %d, %Y at %I:%M %p') }}
                                             </small>
@@ -425,12 +425,12 @@
                                                     {% set grade_class = 'bg-success' if activity.grade >= 80 else ('bg-warning text-dark' if activity.grade >= 67 else 'bg-danger') %}
                                                     <span class="badge {{ grade_class }}">Grade: {{ "%.0f"|format(activity.grade) }}%</span>
                                                 </div>
-                                            {% else %}
+                                        {% else %}
                                                 <div class="mt-1">
                                                     <span class="badge bg-secondary">Grading Pending</span>
-                                                </div>
-                                            {% endif %}
-                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
                                     </a>
                                 {% endif %}
                             </li>
@@ -441,15 +441,15 @@
                             <a href="{{ url_for('student_all_activities', classroom_id=classroom.id) }}" class="btn btn-outline-light btn-sm">View All Activities</a>
                         </div>
                     {% endif %}
-                {% else %}
+        {% else %}
                     <div class="text-center py-4 text-white">
                         <i data-feather="activity" class="text-white-50 mb-3 icon-48"></i>
                         <h6 class="text-white">No recent activity yet</h6>
                         <p class="text-white-80">Complete a quiz or other activity to see it here.</p>
                     </div>
                 {% endif %}
-            </div>
-        </div>
+                 </div>
+             </div>
     </div>
 </div>
 

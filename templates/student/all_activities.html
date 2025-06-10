@@ -81,7 +81,7 @@
                                         {% set grade_class = 'bg-success' if activity.grade >= 80 else ('bg-warning text-dark' if activity.grade >= 67 else 'bg-danger') %}
                                         <span class="badge {{ grade_class }}">Grade: {{ "%.0f"|format(activity.grade) }}%</span>
                                     </div>
-                                {% else %}
+                            {% else %}
                                     <div class="mt-1">
                                         <span class="badge bg-secondary">Grading Pending</span>
                                     </div>
