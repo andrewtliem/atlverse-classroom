@@ -1,50 +1,70 @@
 /* Styles extracted from templates */
 
+/* Codex inspired light theme */
+:root {
+    --accent-color: #10a37f;
+}
+
+body.bg-dark-blue {
+    background-color: #fff !important;
+    color: #000;
+}
+
 /* Color scheme overrides */
 .card.gradient-blue {
-    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #fafafa, #eaeaea) !important;
+    color: #000 !important;
 }
 .card.gradient-teal {
-    background: linear-gradient(135deg, #00BCD4, #4DD0E1) !important;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0) !important;
+    color: #000 !important;
 }
 .card.gradient-coral {
-    background: linear-gradient(135deg, #FF8A65, #EF5350) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #f5f5f5, #dddddd) !important;
+    color: #000 !important;
 }
 .btn.btn-gradient-blue {
-    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-    color: white !important;
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
     border: none !important;
 }
 .btn.btn-gradient-teal {
-    background-color: #00BCD4 !important;
-    color: white !important;
+    background-color: #000 !important;
+    color: #fff !important;
     border: none !important;
 }
 .btn.btn-yellow {
-    background-color: #FFC107 !important;
-    color: #1976D2 !important;
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
     border: none !important;
     font-weight: bold !important;
 }
 .badge.badge-coral {
-    background-color: #EF5350 !important;
+    background-color: var(--accent-color) !important;
     color: white !important;
 }
+.text-white {
+    color: #000 !important;
+}
 .text-white-80 {
-    color: rgba(255,255,255,0.8) !important;
+    color: rgba(0,0,0,0.8) !important;
 }
 .text-white-90 {
-    color: rgba(255,255,255,0.9) !important;
+    color: rgba(0,0,0,0.9) !important;
+}
+.text-white-70 {
+    color: rgba(0,0,0,0.7) !important;
+}
+.text-white-50 {
+    color: rgba(0,0,0,0.5) !important;
 }
 .text-yellow {
-    color: #FFC107 !important;
+    color: var(--accent-color) !important;
 }
 
 /* Classroom styles */
 .gradient-blue {
-    background: linear-gradient(to bottom right, #1976D2, #2196F3) !important;
+    background: linear-gradient(135deg, #fafafa, #eaeaea) !important;
 }
 .card {
     box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
@@ -72,34 +92,34 @@
     border-radius: 0.5rem !important;
 }
 .modal-content.gradient-blue {
-    background: linear-gradient(to bottom right, #1976D2, #2196F3) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #fafafa, #eaeaea) !important;
+    color: #000 !important;
 }
 .modal-content.gradient-blue .form-label,
 .modal-content.gradient-blue .form-text {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: rgba(0, 0, 0, 0.8) !important;
 }
 .modal-content.gradient-blue input[type="text"],
 .modal-content.gradient-blue input[type="file"],
 .modal-content.gradient-blue input[type="email"] {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    color: white !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    color: #000 !important;
 }
 .modal-content.gradient-blue input::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: rgba(0, 0, 0, 0.6) !important;
 }
 .gradient-purple {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #f0f0f0, #dcdcdc) !important;
 }
 .gradient-light-blue {
-    background: linear-gradient(135deg, #64B5F6, #42A5F5) !important;
-    color: white !important;
+    background: linear-gradient(135deg, #f5f5f5, #e5e5e5) !important;
+    color: #000 !important;
 }
 
 /* Hover style for AI Tools button */
 .list-group-item .dropdown .btn.btn-outline-light:hover {
-    color: #1976D2 !important;
+    color: var(--accent-color) !important;
 }
 
 /* Quiz History table text color */
@@ -136,15 +156,15 @@
     border-radius: 0.25rem;
     color: #fff !important;
 }
-.badge.badge-primary { background-color: #0d6efd !important; }
-.badge.badge-secondary { background-color: #17d083 !important; color: #000 !important; }
-.badge.badge-success { background-color: #198754 !important; }
-.badge.badge-danger { background-color: #dc3545 !important; }
-.badge.badge-warning { background-color: #ffc107 !important; color: #000 !important; }
-.badge.badge-info { background-color: #0dcaf0 !important; color: #000 !important; }
-.badge.badge-light { background-color: #f8f9fa !important; color: #000 !important; }
-.badge.badge-dark { background-color: #212529 !important; }
-.badge.badge-coral { background-color: #EF5350 !important; color: white !important; }
+.badge.badge-primary { background-color: var(--accent-color) !important; }
+.badge.badge-secondary { background-color: #666 !important; color: #fff !important; }
+.badge.badge-success { background-color: #555 !important; }
+.badge.badge-danger { background-color: #000 !important; color:#fff !important; }
+.badge.badge-warning { background-color: #777 !important; color: #fff !important; }
+.badge.badge-info { background-color: #999 !important; color: #fff !important; }
+.badge.badge-light { background-color: #eee !important; color: #000 !important; }
+.badge.badge-dark { background-color: #222 !important; color:#fff !important; }
+.badge.badge-coral { background-color: var(--accent-color) !important; color: white !important; }
 
 /* Study guide print styles */
 @media print {
@@ -157,14 +177,14 @@
 }
 
 /* Index page hero styles */
-.bg-gradient-blue { background: linear-gradient(135deg, #2196F3, #1976D2); }
-.bg-gradient-cyan { background: linear-gradient(135deg, #03A9F4, #039BE5); }
-.bg-gradient-red { background: linear-gradient(135deg, #FF8A65, #EF5350); }
+.bg-gradient-blue { background: linear-gradient(135deg, #fafafa, #eaeaea); }
+.bg-gradient-cyan { background: linear-gradient(135deg, #f0f0f0, #e0e0e0); }
+.bg-gradient-red { background: linear-gradient(135deg, #f5f5f5, #dddddd); }
 .btn-hero { font-weight: 600; border: none; }
-.btn-hero-start { background: linear-gradient(135deg, #2196F3, #1976D2); color: #fff; }
-.btn-hero-start:hover { background: linear-gradient(135deg, #1976D2, #2196F3); color: #fff; }
-.btn-hero-signin { background-color: #00BCD4; color: #fff; }
-.btn-hero-signin:hover { background-color: #0097A7; color: #fff; }
+.btn-hero-start { background-color: var(--accent-color); color: #fff; }
+.btn-hero-start:hover { background-color: var(--accent-color); color: #fff; opacity: 0.9; }
+.btn-hero-signin { background-color: #000; color: #fff; }
+.btn-hero-signin:hover { background-color: #333; color: #fff; }
 
 /* Utility classes for inline styles */
 .icon-48 { width: 48px; height: 48px; }
@@ -173,24 +193,24 @@
 .icon-40 { width: 40px; height: 40px; }
 .icon-14 { width: 14px; height: 14px; }
 
-.bg-dark-blue { background-color: #0b4e91; }
-.list-bg-dark { background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px; }
+.bg-dark-blue { background-color: #fff; }
+.list-bg-dark { background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 8px; }
 .list-group-flush > .list-bg-dark {
     border-radius: 8px;
 }
-.bg-white-10 { background-color: rgba(255,255,255,0.1); }
-.bg-white-10-border { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
-.text-cyan { color: #00BCD4 !important; }
-.text-coral { color: #FF8A65 !important; }
-.text-light-blue { color: #64B5F6 !important; }
+.bg-white-10 { background-color: rgba(0,0,0,0.05); }
+.bg-white-10-border { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); }
+.text-cyan { color: var(--accent-color) !important; }
+.text-coral { color: var(--accent-color) !important; }
+.text-light-blue { color: #ccc !important; }
 .progress-thin { height: 5px; }
 .progress-thin-6 { height: 6px; background-color: rgba(255,255,255,0.2); }
 .progress-small-container { width: 50px; background-color: rgba(0,0,0,0.1); height: 8px; }
-.progress-bar-yellow { background-color: #FFC107; }
-.code-inline { background-color: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; }
-.btn-results { background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
-.badge-cyan { background-color: #00BCD4; color: white; }
-.badge-coral-bg { background-color: #FF8A65; color: white; }
+.progress-bar-yellow { background-color: var(--accent-color); }
+.code-inline { background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 4px; }
+.btn-results { background-color: rgba(0,0,0,0.05); color: #000; border: 1px solid rgba(0,0,0,0.2); }
+.badge-cyan { background-color: var(--accent-color); color: white; }
+.badge-coral-bg { background-color: var(--accent-color); color: white; }
 .row-light { border-bottom: 1px solid rgba(0,0,0,0.1); background-color: rgba(255,255,255,0.9); color: #333; }
 .loading-overlay {
     position: fixed;
@@ -198,8 +218,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    color: white;
+    background-color: rgba(255,255,255,0.8);
+    color: #000;
     display: none;
     justify-content: center;
     align-items: center;
@@ -210,27 +230,33 @@
 }
 
 .icon-medal { font-size: 1.5rem; }
-.bg-white-20 { background-color: rgba(255,255,255,0.2); }
+.bg-white-20 { background-color: rgba(0,0,0,0.05); }
 .maxw-500 { max-width: 500px; }
 
 /* Custom button styles */
 .btn-outline-white-solid {
-    background: linear-gradient(135deg, #219CF3, #1976D2) !important;
-    color: white !important;
-    border: 1px solid white !important;
+    background: #000 !important;
+    color: #fff !important;
+    border: 1px solid #000 !important;
 }
 
 /* Hover effect for Class Assignment list items */
 .assignment-list-item:hover {
-    background-color: rgba(0,0,0,0.5) !important; /* Slightly darker on hover */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important; /* Subtle glow */
+    background-color: rgba(0,0,0,0.05) !important; /* Slightly darker on hover */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important; /* Subtle glow */
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
 }
 
 /* Hover effect for Recent Activities list items */
 .recent-activity-item:hover {
-    background-color: rgba(0,0,0,0.5) !important; /* Slightly darker on hover */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important; /* Subtle glow */
+    background-color: rgba(0,0,0,0.05) !important; /* Slightly darker on hover */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) !important; /* Subtle glow */
     transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+/* Override dark form controls for light theme */
+.form-control.bg-dark {
+    background-color: #fff !important;
+    color: #000 !important;
 }
 
