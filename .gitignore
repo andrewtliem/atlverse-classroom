@@ -15,4 +15,6 @@ venv/
 .env
 
 # Ignore uploaded files
-uploads/ 
+uploads/
+node_modules/
+mobile-frontend/dist/

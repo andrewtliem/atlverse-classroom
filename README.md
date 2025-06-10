@@ -60,6 +60,19 @@ docker-compose run web flask db upgrade
 docker-compose up -d
 ```
 
+### Mobile Frontend
+
+This repository includes an optional React-based interface located in `mobile-frontend/`.
+To run it during development:
+
+```bash
+cd mobile-frontend
+npm install
+npm run dev
+```
+
+It provides basic student and teacher dashboard views optimized for mobile and can be extended to communicate with the Flask backend APIs.
+
 ## Repository Layout
 
 ```
@@ -72,6 +85,7 @@ atlverse-classroom/
 ├── static/             # CSS/JS assets
 ├── migrations/         # Alembic scripts
 ├── screenshots/        # Example screenshots
+├── mobile-frontend/    # React mobile UI
 └── ... other files
 ```
 
