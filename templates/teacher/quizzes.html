@@ -91,11 +91,11 @@
                                         <span class="badge badge-secondary text-light">Draft</span>
                                     {% elif quiz.is_upcoming() %}
                                         <span class="badge badge-info text-dark">Upcoming</span>
-                                    {% elif quiz.is_expired() %}
-                                        <span class="badge badge-coral text-warning">Expired</span>
-                                    {% else %}
-                                        <span class="badge badge-success text-success">Active</span>
-                                    {% endif %}
+                                      {% elif quiz.is_expired() %}
+                                          <span class="badge bg-danger">Expired</span>
+                                      {% else %}
+                                          <span class="badge bg-success">Active</span>
+                                      {% endif %}
                                 </td>
                                 <td>
                                     {% if quiz.available_from %}

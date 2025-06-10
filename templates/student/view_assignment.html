@@ -7,10 +7,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-white">{{ assignment.title }}</h1>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('student_classroom', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-light d-flex align-items-center">
+            <a href="{{ url_for('student_classroom', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-dark d-flex align-items-center">
                 <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
             </a>
-            <a href="{{ url_for('student_assignments', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-light d-flex align-items-center">
+            <a href="{{ url_for('student_assignments', classroom_id=assignment.classroom_id) }}" class="btn btn-outline-dark d-flex align-items-center">
                 <i data-feather="list" class="me-2"></i>All Assignments
             </a>
         </div>
@@ -32,11 +32,11 @@
                 <dd class="col-sm-9">
                     {% if not assignment.published %}
                         <span class="badge badge-secondary text-light">Draft (Not visible to students)</span>
-                    {% elif assignment.is_past_deadline() %}
-                        <span class="badge badge-coral text-warning">Expired</span>
-                    {% else %}
-                        <span class="badge badge-success text-success">Active</span>
-                    {% endif %}
+                      {% elif assignment.is_past_deadline() %}
+                          <span class="badge bg-danger">Expired</span>
+                      {% else %}
+                          <span class="badge bg-success">Active</span>
+                      {% endif %}
                 </dd>
 
                 <dt class="col-sm-3">Assigned by:</dt>
