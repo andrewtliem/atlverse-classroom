@@ -92,7 +92,7 @@
                         </td>
                         <td>
                             {% if evaluation and evaluation.completed_at %}
-                                <a href="{{ url_for('teacher_view_submission', quiz_id=quiz.id, evaluation_id=evaluation.id) }}" class="btn btn-sm btn-outline-light">
+                                <a href="{{ url_for('teacher_view_submission', quiz_id=quiz.id, evaluation_id=evaluation.id) }}" class="btn btn-sm btn-outline-dark">
                                     View Submission
                                 </a>
                             {% else %}

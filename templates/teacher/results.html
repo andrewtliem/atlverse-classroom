@@ -6,10 +6,10 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="text-white mb-0">Student Results - {{ classroom.name }}</h1>
     <div class="btn-group" role="group">
-        <button id="cardViewBtn" type="button" class="btn btn-outline-light active">Card View</button>
-        <button id="tableViewBtn" type="button" class="btn btn-outline-light">Table View</button>
+        <button id="cardViewBtn" type="button" class="btn btn-outline-dark active">Card View</button>
+        <button id="tableViewBtn" type="button" class="btn btn-outline-dark">Table View</button>
     </div>
-    <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-light">← Back to Classroom</a>
+    <a href="{{ url_for('teacher_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-dark">← Back to Classroom</a>
 </div>
 
 {% if student_summaries %}
@@ -72,7 +72,7 @@
 
                             <div class="d-grid">
                                 <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student_summary.student.id) }}"
-                                   class="btn btn-outline-light btn-sm">
+                                   class="btn btn-outline-dark btn-sm">
                                     <i data-feather="eye" class="me-1"></i>View Details
                                 </a>
                             </div>

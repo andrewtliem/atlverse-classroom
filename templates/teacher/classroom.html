@@ -16,10 +16,10 @@
         </div>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ url_for('teacher_cpmk', classroom_id=classroom.id) }}" class="btn btn-outline-light">
+        <a href="{{ url_for('teacher_cpmk', classroom_id=classroom.id) }}" class="btn btn-outline-dark">
             <i data-feather="target" class="me-2"></i>CPMK
         </a>
-        <a href="{{ url_for('teacher_results', classroom_id=classroom.id) }}" class="btn btn-outline-light">
+        <a href="{{ url_for('teacher_results', classroom_id=classroom.id) }}" class="btn btn-outline-dark">
             <i data-feather="bar-chart-2" class="me-2"></i>View Results
         </a>
         <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-gradient-teal">
@@ -36,7 +36,7 @@
                 <h5 class="mb-0 text-white">
                     <i data-feather="file-text" class="me-2 text-white"></i>Course Materials
                 </h5>
-                <button type="button" class="btn btn-primary btn-sm text-white" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <button type="button" class="btn btn-gradient-teal btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
                     <i data-feather="upload" class="me-2"></i>Upload Material
                 </button>
             </div>
@@ -58,7 +58,7 @@
                                 <div>
                                     {% if material.file_path %}
                                         <a href="{{ url_for('uploaded_file', filename=material.file_path) }}" 
-                                           class="btn btn-outline-light btn-sm" target="_blank">
+                                           class="btn btn-outline-dark btn-sm" target="_blank">
                                             <i data-feather="download" class="me-1"></i>Download
                                         </a>
                                     {% endif %}
@@ -91,10 +91,10 @@
                     <i data-feather="clipboard" class="me-2 text-white"></i>Quizzes
                 </h5>
                 <div>
-                    <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" class="btn btn-primary btn-sm text-white me-2">
+                    <a href="{{ url_for('teacher_create_quiz', classroom_id=classroom.id) }}" class="btn btn-gradient-teal btn-sm me-2">
                         <i data-feather="plus" class="me-2"></i>Create Quiz
                     </a>
-                    <a href="{{ url_for('teacher_quizzes', classroom_id=classroom.id) }}" class="btn btn-outline-light btn-sm">
+                    <a href="{{ url_for('teacher_quizzes', classroom_id=classroom.id) }}" class="btn btn-outline-dark btn-sm">
                         <i data-feather="list" class="me-2"></i>Manage Quizzes
                     </a>
                 </div>
@@ -108,7 +108,7 @@
                                     <h6 class="mb-0 text-white">{{ quiz.title }}</h6>
                                     <small class="text-white-80">{{ quiz.quiz_type.title() }}</small>
                                 </div>
-                                <a href="{{ url_for('teacher_quiz_results', quiz_id=quiz.id) }}" class="btn btn-outline-light btn-sm">
+                                <a href="{{ url_for('teacher_quiz_results', quiz_id=quiz.id) }}" class="btn btn-outline-dark btn-sm">
                                     <i data-feather="bar-chart-2" class="me-1"></i>View Results
                                 </a>
                             </div>
@@ -133,10 +133,10 @@
                     <i data-feather="edit" class="me-2 text-white"></i>Assignments
                 </h5>
                 <div>
-                    <a href="{{ url_for('teacher_create_assignment', classroom_id=classroom.id) }}" class="btn btn-primary btn-sm text-white me-2">
+                    <a href="{{ url_for('teacher_create_assignment', classroom_id=classroom.id) }}" class="btn btn-gradient-teal btn-sm me-2">
                         <i data-feather="plus" class="me-2"></i>Create Assignment
                     </a>
-                    <a href="{{ url_for('teacher_assignments', classroom_id=classroom.id) }}" class="btn btn-outline-light btn-sm">
+                    <a href="{{ url_for('teacher_assignments', classroom_id=classroom.id) }}" class="btn btn-outline-dark btn-sm">
                         <i data-feather="list" class="me-2"></i>Manage Assignments
                     </a>
                 </div>
@@ -206,7 +206,7 @@
                 <h5 class="mb-0 text-white">
                     <i data-feather="users" class="me-2 text-white"></i>Students
                 </h5>
-                <button type="button" class="btn btn-primary btn-sm text-white" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                <button type="button" class="btn btn-gradient-teal btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                     <i data-feather="user-plus" class="me-2"></i>Add Student
                 </button>
             </div>
@@ -224,11 +224,11 @@
                                 </div>
                                 <div class="d-flex gap-2">
                                     <a href="{{ url_for('teacher_student_details', classroom_id=classroom.id, student_id=student.id) }}"
-                                       class="btn btn-outline-light btn-sm" title="View Student Details">
+                                       class="btn btn-outline-dark btn-sm" title="View Student Details">
                                         View Details
                                     </a>
                                     <a href="{{ url_for('teacher_student_cpmk_performance', classroom_id=classroom.id, student_id=student.id) }}"
-                                       class="btn btn-outline-light btn-sm" title="View CPMK Performance">
+                                       class="btn btn-outline-dark btn-sm" title="View CPMK Performance">
                                         CPMK Performance
                                     </a>
                                     <form action="{{ url_for('teacher_reset_student_password', classroom_id=classroom.id, student_id=student.id) }}" method="POST"

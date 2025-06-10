@@ -7,10 +7,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-white">Assignments for {{ classroom.name }}</h1>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-light d-flex align-items-center">
+            <a href="{{ url_for('student_classroom', classroom_id=classroom.id) }}" class="btn btn-outline-dark d-flex align-items-center">
                 <i data-feather="arrow-left" class="me-2"></i>Back to Classroom
             </a>
-            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light d-flex align-items-center">
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-dark d-flex align-items-center">
                 <i data-feather="home" class="me-2"></i>Dashboard
             </a>
         </div>
