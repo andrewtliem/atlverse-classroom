@@ -21,6 +21,7 @@ Teachers can create classrooms, upload study material and build quizzes. Student
 - **Progress Tracking & Awards** – Teachers view overall results and export them as CSV. Students see color-coded badges for quiz scores (green for 80-100%, yellow for 67-79%, red for <67%) and attempts (green for 1 attempt, yellow for 2-3 attempts, red for >3 attempts) on their dashboards and in recent activities, providing quick visual feedback on performance and encouraging engagement.
 - **Recent Activities Feed** – Students get a comprehensive feed of their latest completed AI quizzes, teacher quizzes, and assignment submissions on their classroom page and a dedicated all activities page.
 - **Notifications** – Students are notified when new materials or quizzes are published.
+- **Daily Computer Science Quote** – A randomly generated CS quote or fact is shown each day, so the message will vary.
 - **Streamlined UI** - Improved navigation and visual consistency across student and teacher interfaces, including the removal of redundant buttons.
 
 ## Installation
