@@ -89,6 +89,9 @@ class Material(db.Model):
     file_path = db.Column(db.String(500))
     file_type = db.Column(db.String(50))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Optional link to a single CPMK for backwards compatibility
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'), nullable=True)
+    cpmk = db.relationship('CPMK', foreign_keys=[cpmk_id])
     
     # Relationships
     self_evaluations = db.relationship('SelfEvaluation', backref='material', lazy=True)
@@ -111,6 +114,9 @@ class Quiz(db.Model):
     time_limit_minutes = db.Column(db.Integer)  # NULL means no time limit
     passing_score = db.Column(db.Float, default=60.0)
     is_required = db.Column(db.Boolean, default=False)
+    # Optional link to a single CPMK for backwards compatibility
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'), nullable=True)
+    cpmk = db.relationship('CPMK', foreign_keys=[cpmk_id])
     available_from = db.Column(db.DateTime)
     available_until = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -211,6 +217,9 @@ class Assignment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     published = db.Column(db.Boolean, default=False)
     allow_group_submission = db.Column(db.Boolean, default=False)
+    # Optional link to a single CPMK for backwards compatibility
+    cpmk_id = db.Column(db.Integer, db.ForeignKey('cpmk.id'), nullable=True)
+    cpmk = db.relationship('CPMK', foreign_keys=[cpmk_id])
 
     # New relationship for submissions
     submissions = db.relationship('AssignmentSubmission', backref='assignment', lazy=True, cascade='all, delete-orphan')
