@@ -50,12 +50,15 @@
                               placeholder="Explain what this quiz is about and any instructions for students">{{ quiz.description }}</textarea>
                 </div>
                 <div class="form-group">
-                    <label for="cpmk_ids"><strong>CPMK</strong></label>
-                    <select class="form-control" id="cpmk_ids" name="cpmk_ids" multiple>
+                    <label class="form-label"><strong>CPMK</strong></label>
+                    <div>
                         {% for cpmk in cpmks %}
-                            <option value="{{ cpmk.id }}" {% if cpmk in quiz.cpmks %}selected{% endif %}>{{ cpmk.code }}</option>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cpmk_{{ cpmk.id }}" name="cpmk_ids" value="{{ cpmk.id }}" {% if cpmk in quiz.cpmks %}checked{% endif %}>
+                                <label class="form-check-label" for="cpmk_{{ cpmk.id }}">{{ cpmk.code }} - {{ cpmk.description }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
 
                 <div class="row">
