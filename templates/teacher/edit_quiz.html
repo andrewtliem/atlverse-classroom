@@ -53,7 +53,7 @@
                     <label for="cpmk_ids"><strong>CPMK</strong></label>
                     <select class="form-control" id="cpmk_ids" name="cpmk_ids" multiple>
                         {% for cpmk in cpmks %}
-                            <option value="{{ cpmk.id }}" {% if cpmk in quiz.cpmks %}selected{% endif %}>{{ cpmk.code }}</option>
+                            <option value="{{ cpmk.id }}" {% if cpmk in quiz.cpmks %}selected{% endif %}>{{ cpmk.code }} - {{ cpmk.description }}</option>
                         {% endfor %}
                     </select>
                 </div>
