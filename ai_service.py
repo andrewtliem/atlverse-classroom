@@ -282,7 +282,8 @@ class AIService:
             "sentences."
         )
         try:
-            response = self.model.generate_content(prompt)
+            config = genai.types.GenerationConfig(temperature=0.8)
+            response = self.model.generate_content(prompt, generation_config=config)
             return response.text.strip()
         except Exception as e:
             raise Exception(f"Error getting daily quote: {str(e)}")
