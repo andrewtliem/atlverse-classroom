@@ -40,8 +40,8 @@ body.bg-dark-blue {
     font-weight: bold !important;
 }
 .badge.badge-coral {
-    background-color: var(--accent-color) !important;
-    color: white !important;
+    background-color: #dc3545 !important;
+    color: #fff !important;
 }
 .text-white {
     color: #000 !important;
@@ -73,7 +73,7 @@ body.bg-dark-blue {
     border-radius: 1rem;
 }
 .text-light-muted {
-    color: #E0E0E0 !important;
+    color: #6c757d !important;
 }
 .badge-material {
     background-color: #FFC107 !important;
@@ -158,13 +158,19 @@ body.bg-dark-blue {
 }
 .badge.badge-primary { background-color: var(--accent-color) !important; }
 .badge.badge-secondary { background-color: #666 !important; color: #fff !important; }
-.badge.badge-success { background-color: #555 !important; }
+.badge.badge-success {
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
+}
 .badge.badge-danger { background-color: #000 !important; color:#fff !important; }
 .badge.badge-warning { background-color: #777 !important; color: #fff !important; }
 .badge.badge-info { background-color: #999 !important; color: #fff !important; }
 .badge.badge-light { background-color: #eee !important; color: #000 !important; }
 .badge.badge-dark { background-color: #222 !important; color:#fff !important; }
-.badge.badge-coral { background-color: var(--accent-color) !important; color: white !important; }
+.badge.badge-coral {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
 
 /* Study guide print styles */
 @media print {

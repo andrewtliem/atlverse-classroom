@@ -153,9 +153,9 @@
                                         {% if not assignment.published %}
                                             <span class="badge bg-secondary text-light">Draft</span>
                                         {% elif assignment.is_past_deadline() %}
-                                            <span class="badge badge-coral text-warning">Expired</span>
+                                              <span class="badge bg-danger">Expired</span>
                                         {% else %}
-                                            <span class="badge bg-success text-success">Active</span>
+                                              <span class="badge bg-success">Active</span>
                                         {% endif %}
                                         {% if assignment.deadline %}
                                             | Deadline: {{ assignment.deadline.strftime('%Y-%m-%d %H:%M') }}

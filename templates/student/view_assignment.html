@@ -32,11 +32,11 @@
                 <dd class="col-sm-9">
                     {% if not assignment.published %}
                         <span class="badge badge-secondary text-light">Draft (Not visible to students)</span>
-                    {% elif assignment.is_past_deadline() %}
-                        <span class="badge badge-coral text-warning">Expired</span>
-                    {% else %}
-                        <span class="badge badge-success text-success">Active</span>
-                    {% endif %}
+                      {% elif assignment.is_past_deadline() %}
+                          <span class="badge bg-danger">Expired</span>
+                      {% else %}
+                          <span class="badge bg-success">Active</span>
+                      {% endif %}
                 </dd>
 
                 <dt class="col-sm-3">Assigned by:</dt>
