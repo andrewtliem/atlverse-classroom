@@ -2,6 +2,9 @@ import os
 import unittest
 from datetime import datetime
 
+# Ensure required env variable is set before importing the app
+os.environ["GEMINI_API_KEY"] = "dummy"
+
 from app import app, db
 from models import User, Classroom, CPMK, Quiz, SelfEvaluation, Assignment, AssignmentSubmission
 from routes import calculate_cpmk_student_scores
@@ -27,11 +30,21 @@ class CPMKProgressTest(unittest.TestCase):
             db.session.commit()
             cpmk = CPMK(code="C1", description="desc", classroom_id=classroom.id)
             db.session.add(cpmk)
-            quiz = Quiz(title="q1", description="", teacher_id=teacher.id,
-                        classroom_id=classroom.id, quiz_type="mcq",
-                        questions_json="[]", cpmk_id=cpmk.id)
-            assignment = Assignment(title="a1", classroom_id=classroom.id,
-                                    teacher_id=teacher.id, cpmk_id=cpmk.id)
+            quiz = Quiz(
+                title="q1",
+                description="",
+                teacher_id=teacher.id,
+                classroom_id=classroom.id,
+                quiz_type="mcq",
+                questions_json="[]",
+            )
+            quiz.cpmks = [cpmk]
+            assignment = Assignment(
+                title="a1",
+                classroom_id=classroom.id,
+                teacher_id=teacher.id,
+            )
+            assignment.cpmks = [cpmk]
             db.session.add_all([quiz, assignment])
             db.session.commit()
 
