@@ -76,6 +76,22 @@ atlverse-classroom/
 └── ... other files
 ```
 
+## Mobile App
+
+The `mobile_app` directory contains a Flutter project providing a basic
+mobile interface for teachers and students. After logging in, the app fetches
+the user's classrooms from the Flask backend. To run it locally, ensure
+Flutter is installed and execute:
+
+```bash
+cd mobile_app
+flutter run
+```
+
+The app now includes login screens and dashboards for both roles powered by
+the `/api/login` and `/api/classrooms` endpoints. Additional functionality can
+be built on top of this foundation.
+
 ## Screenshots
 
 Below are a few screenshots showing important pages:

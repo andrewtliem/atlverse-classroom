@@ -6,4 +6,4 @@ class Base(DeclarativeBase):
     pass
 
 # Initialize extensions
-db = SQLAlchemy(model_class=Base) 
+db = SQLAlchemy(model_class=Base)

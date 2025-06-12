@@ -22,6 +22,7 @@ from awards_utils import calculate_awards_for_student, calculate_star_total, get
 from ai_service import AIService
 from utils import allowed_file, extract_text_from_file
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
 import base64
 import matplotlib
 matplotlib.use('Agg') # Use the Agg backend for non-interactive plotting
@@ -136,6 +137,34 @@ def auth_logout():
     logout_user()
     flash('You have been logged out', 'info')
     return redirect(url_for('index'))
+
+# Simple JSON API endpoints for the mobile app
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    if current_user.is_authenticated:
+        return jsonify({'role': current_user.role, 'name': current_user.full_name})
+
+    data = request.get_json(force=True)
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    login_user(user)
+    return jsonify({'role': user.role, 'name': user.full_name})
+
+
+@app.route('/api/classrooms')
+@login_required
+def api_classrooms():
+    if current_user.role == 'teacher':
+        classrooms = Classroom.query.filter_by(teacher_id=current_user.id).all()
+    else:
+        classrooms = [e.classroom for e in current_user.enrollments]
+
+    return jsonify([{ 'id': c.id, 'name': c.name } for c in classrooms])
 
 # Teacher routes
 @app.route('/teacher/dashboard')
@@ -2116,9 +2145,9 @@ def calculate_cpmk_student_scores(cpmk_id):
     evaluations = (
         SelfEvaluation.query
         .join(Quiz, SelfEvaluation.quiz_id == Quiz.id)
-        .join(quiz_cpmk, Quiz.id == quiz_cpmk.c.quiz_id)
+        .outerjoin(quiz_cpmk, Quiz.id == quiz_cpmk.c.quiz_id)
         .filter(
-            quiz_cpmk.c.cpmk_id == cpmk_id,
+            or_(Quiz.cpmk_id == cpmk_id, quiz_cpmk.c.cpmk_id == cpmk_id),
             SelfEvaluation.completed_at.isnot(None),
             SelfEvaluation.score.isnot(None)
         )
@@ -2130,9 +2159,9 @@ def calculate_cpmk_student_scores(cpmk_id):
     submissions = (
         AssignmentSubmission.query
         .join(Assignment, AssignmentSubmission.assignment_id == Assignment.id)
-        .join(assignment_cpmk, Assignment.id == assignment_cpmk.c.assignment_id)
+        .outerjoin(assignment_cpmk, Assignment.id == assignment_cpmk.c.assignment_id)
         .filter(
-            assignment_cpmk.c.cpmk_id == cpmk_id,
+            or_(Assignment.cpmk_id == cpmk_id, assignment_cpmk.c.cpmk_id == cpmk_id),
             AssignmentSubmission.grade.isnot(None)
         )
         .all()

@@ -15,4 +15,10 @@ venv/
 .env
 
 # Ignore uploaded files
-uploads/ 
+uploads/
+
+# Flutter build artifacts
+mobile_app/.dart_tool/
+mobile_app/build/
+mobile_app/.packages
+instance/

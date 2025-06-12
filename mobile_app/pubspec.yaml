@@ -1,0 +1,20 @@
+name: classroom_mobile
+description: Mobile frontend for AI Classroom Companion
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: "^3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  http: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
