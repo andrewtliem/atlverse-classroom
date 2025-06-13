@@ -37,7 +37,7 @@
             <div class="mb-4 {% if not loop.last %}border-bottom border-secondary pb-4{% endif %}">
                 <h5 class="mb-3 text-white">Question {{ loop.index }}. {{ question.question }}</h5>
                 
-                {% if quiz.quiz_type == 'mcq' or quiz.quiz_type == 'true_false' %}
+                {% if question.type == 'mcq' or question.type == 'true_false' %}
                     <!-- Objective Question -->
                     <div class="mb-2 text-white">
                         <strong>Student's Answer:</strong>
@@ -64,7 +64,7 @@
                         </div>
                     {% endif %}
                 
-                {% elif quiz.quiz_type == 'essay' %}
+                {% elif question.type == 'essay' %}
                     <!-- Essay Question -->
                     <div class="mb-3 text-white">
                         <strong>Student's Answer:</strong>

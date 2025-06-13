@@ -219,14 +219,22 @@
                     </button>
                 </div>
                 <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label><strong>Question Type</strong></label>
+                        <select class="form-control question-type" name="question_${questionCounter}_type">
+                            <option value="mcq" ${quizType === 'mcq' ? 'selected' : ''}>Multiple Choice</option>
+                            <option value="true_false" ${quizType === 'true_false' ? 'selected' : ''}>True/False</option>
+                            <option value="essay" ${quizType === 'essay' ? 'selected' : ''}>Essay</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
                         <textarea class="form-control" id="question_${questionCounter}" name="question_${questionCounter}" rows="2" required></textarea>
                     </div>
             `;
             
-            if (quizType === 'mcq') {
-                questionHtml += `
+            questionHtml += `
+                <div class="mcq-fields" style="display:${quizType === 'mcq' ? 'block' : 'none'};">
                     <div class="options-container">
                         <p><strong>Options</strong> <span class="text-danger">*</span></p>
                         <div class="form-group row">
@@ -266,13 +274,12 @@
                     </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
-                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
-                                  name="question_${questionCounter}_explanation" rows="2" 
+                        <textarea class="form-control" id="question_${questionCounter}_explanation"
+                                  name="question_${questionCounter}_explanation" rows="2"
                                   placeholder="Explain why the correct answer is correct"></textarea>
                     </div>
-                `;
-            } else if (quizType === 'true_false') {
-                questionHtml += `
+                </div>
+                <div class="true-false-fields" style="display:${quizType === 'true_false' ? 'block' : 'none'};">
                     <div class="form-group">
                         <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
                         <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
@@ -283,16 +290,15 @@
                     </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
-                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
-                                  name="question_${questionCounter}_explanation" rows="2" 
+                        <textarea class="form-control" id="question_${questionCounter}_explanation"
+                                  name="question_${questionCounter}_explanation" rows="2"
                                   placeholder="Explain why the correct answer is correct"></textarea>
                     </div>
-                `;
-            } else if (quizType === 'essay') {
-                questionHtml += `
+                </div>
+                <div class="essay-fields" style="display:${quizType === 'essay' ? 'block' : 'none'};">
                     <div class="form-group">
                         <label for="question_${questionCounter}_suggested_length"><strong>Suggested Answer Length</strong></label>
-                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length" 
+                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length"
                                name="question_${questionCounter}_suggested_length" placeholder="e.g., 2-3 paragraphs or 200-300 words">
                     </div>
                     <div class="key-points-container">
@@ -305,7 +311,7 @@
                         <div id="key-points-${questionCounter}">
                             <div class="form-group row key-point-row">
                                 <div class="col-11">
-                                    <input type="text" class="form-control" name="question_${questionCounter}_key_point_0" 
+                                    <input type="text" class="form-control" name="question_${questionCounter}_key_point_0"
                                            placeholder="Important concept that should be included in a good answer">
                                 </div>
                                 <div class="col-1">
@@ -317,8 +323,8 @@
                         </div>
                         <input type="hidden" id="question_${questionCounter}_key_points_count" name="question_${questionCounter}_key_points_count" value="1">
                     </div>
-                `;
-            }
+                </div>
+            `;
             
             questionHtml += `</div>`;
             questionDiv.innerHTML = questionHtml;
@@ -333,22 +339,39 @@
                 questionElement.remove();
                 renumberQuestions();
             });
-            
-            // Add event listeners for key point buttons in essay questions
-            if (quizType === 'essay') {
+
+            const typeSelect = questionDiv.querySelector('.question-type');
+
+            function attachKeyPointListeners(id) {
                 const addKeyPointBtn = questionDiv.querySelector('.add-key-point');
-                addKeyPointBtn.addEventListener('click', function() {
-                    addKeyPoint(this.getAttribute('data-question'));
-                });
-                
+                if (addKeyPointBtn) {
+                    addKeyPointBtn.addEventListener('click', function() {
+                        addKeyPoint(id);
+                    });
+                }
+
                 const removeKeyPointBtns = questionDiv.querySelectorAll('.remove-key-point');
                 removeKeyPointBtns.forEach(btn => {
                     btn.addEventListener('click', function() {
                         this.closest('.key-point-row').remove();
-                        updateKeyPointCount(questionCounter);
+                        updateKeyPointCount(id);
                     });
                 });
             }
+
+            function handleTypeChange() {
+                const type = typeSelect.value;
+                questionDiv.querySelector('.mcq-fields').style.display = type === 'mcq' ? 'block' : 'none';
+                questionDiv.querySelector('.true-false-fields').style.display = type === 'true_false' ? 'block' : 'none';
+                questionDiv.querySelector('.essay-fields').style.display = type === 'essay' ? 'block' : 'none';
+
+                if (type === 'essay') {
+                    attachKeyPointListeners(questionCounter);
+                }
+            }
+
+            typeSelect.addEventListener('change', handleTypeChange);
+            handleTypeChange();
             
             questionCounter++;
             updateQuestionCount();
@@ -570,28 +593,8 @@
         // Add event listener for add question button
         addQuestionBtn.addEventListener('click', addQuestion);
         
-        // Change question type when quiz type changes
+        // When the default quiz type dropdown changes, new questions will use that type
         quizTypeSelect.addEventListener('change', function() {
-            // Confirm if there are existing questions
-            if (questionCounter > 0) {
-                if (confirm('Changing quiz type will remove all existing questions. Continue?')) {
-                    // Clear all existing questions
-                    questionsContainer.innerHTML = '';
-                    questionCounter = 0;
-                    
-                    // Add a new question of the correct type
-                    addQuestion();
-                } else {
-                    // Revert selection
-                    const previousValue = this.getAttribute('data-prev-value') || 'mcq';
-                    this.value = previousValue;
-                }
-            } else {
-                // Add a new question of the correct type
-                addQuestion();
-            }
-            
-            // Store current value for future reference
             this.setAttribute('data-prev-value', this.value);
         });
         

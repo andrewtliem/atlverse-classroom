@@ -106,7 +106,7 @@ class Quiz(db.Model):
     description = db.Column(db.Text)
     teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
-    quiz_type = db.Column(db.String(20), nullable=False)  # 'mcq', 'true_false', 'essay'
+    quiz_type = db.Column(db.String(20), nullable=True)  # 'mcq', 'true_false', 'essay', 'mixed'
     questions_json = db.Column(db.Text, nullable=False)
     time_limit_minutes = db.Column(db.Integer)  # NULL means no time limit
     passing_score = db.Column(db.Float, default=60.0)
@@ -144,7 +144,7 @@ class SelfEvaluation(db.Model):
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=False)
     material_id = db.Column(db.Integer, db.ForeignKey('material.id'), nullable=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=True)
-    quiz_type = db.Column(db.String(20), nullable=False)  # 'mcq', 'true_false', 'essay'
+    quiz_type = db.Column(db.String(20), nullable=True)  # 'mcq', 'true_false', 'essay', 'mixed'
     questions_json = db.Column(db.Text, nullable=False)
     answers_json = db.Column(db.Text, nullable=False)
     score = db.Column(db.Float)

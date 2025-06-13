@@ -139,14 +139,27 @@
                                     <textarea class="form-control" id="question_{{ loop.index0 }}" name="question_{{ loop.index0 }}" rows="2" required>{{ question.question }}</textarea>
                                 </div>
                                 
-                                {% if quiz.quiz_type == 'mcq' %}
+                                <div class="form-group mb-3">
+                                    <label><strong>Question Type</strong></label>
+                                    <select class="form-control question-type" name="question_{{ loop.index0 }}_type">
+                                        <option value="mcq" {% if question.type == 'mcq' %}selected{% endif %}>Multiple Choice</option>
+                                        <option value="true_false" {% if question.type == 'true_false' %}selected{% endif %}>True/False</option>
+                                        <option value="essay" {% if question.type == 'essay' %}selected{% endif %}>Essay</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="question_{{ loop.index0 }}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="question_{{ loop.index0 }}" name="question_{{ loop.index0 }}" rows="2" required>{{ question.question }}</textarea>
+                                </div>
+
+                                <div class="mcq-fields" style="display:{% if question.type == 'mcq' %}block{% else %}none{% endif %};">
                                     <div class="options-container">
                                         <p><strong>Options</strong> <span class="text-danger">*</span></p>
                                         {% for option in question.options %}
                                             <div class="form-group row">
                                                 <label class="col-sm-1 col-form-label text-right">{{ chr(65 + loop.index0) }}</label>
                                                 <div class="col-sm-11">
-                                                    <input type="text" class="form-control" name="question_{{ question.index }}_option_{{ loop.index0 }}" 
+                                                    <input type="text" class="form-control" name="question_{{ question.index }}_option_{{ loop.index0 }}"
                                                            value="{{ option[3:] }}" required>
                                                 </div>
                                             </div>
@@ -164,11 +177,13 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="question_{{ loop.index0 }}_explanation"><strong>Explanation</strong></label>
-                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation" 
-                                                  name="question_{{ loop.index0 }}_explanation" rows="2" 
+                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation"
+                                                  name="question_{{ loop.index0 }}_explanation" rows="2"
                                                   placeholder="Explain why the correct answer is correct">{{ question.explanation }}</textarea>
                                     </div>
-                                {% elif quiz.quiz_type == 'true_false' %}
+                                </div>
+
+                                <div class="true-false-fields" style="display:{% if question.type == 'true_false' %}block{% else %}none{% endif %};">
                                     <div class="form-group">
                                         <label for="question_{{ loop.index0 }}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
                                         <select class="form-control" id="question_{{ loop.index0 }}_correct" name="question_{{ loop.index0 }}_correct" required>
@@ -179,16 +194,18 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="question_{{ loop.index0 }}_explanation"><strong>Explanation</strong></label>
-                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation" 
-                                                  name="question_{{ loop.index0 }}_explanation" rows="2" 
+                                        <textarea class="form-control" id="question_{{ loop.index0 }}_explanation"
+                                                  name="question_{{ loop.index0 }}_explanation" rows="2"
                                                   placeholder="Explain why the correct answer is correct">{{ question.explanation }}</textarea>
                                     </div>
-                                {% elif quiz.quiz_type == 'essay' %}
+                                </div>
+
+                                <div class="essay-fields" style="display:{% if question.type == 'essay' %}block{% else %}none{% endif %};">
                                     <div class="form-group">
                                         <label for="question_{{ loop.index0 }}_suggested_length"><strong>Suggested Answer Length</strong></label>
-                                        <input type="text" class="form-control" id="question_{{ loop.index0 }}_suggested_length" 
-                                               name="question_{{ loop.index0 }}_suggested_length" 
-                                               placeholder="e.g., 2-3 paragraphs or 200-300 words" 
+                                        <input type="text" class="form-control" id="question_{{ loop.index0 }}_suggested_length"
+                                               name="question_{{ loop.index0 }}_suggested_length"
+                                               placeholder="e.g., 2-3 paragraphs or 200-300 words"
                                                value="{{ question.suggested_length }}">
                                     </div>
                                     <div class="key-points-container">
@@ -202,7 +219,7 @@
                                             {% for key_point in question.key_points %}
                                                 <div class="form-group row key-point-row">
                                                     <div class="col-11">
-                                                        <input type="text" class="form-control" name="question_{{ question.index }}_key_point_{{ loop.index0 }}" 
+                                                        <input type="text" class="form-control" name="question_{{ question.index }}_key_point_{{ loop.index0 }}"
                                                                value="{{ key_point }}">
                                                     </div>
                                                     <div class="col-1">
@@ -215,7 +232,7 @@
                                         </div>
                                         <input type="hidden" id="question_{{ loop.index0 }}_key_points_count" name="question_{{ loop.index0 }}_key_points_count" value="{{ question.key_points|length }}">
                                     </div>
-                                {% endif %}
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -245,37 +262,43 @@
         const questionCountInput = document.getElementById('question_count');
         const addQuestionBtn = document.getElementById('add-question-btn');
         const questionsContainer = document.getElementById('questions-container');
-        const quizType = '{{ quiz.quiz_type }}';
+        const defaultType = '{{ quiz.quiz_type }}';
         
         // Add event listeners to existing remove buttons
-        const existingRemoveBtns = document.querySelectorAll('.remove-question');
-        existingRemoveBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const questionId = this.getAttribute('data-question');
-                const questionElement = document.getElementById(`question-${questionId}`);
-                questionElement.remove();
+        function attachHandlers(questionDiv, id) {
+            const removeBtn = questionDiv.querySelector('.remove-question');
+            removeBtn.addEventListener('click', function() {
+                const qId = this.getAttribute('data-question');
+                document.getElementById(`question-${qId}`).remove();
                 renumberQuestions();
             });
-        });
-        
-        // Add event listeners to existing key point buttons (for essay questions)
-        if (quizType === 'essay') {
-            const existingAddKeyPointBtns = document.querySelectorAll('.add-key-point');
-            existingAddKeyPointBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    addKeyPoint(this.getAttribute('data-question'));
-                });
-            });
-            
-            const existingRemoveKeyPointBtns = document.querySelectorAll('.remove-key-point');
-            existingRemoveKeyPointBtns.forEach(btn => {
+
+            const typeSelect = questionDiv.querySelector('.question-type');
+            function handleTypeChange() {
+                const type = typeSelect.value;
+                questionDiv.querySelector('.mcq-fields').style.display = type === 'mcq' ? 'block' : 'none';
+                questionDiv.querySelector('.true-false-fields').style.display = type === 'true_false' ? 'block' : 'none';
+                questionDiv.querySelector('.essay-fields').style.display = type === 'essay' ? 'block' : 'none';
+            }
+            typeSelect.addEventListener('change', handleTypeChange);
+            handleTypeChange();
+
+            const addKeyPointBtn = questionDiv.querySelector('.add-key-point');
+            if (addKeyPointBtn) {
+                addKeyPointBtn.addEventListener('click', function() { addKeyPoint(id); });
+            }
+            const removeKPBtns = questionDiv.querySelectorAll('.remove-key-point');
+            removeKPBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     this.closest('.key-point-row').remove();
-                    const questionId = this.closest('.question-block').id.replace('question-', '');
-                    updateKeyPointCount(questionId);
+                    updateKeyPointCount(id);
                 });
             });
         }
+
+        document.querySelectorAll('.question-block').forEach((block, idx) => {
+            attachHandlers(block, idx);
+        });
         
         // Function to update the hidden question count field
         function updateQuestionCount() {
@@ -284,6 +307,7 @@
         
         // Function to add a new question based on quiz type
         function addQuestion() {
+            const quizType = defaultType;
             const questionDiv = document.createElement('div');
             questionDiv.className = 'question-block card mb-4';
             questionDiv.id = `question-${questionCounter}`;
@@ -296,14 +320,22 @@
                     </button>
                 </div>
                 <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label><strong>Question Type</strong></label>
+                        <select class="form-control question-type" name="question_${questionCounter}_type">
+                            <option value="mcq" ${quizType === 'mcq' ? 'selected' : ''}>Multiple Choice</option>
+                            <option value="true_false" ${quizType === 'true_false' ? 'selected' : ''}>True/False</option>
+                            <option value="essay" ${quizType === 'essay' ? 'selected' : ''}>Essay</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}"><strong>Question Text</strong> <span class="text-danger">*</span></label>
                         <textarea class="form-control" id="question_${questionCounter}" name="question_${questionCounter}" rows="2" required></textarea>
                     </div>
             `;
-            
-            if (quizType === 'mcq') {
-                questionHtml += `
+
+            questionHtml += `
+                <div class="mcq-fields" style="display:${quizType === 'mcq' ? 'block' : 'none'};">
                     <div class="options-container">
                         <p><strong>Options</strong> <span class="text-danger">*</span></p>
                         <div class="form-group row">
@@ -343,13 +375,12 @@
                     </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
-                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
-                                  name="question_${questionCounter}_explanation" rows="2" 
+                        <textarea class="form-control" id="question_${questionCounter}_explanation"
+                                  name="question_${questionCounter}_explanation" rows="2"
                                   placeholder="Explain why the correct answer is correct"></textarea>
                     </div>
-                `;
-            } else if (quizType === 'true_false') {
-                questionHtml += `
+                </div>
+                <div class="true-false-fields" style="display:${quizType === 'true_false' ? 'block' : 'none'};">
                     <div class="form-group">
                         <label for="question_${questionCounter}_correct"><strong>Correct Answer</strong> <span class="text-danger">*</span></label>
                         <select class="form-control" id="question_${questionCounter}_correct" name="question_${questionCounter}_correct" required>
@@ -360,16 +391,15 @@
                     </div>
                     <div class="form-group">
                         <label for="question_${questionCounter}_explanation"><strong>Explanation</strong></label>
-                        <textarea class="form-control" id="question_${questionCounter}_explanation" 
-                                  name="question_${questionCounter}_explanation" rows="2" 
+                        <textarea class="form-control" id="question_${questionCounter}_explanation"
+                                  name="question_${questionCounter}_explanation" rows="2"
                                   placeholder="Explain why the correct answer is correct"></textarea>
                     </div>
-                `;
-            } else if (quizType === 'essay') {
-                questionHtml += `
+                </div>
+                <div class="essay-fields" style="display:${quizType === 'essay' ? 'block' : 'none'};">
                     <div class="form-group">
                         <label for="question_${questionCounter}_suggested_length"><strong>Suggested Answer Length</strong></label>
-                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length" 
+                        <input type="text" class="form-control" id="question_${questionCounter}_suggested_length"
                                name="question_${questionCounter}_suggested_length" placeholder="e.g., 2-3 paragraphs or 200-300 words">
                     </div>
                     <div class="key-points-container">
@@ -394,8 +424,8 @@
                         </div>
                         <input type="hidden" id="question_${questionCounter}_key_points_count" name="question_${questionCounter}_key_points_count" value="1">
                     </div>
-                `;
-            }
+                </div>
+            `;
             
             questionHtml += `</div>`;
             questionDiv.innerHTML = questionHtml;
@@ -411,21 +441,34 @@
                 renumberQuestions();
             });
             
-            // Add event listeners for key point buttons in essay questions
-            if (quizType === 'essay') {
-                const addKeyPointBtn = questionDiv.querySelector('.add-key-point');
-                addKeyPointBtn.addEventListener('click', function() {
-                    addKeyPoint(this.getAttribute('data-question'));
-                });
-                
-                const removeKeyPointBtns = questionDiv.querySelectorAll('.remove-key-point');
-                removeKeyPointBtns.forEach(btn => {
+            const typeSelect = questionDiv.querySelector('.question-type');
+
+            function attachKeyPointListeners(id) {
+                const addKP = questionDiv.querySelector('.add-key-point');
+                if (addKP) {
+                    addKP.addEventListener('click', function() { addKeyPoint(id); });
+                }
+                const rmKP = questionDiv.querySelectorAll('.remove-key-point');
+                rmKP.forEach(btn => {
                     btn.addEventListener('click', function() {
                         this.closest('.key-point-row').remove();
-                        updateKeyPointCount(questionCounter);
+                        updateKeyPointCount(id);
                     });
                 });
             }
+
+            function handleTypeChange() {
+                const type = typeSelect.value;
+                questionDiv.querySelector('.mcq-fields').style.display = type === 'mcq' ? 'block' : 'none';
+                questionDiv.querySelector('.true-false-fields').style.display = type === 'true_false' ? 'block' : 'none';
+                questionDiv.querySelector('.essay-fields').style.display = type === 'essay' ? 'block' : 'none';
+                if (type === 'essay') {
+                    attachKeyPointListeners(questionCounter);
+                }
+            }
+
+            typeSelect.addEventListener('change', handleTypeChange);
+            handleTypeChange();
             
             questionCounter++;
             updateQuestionCount();

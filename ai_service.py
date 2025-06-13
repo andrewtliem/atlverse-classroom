@@ -165,8 +165,33 @@ class AIService:
             return self._score_true_false(questions, answers)
         elif quiz_type == "essay":
             return self._score_essay(questions, answers)
+        elif quiz_type == "mixed":
+            return self._score_mixed(questions, answers)
         else:
             raise ValueError(f"Unsupported quiz type: {quiz_type}")
+
+    def _score_mixed(self, questions: List[Dict], answers: List[str]) -> Tuple[float, List[Dict]]:
+        total = 0
+        feedback_all = []
+        for i, (question, answer) in enumerate(zip(questions, answers)):
+            q_type = question.get('type')
+            if q_type == 'mcq':
+                score, fb = self._score_mcq([question], [answer])
+                total += score
+                feedback_all.extend(fb)
+            elif q_type == 'true_false':
+                score, fb = self._score_true_false([question], [answer])
+                total += score
+                feedback_all.extend(fb)
+            elif q_type == 'essay':
+                score, fb = self._score_essay([question], [answer])
+                total += score
+                # fb is list
+                feedback_all.extend(fb)
+            else:
+                feedback_all.append({'question_index': i, 'error': 'Unsupported type', 'user_answer': answer})
+        avg = total / len(questions) if questions else 0
+        return avg, feedback_all
     
     def _score_mcq(self, questions: List[Dict], answers: List[str]) -> Tuple[float, List[Dict]]:
         """Score multiple choice questions"""

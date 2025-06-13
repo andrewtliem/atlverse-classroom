@@ -29,9 +29,11 @@ class CPMKProgressTest(unittest.TestCase):
             db.session.add(cpmk)
             quiz = Quiz(title="q1", description="", teacher_id=teacher.id,
                         classroom_id=classroom.id, quiz_type="mcq",
-                        questions_json="[]", cpmk_id=cpmk.id)
+                        questions_json="[]")
+            quiz.cpmks.append(cpmk)
             assignment = Assignment(title="a1", classroom_id=classroom.id,
-                                    teacher_id=teacher.id, cpmk_id=cpmk.id)
+                                    teacher_id=teacher.id)
+            assignment.cpmks.append(cpmk)
             db.session.add_all([quiz, assignment])
             db.session.commit()
 
