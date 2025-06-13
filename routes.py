@@ -583,7 +583,7 @@ def teacher_create_quiz(classroom_id):
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        quiz_type = request.form.get('quiz_type')
+        default_type = request.form.get('quiz_type')
         time_limit = request.form.get('time_limit')
         passing_score = request.form.get('passing_score')
         is_required = 'is_required' in request.form
@@ -614,12 +614,15 @@ def teacher_create_quiz(classroom_id):
         
         # Process questions
         questions = []
+        question_types = set()
         question_count = int(request.form.get('question_count', 0))
         
         for i in range(question_count):
             question_text = request.form.get(f'question_{i}')
-            
-            if quiz_type == 'mcq':
+            q_type = request.form.get(f'question_{i}_type') or default_type
+            question_types.add(q_type)
+
+            if q_type == 'mcq':
                 # Multiple choice question
                 options = []
                 for j in range(4):  # Assuming 4 options for MCQ
@@ -631,24 +634,26 @@ def teacher_create_quiz(classroom_id):
                 explanation = request.form.get(f'question_{i}_explanation', '')
                 
                 questions.append({
+                    'type': 'mcq',
                     'question': question_text,
                     'options': options,
                     'correct_answer': correct_answer,
                     'explanation': explanation
                 })
-                
-            elif quiz_type == 'true_false':
+
+            elif q_type == 'true_false':
                 # True/False question
                 correct_answer = request.form.get(f'question_{i}_correct')
                 explanation = request.form.get(f'question_{i}_explanation', '')
-                
+
                 questions.append({
+                    'type': 'true_false',
                     'question': question_text,
                     'correct_answer': correct_answer,
                     'explanation': explanation
                 })
-                
-            elif quiz_type == 'essay':
+
+            elif q_type == 'essay':
                 # Essay question
                 key_points = []
                 key_points_count = int(request.form.get(f'question_{i}_key_points_count', 0))
@@ -661,18 +666,24 @@ def teacher_create_quiz(classroom_id):
                 suggested_length = request.form.get(f'question_{i}_suggested_length', '')
                 
                 questions.append({
+                    'type': 'essay',
                     'question': question_text,
                     'key_points': key_points,
                     'suggested_length': suggested_length
                 })
         
+        if len(question_types) == 1:
+            computed_quiz_type = list(question_types)[0]
+        else:
+            computed_quiz_type = 'mixed'
+
         # Create quiz
         quiz = Quiz(
             title=title,
             description=description,
             teacher_id=current_user.id,
             classroom_id=classroom_id,
-            quiz_type=quiz_type,
+            quiz_type=computed_quiz_type,
             questions_json=json.dumps(questions),
             time_limit_minutes=time_limit,
             passing_score=passing_score,
@@ -746,12 +757,15 @@ def teacher_edit_quiz(quiz_id):
         
         # Process questions (similar to create route)
         questions = []
+        question_types = set()
         question_count = int(request.form.get('question_count', 0))
         
         for i in range(question_count):
             question_text = request.form.get(f'question_{i}')
-            
-            if quiz.quiz_type == 'mcq':
+            q_type = request.form.get(f'question_{i}_type') or quiz.quiz_type
+            question_types.add(q_type)
+
+            if q_type == 'mcq':
                 options = []
                 for j in range(4):
                     option = request.form.get(f'question_{i}_option_{j}')
@@ -762,23 +776,25 @@ def teacher_edit_quiz(quiz_id):
                 explanation = request.form.get(f'question_{i}_explanation', '')
                 
                 questions.append({
+                    'type': 'mcq',
                     'question': question_text,
                     'options': options,
                     'correct_answer': correct_answer,
                     'explanation': explanation
                 })
-                
-            elif quiz.quiz_type == 'true_false':
+
+            elif q_type == 'true_false':
                 correct_answer = request.form.get(f'question_{i}_correct')
                 explanation = request.form.get(f'question_{i}_explanation', '')
-                
+
                 questions.append({
+                    'type': 'true_false',
                     'question': question_text,
                     'correct_answer': correct_answer,
                     'explanation': explanation
                 })
-                
-            elif quiz.quiz_type == 'essay':
+
+            elif q_type == 'essay':
                 key_points = []
                 key_points_count = int(request.form.get(f'question_{i}_key_points_count', 0))
                 
@@ -790,10 +806,16 @@ def teacher_edit_quiz(quiz_id):
                 suggested_length = request.form.get(f'question_{i}_suggested_length', '')
                 
                 questions.append({
+                    'type': 'essay',
                     'question': question_text,
                     'key_points': key_points,
                     'suggested_length': suggested_length
                 })
+
+        if len(question_types) == 1:
+            quiz.quiz_type = list(question_types)[0]
+        else:
+            quiz.quiz_type = 'mixed'
         
         quiz.questions_json = json.dumps(questions)
         db.session.commit()
@@ -1780,29 +1802,7 @@ def student_submit_teacher_quiz(evaluation_id):
         answers.append(answer)
     
     # Score the quiz
-    if evaluation.quiz_type == 'mcq' or evaluation.quiz_type == 'true_false':
-        # For objective questions, we can score them directly
-        correct_count = 0
-        feedback = []
-        
-        for i, (question, answer) in enumerate(zip(questions, answers)):
-            is_correct = answer == question.get('correct_answer')
-            if is_correct:
-                correct_count += 1
-            
-            feedback.append({
-                'question_index': i,
-                'is_correct': is_correct,
-                'correct_answer': question.get('correct_answer'),
-                'explanation': question.get('explanation', ''),
-                'user_answer': answer
-            })
-        
-        score = (correct_count / len(questions)) * 100 if questions else 0
-        
-    elif evaluation.quiz_type == 'essay':
-        # For essays, use AI to score
-        score, feedback = ai_service.score_quiz(questions, answers, evaluation.quiz_type)
+    score, feedback = ai_service.score_quiz(questions, answers, evaluation.quiz_type)
     
     # Update evaluation
     evaluation.answers_json = json.dumps(answers)
